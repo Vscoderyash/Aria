@@ -1057,9 +1057,9 @@ async function doSend(text, curImgs){
         if(data==='[DONE]') break;
         try{
           const j=JSON.parse(data);
-          if(j.type==='content_block_delta'&&j.delta?.type==='text_delta'){
-            fullText+=j.delta.text;
-            updateStream(j.delta.text);
+          if(j.choices?.[0]?.delta?.content){
+            fullText+=j.choices[0].delta.content;
+            updateStream(j.choices[0].delta.content);
           }
         }catch(e){}
       }
