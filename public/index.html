@@ -3,779 +3,1124 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ARIA API — Developer Platform</title>
+<title>ARIA API — Build with Intelligence</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>"/>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,700;0,900;1,400;1,700&display=swap" rel="stylesheet"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#0a0a0a;--sb:#0f0f0f;--sur:#161616;--sur2:#1e1e1e;--sur3:#252525;
-  --bor:#242424;--bor2:#303030;
-  --tx:#f0f0f0;--tx2:#888;--tx3:#444;
-  --acc:#cc785c;--acc2:#d4896d;--accg:rgba(204,120,92,0.1);
-  --grn:#3dd68c;--grns:rgba(61,214,140,0.1);
-  --blu:#5b9cf6;--blus:rgba(91,156,246,0.1);
-  --pur:#9b7fe8;--purs:rgba(155,127,232,0.1);
-  --red:#e57373;
+/* ═══════════════════════════════════════
+   ARIA API — DESIGN SYSTEM
+   Aesthetic: Editorial luxury dark
+   Inspired by: high-end fintech + dev tools
+═══════════════════════════════════════ */
+:root {
+  --void: #050506;
+  --ink: #0c0c10;
+  --depth: #111117;
+  --lift: #18181f;
+  --raise: #1f1f28;
+  --edge: #2a2a36;
+  --line: #333340;
+  --mute: #52526a;
+  --dim: #7878a0;
+  --soft: #a8a8c8;
+  --text: #e8e8f5;
+  --pure: #f5f5ff;
+  --gold: #e8b86d;
+  --gold2: #f5d08a;
+  --goldd: rgba(232,184,109,0.08);
+  --goldb: rgba(232,184,109,0.15);
+  --teal: #4ecdc4;
+  --teald: rgba(78,205,196,0.08);
+  --rose: #ff6b9d;
+  --rosed: rgba(255,107,157,0.08);
+  --iris: #818cf8;
+  --irisd: rgba(129,140,248,0.08);
+  --r: 10px;
+  --r2: 16px;
 }
-html,body{height:100%;font-family:'Geist',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.6;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',system-ui,sans-serif;
+  background:var(--void);color:var(--text);
+  font-size:14px;line-height:1.6;
+  overflow-x:hidden;
+  cursor:default;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:1000;opacity:0.4;
+}
+
+/* ── GLOW ORBS ── */
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(100px);opacity:0.06;}
+.orb-1{width:600px;height:600px;background:var(--gold);top:-200px;right:-100px;animation:drift 25s ease-in-out infinite;}
+.orb-2{width:400px;height:400px;background:var(--teal);bottom:-100px;left:-100px;animation:drift 20s ease-in-out infinite reverse;}
+.orb-3{width:300px;height:300px;background:var(--iris);top:50%;left:50%;animation:drift 30s ease-in-out infinite 5s;}
+@keyframes drift{0%,100%{transform:translate(0,0);}33%{transform:translate(30px,-40px);}66%{transform:translate(-20px,30px);}}
 
 /* ── LAYOUT ── */
-.shell{display:flex;height:100vh;}
-.sidebar{width:220px;flex-shrink:0;background:var(--sb);border-right:1px solid var(--bor);display:flex;flex-direction:column;overflow:hidden;}
-.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.app{display:flex;height:100vh;position:relative;z-index:1;}
 
-/* ── SIDEBAR ── */
-.sb-brand{padding:20px 16px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bor);}
-.sb-logo{width:30px;height:30px;border-radius:8px;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;}
-.sb-name{font-size:15px;font-weight:700;letter-spacing:-0.02em;}
-.sb-name span{color:var(--acc);}
-.sb-tag{font-size:9px;color:var(--tx3);letter-spacing:0.1em;text-transform:uppercase;margin-top:1px;}
-
-.sb-nav{flex:1;padding:10px 8px;overflow-y:auto;}
-.nav-sec{font-size:10px;color:var(--tx3);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 4px;}
-.nav-item{
-  padding:7px 10px;border-radius:7px;cursor:pointer;
-  display:flex;align-items:center;gap:9px;margin-bottom:1px;
-  font-size:13px;color:var(--tx2);transition:all 0.12s;border:1px solid transparent;
+/* ═══ SIDEBAR ═══ */
+.sidebar{
+  width:240px;flex-shrink:0;
+  background:linear-gradient(180deg, var(--ink) 0%, var(--void) 100%);
+  border-right:1px solid var(--edge);
+  display:flex;flex-direction:column;
+  overflow:hidden;position:relative;
 }
-.nav-item:hover{background:var(--sur2);color:var(--tx);}
-.nav-item.active{background:var(--sur2);color:var(--tx);border-color:var(--bor2);}
-.nav-icon{font-size:14px;flex-shrink:0;}
-
-.sb-foot{padding:10px;border-top:1px solid var(--bor);}
-.credit-chip{
-  padding:10px 12px;border-radius:8px;
-  background:var(--sur2);border:1px solid var(--bor);
+.sidebar::after{
+  content:'';position:absolute;top:0;right:0;
+  width:1px;height:100%;
+  background:linear-gradient(180deg,transparent,var(--gold),transparent);
+  opacity:0.2;
 }
-.cc-label{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.08em;}
-.cc-val{font-size:22px;font-weight:700;color:var(--acc);font-family:'Geist Mono',monospace;margin:2px 0;}
-.cc-sub{font-size:11px;color:var(--tx3);}
 
-/* ── HEADER ── */
-.page-header{
-  padding:24px 32px 0;
+.brand{
+  padding:24px 20px 20px;
+  border-bottom:1px solid var(--edge);
+  display:flex;align-items:center;gap:12px;
   flex-shrink:0;
 }
-.ph-title{font-size:22px;font-weight:700;letter-spacing:-0.03em;margin-bottom:4px;}
-.ph-sub{font-size:13px;color:var(--tx2);}
+.brand-mark{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg, var(--gold), #c87941);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;font-size:18px;font-weight:900;
+  color:var(--void);flex-shrink:0;
+  box-shadow:0 0 20px rgba(232,184,109,0.3);
+}
+.brand-text{}
+.brand-name{
+  font-family:'Playfair Display',serif;
+  font-size:17px;font-weight:700;
+  color:var(--pure);letter-spacing:0.02em;
+}
+.brand-sub{font-size:10px;color:var(--mute);letter-spacing:0.12em;text-transform:uppercase;margin-top:1px;}
 
-/* ── CONTENT ── */
-.content{padding:20px 32px 48px;flex:1;}
+.nav{flex:1;padding:12px 10px;overflow-y:auto;}
+.nav::-webkit-scrollbar{width:0;}
 
-/* ── TABS ── */
-.tabs{display:none;}
-.tab-content{display:none;}
-.tab-content.active{display:block;}
+.nav-group-label{
+  font-size:9px;color:var(--mute);
+  letter-spacing:0.14em;text-transform:uppercase;
+  padding:12px 10px 5px;font-weight:500;
+}
+
+.nav-item{
+  padding:8px 12px;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:1px;font-size:13px;
+  color:var(--dim);transition:all 0.15s;
+  border:1px solid transparent;position:relative;
+  font-weight:400;
+}
+.nav-item:hover{color:var(--soft);background:var(--lift);}
+.nav-item.active{
+  color:var(--gold);background:var(--goldd);
+  border-color:rgba(232,184,109,0.15);
+}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:50%;
+  transform:translateY(-50%);
+  width:2px;height:60%;background:var(--gold);
+  border-radius:0 2px 2px 0;
+}
+.nav-icon{
+  width:16px;height:16px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;opacity:0.7;
+}
+.nav-item.active .nav-icon{opacity:1;}
+
+.sidebar-footer{
+  padding:14px;border-top:1px solid var(--edge);
+  flex-shrink:0;
+}
+.credit-display{
+  background:var(--lift);border:1px solid var(--edge);
+  border-radius:var(--r);padding:14px;
+  position:relative;overflow:hidden;
+}
+.credit-display::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--goldd),transparent);
+  pointer-events:none;
+}
+.cd-label{font-size:9px;color:var(--mute);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;}
+.cd-val{
+  font-family:'DM Mono',monospace;font-size:28px;font-weight:500;
+  color:var(--gold);line-height:1;letter-spacing:-0.02em;
+}
+.cd-sub{font-size:11px;color:var(--mute);margin-top:4px;}
+.cd-bar{height:2px;background:var(--edge);border-radius:1px;margin-top:10px;overflow:hidden;}
+.cd-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:1px;transition:width 0.5s;}
+
+/* ═══ MAIN ═══ */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+
+/* ── TOP BAR ── */
+.topbar{
+  height:56px;padding:0 28px;
+  border-bottom:1px solid var(--edge);
+  display:flex;align-items:center;gap:14px;
+  flex-shrink:0;background:var(--ink);
+  backdrop-filter:blur(10px);
+}
+.tb-title{font-size:15px;font-weight:500;color:var(--pure);}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.tb-btn{
+  height:32px;padding:0 14px;border-radius:7px;
+  border:1px solid var(--edge);background:none;
+  color:var(--dim);font-family:'DM Sans',sans-serif;
+  font-size:12px;cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;gap:6px;
+}
+.tb-btn:hover{color:var(--soft);border-color:var(--line);background:var(--lift);}
+.tb-badge{
+  padding:4px 12px;border-radius:20px;
+  background:var(--goldd);border:1px solid rgba(232,184,109,0.2);
+  font-size:11px;color:var(--gold);font-family:'DM Mono',monospace;
+  font-weight:500;
+}
+
+/* ── SCROLL AREA ── */
+.scroll{flex:1;overflow-y:auto;}
+.scroll::-webkit-scrollbar{width:4px;}
+.scroll::-webkit-scrollbar-track{background:transparent;}
+.scroll::-webkit-scrollbar-thumb{background:var(--edge);border-radius:2px;}
+
+/* ── PAGE ── */
+.page{padding:32px 36px 60px;max-width:900px;}
+.page-hero{margin-bottom:32px;}
+.page-eyebrow{
+  font-size:10px;color:var(--gold);
+  letter-spacing:0.14em;text-transform:uppercase;
+  font-weight:500;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.page-eyebrow::before{content:'';width:20px;height:1px;background:var(--gold);opacity:0.5;}
+.page-title{
+  font-family:'Playfair Display',serif;
+  font-size:32px;font-weight:700;
+  color:var(--pure);letter-spacing:-0.02em;
+  line-height:1.2;margin-bottom:8px;
+}
+.page-title em{font-style:italic;color:var(--gold);}
+.page-sub{font-size:14px;color:var(--dim);max-width:560px;line-height:1.6;}
 
 /* ── CARDS ── */
-.card{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:20px;margin-bottom:16px;}
-.card-title{font-size:13px;font-weight:600;color:var(--tx2);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-.card-title .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);}
+.card{
+  background:var(--depth);border:1px solid var(--edge);
+  border-radius:var(--r2);padding:22px 24px;
+  margin-bottom:16px;position:relative;overflow:hidden;
+  transition:border-color 0.2s;
+}
+.card:hover{border-color:var(--line);}
+.card-shimmer{
+  position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.card:hover .card-shimmer{opacity:0.3;}
 
-/* ── STATS GRID ── */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
-.stat-card{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:16px 18px;}
-.stat-label{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
-.stat-val{font-size:28px;font-weight:700;letter-spacing:-0.03em;font-family:'Geist Mono',monospace;}
-.stat-val.green{color:var(--grn);}
-.stat-val.blue{color:var(--blu);}
-.stat-val.purple{color:var(--pur);}
-.stat-val.orange{color:var(--acc);}
-.stat-sub{font-size:11px;color:var(--tx3);margin-top:3px;}
+.card-label{
+  font-size:10px;color:var(--mute);
+  letter-spacing:0.12em;text-transform:uppercase;
+  font-weight:500;margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;
+}
+.card-label::after{content:'';flex:1;height:1px;background:var(--edge);}
 
-/* ── API KEY DISPLAY ── */
-.key-row{
-  display:flex;align-items:center;gap:10px;
-  background:var(--sur2);border:1px solid var(--bor2);
-  border-radius:9px;padding:12px 14px;margin-bottom:10px;
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat{
+  background:var(--depth);border:1px solid var(--edge);
+  border-radius:var(--r2);padding:18px 20px;
+  position:relative;overflow:hidden;transition:all 0.2s;
 }
-.key-badge{
-  font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;
-  text-transform:uppercase;letter-spacing:0.08em;flex-shrink:0;
+.stat:hover{border-color:var(--line);transform:translateY(-1px);}
+.stat-bg{
+  position:absolute;top:-20px;right:-20px;
+  font-size:60px;opacity:0.03;pointer-events:none;
 }
-.key-badge.active{background:var(--grns);color:var(--grn);}
-.key-badge.inactive{background:var(--sur3);color:var(--tx3);}
-.key-val{
-  flex:1;font-family:'Geist Mono',monospace;font-size:13px;
-  color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+.stat-label{font-size:10px;color:var(--mute);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;font-weight:500;}
+.stat-val{
+  font-family:'DM Mono',monospace;
+  font-size:30px;font-weight:400;
+  letter-spacing:-0.03em;line-height:1;
 }
-.key-name{font-size:12px;color:var(--tx3);min-width:80px;}
+.sv-gold{color:var(--gold);}
+.sv-teal{color:var(--teal);}
+.sv-iris{color:var(--iris);}
+.sv-rose{color:var(--rose);}
+.stat-trend{font-size:11px;color:var(--mute);margin-top:6px;}
+
+/* ── KEY DISPLAY ── */
+.key-item{
+  background:var(--lift);border:1px solid var(--edge);
+  border-radius:var(--r);padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:8px;transition:all 0.15s;
+  group:true;
+}
+.key-item:hover{border-color:var(--line);background:var(--raise);}
+.key-status{
+  width:6px;height:6px;border-radius:50%;flex-shrink:0;
+  background:var(--teal);box-shadow:0 0 6px var(--teal);
+}
+.key-status.off{background:var(--mute);box-shadow:none;}
+.key-name-label{
+  font-size:12px;color:var(--dim);
+  min-width:90px;font-weight:400;
+}
+.key-value{
+  flex:1;font-family:'DM Mono',monospace;font-size:12px;
+  color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  letter-spacing:0.02em;
+}
 .key-actions{display:flex;gap:6px;flex-shrink:0;}
-.kbtn{
-  padding:4px 10px;border-radius:6px;border:1px solid var(--bor2);
-  background:none;color:var(--tx2);font-size:11px;cursor:pointer;
-  font-family:'Geist',sans-serif;transition:all 0.12s;
+.ka-btn{
+  height:28px;padding:0 12px;border-radius:6px;
+  border:1px solid var(--edge);background:none;
+  color:var(--dim);font-family:'DM Sans',sans-serif;
+  font-size:11px;cursor:pointer;transition:all 0.12s;font-weight:500;
 }
-.kbtn:hover{color:var(--tx);background:var(--sur3);}
-.kbtn.danger:hover{color:var(--red);border-color:var(--red);}
+.ka-btn:hover{color:var(--soft);border-color:var(--line);background:var(--raise);}
+.ka-btn.gold:hover{color:var(--gold);border-color:rgba(232,184,109,0.3);}
+.ka-btn.danger:hover{color:var(--rose);border-color:rgba(255,107,157,0.3);}
 
-/* ── CODE BLOCK ── */
-.code-wrap{position:relative;margin:10px 0;}
-.code-head{
+/* ── CODE ── */
+.code-wrap{margin:12px 0;border-radius:var(--r2);overflow:hidden;border:1px solid var(--edge);}
+.code-header{
+  background:var(--raise);padding:10px 16px;
   display:flex;align-items:center;justify-content:space-between;
-  background:var(--sur2);border:1px solid var(--bor2);border-bottom:none;
-  border-radius:9px 9px 0 0;padding:8px 14px;
-  font-size:11px;color:var(--tx3);font-family:'Geist Mono',monospace;
+  border-bottom:1px solid var(--edge);
 }
-.code-block{
-  background:var(--sur2);border:1px solid var(--bor2);
-  border-radius:0 0 9px 9px;padding:14px 16px;
-  overflow-x:auto;font-family:'Geist Mono',monospace;
-  font-size:12.5px;line-height:1.7;color:#c9d1d9;
-  margin:0;white-space:pre;
+.code-lang{
+  font-family:'DM Mono',monospace;font-size:11px;
+  color:var(--mute);letter-spacing:0.06em;
+  display:flex;align-items:center;gap:8px;
 }
+.lang-dot{width:8px;height:8px;border-radius:50%;}
+.lang-dot.curl{background:#e8b86d;}
+.lang-dot.python{background:#4ecdc4;}
+.lang-dot.js{background:#818cf8;}
+.lang-dot.json{background:#ff6b9d;}
 .copy-btn{
-  background:none;border:1px solid var(--bor2);border-radius:5px;
-  color:var(--tx3);font-size:11px;padding:2px 8px;cursor:pointer;
-  font-family:'Geist',sans-serif;transition:all 0.12s;
+  height:24px;padding:0 10px;border-radius:5px;
+  border:1px solid var(--edge);background:none;
+  color:var(--mute);font-family:'DM Sans',sans-serif;
+  font-size:11px;cursor:pointer;transition:all 0.12s;
 }
-.copy-btn:hover{color:var(--tx);border-color:var(--tx3);}
-
-/* ── SYNTAX ── */
-.kw{color:#ff7b72;} .str{color:#a5d6ff;} .com{color:#8b949e;font-style:italic;}
-.fn{color:#d2a8ff;} .num{color:#79c0ff;} .key{color:#7ee787;} .pun{color:#c9d1d9;}
-.var{color:#ffa657;}
+.copy-btn:hover{color:var(--gold);border-color:rgba(232,184,109,0.3);}
+.code-body{
+  background:var(--depth);
+  padding:16px 18px;overflow-x:auto;
+  font-family:'DM Mono',monospace;font-size:12.5px;
+  line-height:1.7;color:#c8c8e8;
+  white-space:pre;
+}
+/* syntax */
+.t-k{color:#e8b86d;} .t-s{color:#7dd3fc;} .t-c{color:#52526a;font-style:italic;}
+.t-f{color:#c084fc;} .t-n{color:#86efac;} .t-p{color:#94a3b8;} .t-v{color:#fca5a5;}
+.t-b{color:#4ecdc4;}
 
 /* ── MODEL CARDS ── */
-.models-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+.model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 .model-card{
-  background:var(--sur);border:1px solid var(--bor);border-radius:12px;
-  padding:18px;transition:all 0.15s;cursor:default;
+  background:var(--depth);border:1px solid var(--edge);
+  border-radius:var(--r2);padding:20px;
+  cursor:default;transition:all 0.2s;position:relative;overflow:hidden;
 }
-.model-card:hover{border-color:var(--bor2);}
-.mc-name{font-size:15px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px;}
-.mc-id{font-family:'Geist Mono',monospace;font-size:11px;color:var(--tx3);margin-bottom:10px;}
-.mc-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;margin-bottom:10px;}
-.mc-desc{font-size:12px;color:var(--tx2);line-height:1.5;margin-bottom:10px;}
-.mc-cost{font-size:12px;color:var(--tx3);}
-.mc-cost strong{color:var(--tx);}
+.model-card:hover{transform:translateY(-2px);border-color:var(--line);}
+.model-card.featured{border-color:rgba(232,184,109,0.3);}
+.model-card.featured::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.model-card-tag{
+  position:absolute;top:14px;right:14px;
+  font-size:9px;font-weight:600;padding:2px 8px;
+  border-radius:20px;letter-spacing:0.08em;text-transform:uppercase;
+}
+.tag-popular{background:var(--goldd);color:var(--gold);border:1px solid rgba(232,184,109,0.2);}
+.tag-fast{background:var(--teald);color:var(--teal);border:1px solid rgba(78,205,196,0.2);}
+.tag-power{background:var(--irisd);color:var(--iris);border:1px solid rgba(129,140,248,0.2);}
+.mc-icon{font-size:24px;margin-bottom:12px;}
+.mc-name{font-size:16px;font-weight:600;color:var(--pure);margin-bottom:3px;letter-spacing:-0.01em;}
+.mc-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--mute);margin-bottom:10px;}
+.mc-desc{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:14px;}
+.mc-credit{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:6px;
+  font-size:11px;font-weight:600;
+  font-family:'DM Mono',monospace;
+}
+.mc-credit.fast{background:var(--teald);color:var(--teal);}
+.mc-credit.smart{background:var(--goldd);color:var(--gold);}
+.mc-credit.pro{background:var(--irisd);color:var(--iris);}
 
-/* ── FORMS ── */
-.form-group{margin-bottom:14px;}
-.form-group label{display:block;font-size:11px;color:var(--tx3);font-weight:500;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;}
-.form-group input{
-  width:100%;padding:9px 12px;background:var(--sur2);
-  border:1px solid var(--bor2);border-radius:8px;
-  color:var(--tx);font-family:'Geist',sans-serif;font-size:13px;outline:none;
-  transition:border-color 0.15s;
+/* ── TABLE ── */
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table th{
+  text-align:left;padding:10px 14px;
+  border-bottom:1px solid var(--edge);
+  font-size:10px;color:var(--mute);font-weight:500;
+  letter-spacing:0.1em;text-transform:uppercase;
 }
-.form-group input:focus{border-color:var(--acc);}
-.form-group input::placeholder{color:var(--tx3);}
-.form-hint{font-size:11px;color:var(--tx3);margin-top:3px;}
+.data-table td{
+  padding:12px 14px;border-bottom:1px solid rgba(42,42,54,0.5);
+  color:var(--soft);
+}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:var(--lift);}
 
-.submit-btn{
-  padding:10px 20px;background:var(--acc);color:white;border:none;
-  border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;font-weight:600;
-  cursor:pointer;transition:background 0.15s;
+/* ── ENDPOINT ── */
+.endpoint-row{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--lift);border:1px solid var(--edge);
+  border-radius:8px;padding:8px 14px;
+  font-family:'DM Mono',monospace;font-size:12px;
+  color:var(--soft);margin-bottom:14px;
 }
-.submit-btn:hover{background:var(--acc2);}
-.submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.method-badge{
+  font-size:10px;font-weight:700;padding:2px 8px;
+  border-radius:4px;letter-spacing:0.06em;
+}
+.mb-post{background:var(--teald);color:var(--teal);}
+.mb-get{background:var(--irisd);color:var(--iris);}
 
 /* ── BADGE ── */
-.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;}
-.badge.green{background:var(--grns);color:var(--grn);}
-.badge.blue{background:var(--blus);color:var(--blu);}
-.badge.purple{background:var(--purs);color:var(--pur);}
-.badge.orange{background:var(--accg);color:var(--acc);}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:600;}
+.b-gold{background:var(--goldd);color:var(--gold);}
+.b-teal{background:var(--teald);color:var(--teal);}
+.b-iris{background:var(--irisd);color:var(--iris);}
+.b-rose{background:var(--rosed);color:var(--rose);}
 
-/* ── USAGE TABLE ── */
-.usage-table{width:100%;border-collapse:collapse;font-size:13px;}
-.usage-table th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--bor2);font-size:11px;color:var(--tx3);font-weight:500;letter-spacing:0.06em;text-transform:uppercase;}
-.usage-table td{padding:10px 12px;border-bottom:1px solid var(--bor);}
-.usage-table tr:last-child td{border-bottom:none;}
-
-/* ── AUTH SCREEN ── */
-.auth-screen{
+/* ── AUTH ── */
+.auth-wrap{
   flex:1;display:flex;align-items:center;justify-content:center;
-  padding:40px 20px;
+  padding:40px;position:relative;
 }
-.auth-box{
-  width:100%;max-width:400px;
-  background:var(--sur);border:1px solid var(--bor);
-  border-radius:16px;padding:28px;
+.auth-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%, rgba(232,184,109,0.04) 0%, transparent 60%);
+}
+.auth-card{
+  width:100%;max-width:420px;position:relative;z-index:1;
+  background:var(--depth);border:1px solid var(--edge);
+  border-radius:20px;padding:32px;
+  box-shadow:0 40px 80px rgba(0,0,0,0.5);
+}
+.auth-card::before{
+  content:'';position:absolute;top:0;left:20%;right:20%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:0.4;
 }
 .auth-logo{
-  width:44px;height:44px;border-radius:12px;background:var(--acc);
+  width:48px;height:48px;border-radius:12px;
+  background:linear-gradient(135deg,var(--gold),#c87941);
   display:flex;align-items:center;justify-content:center;
-  font-size:22px;font-weight:700;color:white;margin-bottom:16px;
+  font-family:'Playfair Display',serif;font-size:24px;font-weight:900;
+  color:var(--void);margin-bottom:20px;
+  box-shadow:0 8px 24px rgba(232,184,109,0.25);
 }
-.auth-title{font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:6px;}
-.auth-sub{font-size:13px;color:var(--tx2);margin-bottom:22px;line-height:1.5;}
-.auth-switch{font-size:12px;color:var(--tx3);margin-top:12px;text-align:center;}
-.auth-switch a{color:var(--acc);cursor:pointer;text-decoration:none;}
+.auth-title{
+  font-family:'Playfair Display',serif;
+  font-size:24px;font-weight:700;color:var(--pure);
+  margin-bottom:6px;letter-spacing:-0.01em;
+}
+.auth-sub{font-size:13px;color:var(--dim);margin-bottom:24px;line-height:1.5;}
+.auth-free-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--teald);border:1px solid rgba(78,205,196,0.2);
+  color:var(--teal);font-size:11px;font-weight:600;
+  padding:4px 10px;border-radius:20px;margin-bottom:20px;
+}
+
+.form-group{margin-bottom:14px;}
+.form-group label{
+  display:block;font-size:10px;color:var(--mute);
+  font-weight:500;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;
+}
+.form-group input{
+  width:100%;padding:10px 14px;
+  background:var(--lift);border:1px solid var(--edge);
+  border-radius:8px;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;transition:all 0.15s;
+}
+.form-group input:focus{border-color:rgba(232,184,109,0.4);background:var(--raise);box-shadow:0 0 0 3px rgba(232,184,109,0.05);}
+.form-group input::placeholder{color:var(--mute);}
+
+.submit-btn{
+  width:100%;padding:12px;
+  background:linear-gradient(135deg,var(--gold),#c87941);
+  color:var(--void);border:none;border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;letter-spacing:0.01em;
+  box-shadow:0 4px 20px rgba(232,184,109,0.2);
+}
+.submit-btn:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(232,184,109,0.3);}
+.submit-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+.auth-switch{font-size:12px;color:var(--mute);text-align:center;margin-top:14px;}
+.auth-switch a{color:var(--gold);cursor:pointer;}
 .auth-switch a:hover{text-decoration:underline;}
-.auth-success{
-  background:var(--grns);border:1px solid var(--grn);
-  border-radius:8px;padding:12px 14px;margin-top:14px;
-  font-size:13px;color:var(--grn);display:none;
+
+.msg{border-radius:8px;padding:10px 14px;margin-top:12px;font-size:12px;display:none;}
+.msg.success{background:var(--teald);border:1px solid rgba(78,205,196,0.2);color:var(--teal);}
+.msg.error{background:var(--rosed);border:1px solid rgba(255,107,157,0.2);color:var(--rose);}
+.msg.show{display:block;}
+
+/* ── PLANS ── */
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.plan{
+  background:var(--lift);border:1px solid var(--edge);
+  border-radius:var(--r2);padding:18px;
+  cursor:pointer;transition:all 0.15s;position:relative;
 }
-.auth-error{
-  background:rgba(229,115,115,0.1);border:1px solid var(--red);
-  border-radius:8px;padding:10px 12px;margin-top:10px;
-  font-size:12px;color:var(--red);display:none;
+.plan:hover,.plan.sel{border-color:rgba(232,184,109,0.3);background:var(--goldd);}
+.plan-pop{
+  position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--gold),#c87941);
+  color:var(--void);font-size:9px;font-weight:700;
+  padding:2px 10px;border-radius:20px;letter-spacing:0.1em;white-space:nowrap;
 }
+.plan-icon{font-size:22px;margin-bottom:10px;}
+.plan-name{font-size:14px;font-weight:600;color:var(--pure);margin-bottom:3px;}
+.plan-desc{font-size:11px;color:var(--dim);margin-bottom:10px;line-height:1.5;}
+.plan-price{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:var(--gold);}
+.plan-price small{font-size:12px;font-weight:400;color:var(--mute);}
 
 /* ── TOAST ── */
 .toast{
-  position:fixed;bottom:18px;right:18px;
-  background:var(--sur3);border:1px solid var(--bor2);
-  color:var(--tx);padding:9px 15px;border-radius:8px;
-  font-size:12px;opacity:0;transition:opacity 0.2s;
-  pointer-events:none;z-index:999;
+  position:fixed;bottom:20px;right:20px;
+  background:var(--raise);border:1px solid var(--edge);
+  color:var(--text);padding:12px 18px;border-radius:10px;
+  font-size:13px;opacity:0;transition:all 0.25s;
+  pointer-events:none;z-index:9999;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  transform:translateY(8px);
 }
-.toast.show{opacity:1;}
+.toast.show{opacity:1;transform:translateY(0);}
 
 /* ── DIVIDER ── */
-.divider{height:1px;background:var(--bor);margin:20px 0;}
+.div{height:1px;background:var(--edge);margin:24px 0;}
 
-/* ── ENDPOINT BADGE ── */
-.endpoint{
-  display:inline-flex;align-items:center;gap:8px;
-  background:var(--sur2);border:1px solid var(--bor2);
-  border-radius:8px;padding:8px 14px;
-  font-family:'Geist Mono',monospace;font-size:12px;color:var(--tx2);
-  margin-bottom:12px;
+/* ── INLINE CODE ── */
+ic{
+  font-family:'DM Mono',monospace;font-size:12px;
+  background:var(--lift);border:1px solid var(--edge);
+  padding:1px 6px;border-radius:4px;color:var(--gold);
 }
-.method{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;}
-.method.post{background:rgba(61,214,140,0.15);color:var(--grn);}
-.method.get{background:rgba(91,156,246,0.15);color:var(--blu);}
 
-/* Mobile */
-@media(max-width:640px){
+/* ── RESPONSIVE ── */
+@media(max-width:720px){
   .sidebar{display:none;}
-  .content{padding:16px;}
-  .page-header{padding:16px 16px 0;}
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .model-grid{grid-template-columns:1fr;}
+  .plans-grid{grid-template-columns:1fr;}
+  .page{padding:20px 16px 40px;}
 }
+
+/* ── ANIMATIONS ── */
+.fade-in{animation:fadeIn 0.4s ease both;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.stagger > *{animation:fadeIn 0.4s ease both;}
+.stagger > *:nth-child(1){animation-delay:0.05s;}
+.stagger > *:nth-child(2){animation-delay:0.1s;}
+.stagger > *:nth-child(3){animation-delay:0.15s;}
+.stagger > *:nth-child(4){animation-delay:0.2s;}
 </style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
-<div id="auth-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;">
-  <div class="auth-box">
-    <div class="auth-logo">A</div>
-    <div class="auth-title" id="auth-title">Create your account</div>
-    <div class="auth-sub" id="auth-sub">Get 100 free credits instantly. No credit card required.</div>
+<!-- AMBIENT ORBS -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
 
-    <div id="register-form">
-      <div class="form-group"><label>Your Name</label><input type="text" id="reg-name" placeholder="Yash Raj"/></div>
-      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="yash@example.com"/></div>
-      <button class="submit-btn" id="reg-btn" onclick="register()" style="width:100%;">Create account & get API key</button>
-      <div class="auth-error" id="reg-error"></div>
-      <div class="auth-success" id="reg-success"></div>
-      <div class="auth-switch">Already have an account? <a onclick="showLogin()">Sign in</a></div>
+<!-- AUTH -->
+<div id="auth-view" style="display:flex;height:100vh;align-items:center;justify-content:center;position:relative;z-index:1;">
+  <div class="auth-bg"></div>
+  <div class="auth-card fade-in">
+    <div class="auth-logo">A</div>
+
+    <div id="reg-view">
+      <div class="auth-free-tag">✦ 100 free credits on signup</div>
+      <div class="auth-title">Build with <em style="font-style:italic;color:var(--gold);">ARIA</em></div>
+      <div class="auth-sub">The AI API built by Yash Raj. Get your secret key in seconds.</div>
+      <div class="form-group"><label>Full name</label><input type="text" id="rn" placeholder="Yash Raj" autocomplete="name"/></div>
+      <div class="form-group"><label>Email address</label><input type="email" id="re" placeholder="you@example.com" autocomplete="email"/></div>
+      <button class="submit-btn" id="reg-btn" onclick="doRegister()">Create account → get API key</button>
+      <div class="msg success" id="reg-ok"></div>
+      <div class="msg error" id="reg-err"></div>
+      <div class="auth-switch">Have an account? <a onclick="showLogin()">Sign in</a></div>
     </div>
 
-    <div id="login-form" style="display:none;">
-      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="yash@example.com"/></div>
-      <button class="submit-btn" id="login-btn" onclick="login()" style="width:100%;">View my dashboard</button>
-      <div class="auth-error" id="login-error"></div>
+    <div id="login-view" style="display:none;">
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-sub">Enter your email to access your dashboard.</div>
+      <div class="form-group" style="margin-top:20px;"><label>Email address</label><input type="email" id="le" placeholder="you@example.com" autocomplete="email"/></div>
+      <button class="submit-btn" id="login-btn" onclick="doLogin()">Open dashboard</button>
+      <div class="msg error" id="login-err"></div>
       <div class="auth-switch">New here? <a onclick="showRegister()">Create account</a></div>
     </div>
   </div>
 </div>
 
 <!-- DASHBOARD -->
-<div class="shell" id="dashboard" style="display:none;">
+<div class="app" id="dash-view" style="display:none;">
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sb-brand">
-      <div class="sb-logo">A</div>
-      <div>
-        <div class="sb-name">ARI<span>A</span></div>
-        <div class="sb-tag">API Platform</div>
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div class="brand-text">
+        <div class="brand-name">ARIA</div>
+        <div class="brand-sub">API Platform</div>
       </div>
     </div>
 
-    <div class="sb-nav">
-      <div class="nav-sec">Dashboard</div>
-      <div class="nav-item active" onclick="showTab('overview')"><span class="nav-icon">⬡</span>Overview</div>
-      <div class="nav-item" onclick="showTab('keys')"><span class="nav-icon">⚿</span>API Keys</div>
-      <div class="nav-item" onclick="showTab('usage')"><span class="nav-icon">◈</span>Usage</div>
+    <div class="nav">
+      <div class="nav-group-label">Dashboard</div>
+      <div class="nav-item active" onclick="go('overview')">
+        <div class="nav-icon">⬡</div>Overview
+      </div>
+      <div class="nav-item" onclick="go('keys')">
+        <div class="nav-icon">⚿</div>API Keys
+      </div>
+      <div class="nav-item" onclick="go('usage')">
+        <div class="nav-icon">◈</div>Usage & Credits
+      </div>
 
-      <div class="nav-sec">Docs</div>
-      <div class="nav-item" onclick="showTab('quickstart')"><span class="nav-icon">▷</span>Quickstart</div>
-      <div class="nav-item" onclick="showTab('models')"><span class="nav-icon">◎</span>Models</div>
-      <div class="nav-item" onclick="showTab('reference')"><span class="nav-icon">⊞</span>API Reference</div>
+      <div class="nav-group-label">Documentation</div>
+      <div class="nav-item" onclick="go('quickstart')">
+        <div class="nav-icon">▷</div>Quickstart
+      </div>
+      <div class="nav-item" onclick="go('models')">
+        <div class="nav-icon">◎</div>Models
+      </div>
+      <div class="nav-item" onclick="go('reference')">
+        <div class="nav-icon">⊞</div>API Reference
+      </div>
 
-      <div class="nav-sec">Account</div>
-      <div class="nav-item" onclick="showTab('billing')"><span class="nav-icon">◈</span>Credits</div>
-      <div class="nav-item" onclick="logout()"><span class="nav-icon">→</span>Sign out</div>
+      <div class="nav-group-label">Account</div>
+      <div class="nav-item" onclick="go('billing')">
+        <div class="nav-icon">◈</div>Billing
+      </div>
+      <div class="nav-item" onclick="doLogout()">
+        <div class="nav-icon">→</div>Sign out
+      </div>
     </div>
 
-    <div class="sb-foot">
-      <div class="credit-chip">
-        <div class="cc-label">Credits</div>
-        <div class="cc-val" id="sb-credits">—</div>
-        <div class="cc-sub">remaining</div>
+    <div class="sidebar-footer">
+      <div class="credit-display">
+        <div class="cd-label">Credits remaining</div>
+        <div class="cd-val" id="sb-cred">—</div>
+        <div class="cd-sub" id="sb-plan">Free plan</div>
+        <div class="cd-bar"><div class="cd-bar-fill" id="cd-fill" style="width:100%"></div></div>
       </div>
     </div>
   </div>
 
-  <!-- MAIN -->
+  <!-- MAIN CONTENT -->
   <div class="main">
-
-    <!-- OVERVIEW -->
-    <div class="tab-content active" id="tab-overview">
-      <div class="page-header">
-        <div class="ph-title">Overview</div>
-        <div class="ph-sub" id="overview-welcome">Welcome back</div>
-      </div>
-      <div class="content">
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-label">Credits Left</div><div class="stat-val orange" id="ov-credits">—</div><div class="stat-sub">top up anytime</div></div>
-          <div class="stat-card"><div class="stat-label">API Keys</div><div class="stat-val blue" id="ov-keys">—</div><div class="stat-sub">active keys</div></div>
-          <div class="stat-card"><div class="stat-label">Plan</div><div class="stat-val green" id="ov-plan" style="font-size:20px;">Free</div><div class="stat-sub">upgrade anytime</div></div>
-          <div class="stat-card"><div class="stat-label">Base URL</div><div class="stat-val" style="font-size:11px;font-family:'Geist Mono',monospace;color:var(--tx2);padding-top:4px;" id="ov-base">aria-sigma-gold.vercel.app</div></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><div class="dot"></div>Your API Key</div>
-          <div id="ov-key-display">Loading...</div>
-          <div style="margin-top:12px;font-size:12px;color:var(--tx3);">Keep this secret. Never expose it in frontend code.</div>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><div class="dot"></div>Quick test</div>
-          <div class="code-wrap">
-            <div class="code-head"><span>curl</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
-            <pre class="code-block" id="quick-curl">Loading...</pre>
-          </div>
-        </div>
+    <div class="topbar">
+      <div class="tb-title" id="tb-title">Overview</div>
+      <div class="tb-right">
+        <div class="tb-badge" id="tb-email">—</div>
+        <button class="tb-btn" onclick="go('billing')">⚡ Upgrade</button>
       </div>
     </div>
 
-    <!-- API KEYS -->
-    <div class="tab-content" id="tab-keys">
-      <div class="page-header">
-        <div class="ph-title">API Keys</div>
-        <div class="ph-sub">Manage your secret keys. Never share them publicly.</div>
-      </div>
-      <div class="content">
-        <div class="card">
-          <div class="card-title" style="justify-content:space-between;display:flex;align-items:center;">
-            <span><div class="dot" style="display:inline-block;margin-right:8px;"></div>Active Keys</span>
-            <button class="submit-btn" onclick="createKey()" style="padding:6px 14px;font-size:12px;">+ New Key</button>
-          </div>
-          <div id="keys-list">Loading...</div>
+    <div class="scroll">
+
+      <!-- OVERVIEW -->
+      <div id="p-overview" class="page fade-in">
+        <div class="page-hero">
+          <div class="page-eyebrow">Dashboard</div>
+          <div class="page-title">Welcome back, <em id="hero-name">—</em></div>
+          <div class="page-sub">Your ARIA API dashboard. Monitor usage, manage keys, and explore documentation.</div>
+        </div>
+
+        <div class="stat-grid stagger">
+          <div class="stat"><div class="stat-bg">◈</div><div class="stat-label">Credits left</div><div class="stat-val sv-gold" id="ov-cred">—</div><div class="stat-trend">Top up anytime</div></div>
+          <div class="stat"><div class="stat-bg">⚿</div><div class="stat-label">Active keys</div><div class="stat-val sv-teal" id="ov-keys">—</div><div class="stat-trend">Manage below</div></div>
+          <div class="stat"><div class="stat-bg">◎</div><div class="stat-label">Plan</div><div class="stat-val sv-iris" id="ov-plan" style="font-size:20px;padding-top:6px;">Free</div><div class="stat-trend">Upgrade for more</div></div>
+          <div class="stat"><div class="stat-bg">▷</div><div class="stat-label">Base URL</div><div class="stat-val" style="font-size:10px;color:var(--dim);padding-top:8px;font-family:'DM Mono',monospace;line-height:1.4;">aria-sigma-gold<br>.vercel.app</div></div>
         </div>
 
         <div class="card">
-          <div class="card-title"><div class="dot"></div>Using your key</div>
-          <p style="font-size:13px;color:var(--tx2);margin-bottom:12px;">Pass your key in the Authorization header:</p>
+          <div class="card-shimmer"></div>
+          <div class="card-label">Your primary API key</div>
+          <div id="ov-key">Loading…</div>
+          <p style="font-size:12px;color:var(--mute);margin-top:12px;">🔒 Keep this secret. Never expose in client-side code or public repos.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-shimmer"></div>
+          <div class="card-label">Quick test</div>
           <div class="code-wrap">
-            <div class="code-head"><span>http header</span></div>
-            <pre class="code-block"><span class="key">Authorization</span><span class="pun">: </span><span class="str">Bearer sk-aria-your-key-here</span></pre>
+            <div class="code-header">
+              <div class="code-lang"><div class="lang-dot curl"></div>curl</div>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <div class="code-body" id="ov-curl">Loading…</div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- USAGE -->
-    <div class="tab-content" id="tab-usage">
-      <div class="page-header">
-        <div class="ph-title">Usage</div>
-        <div class="ph-sub">Credit consumption per model</div>
-      </div>
-      <div class="content">
+      <!-- API KEYS -->
+      <div id="p-keys" class="page fade-in" style="display:none;">
+        <div class="page-hero">
+          <div class="page-eyebrow">API Keys</div>
+          <div class="page-title">Secret <em>Keys</em></div>
+          <div class="page-sub">Create and manage your API keys. Each key has full access to your account credits.</div>
+        </div>
+
         <div class="card">
-          <div class="card-title"><div class="dot"></div>Credit costs</div>
-          <table class="usage-table">
-            <thead><tr><th>Model</th><th>ID</th><th>Credits/call</th><th>Speed</th></tr></thead>
+          <div class="card-shimmer"></div>
+          <div class="card-label" style="justify-content:space-between;">
+            <span>Active keys</span>
+            <button onclick="newKey()" style="height:26px;padding:0 14px;border-radius:6px;border:1px solid rgba(232,184,109,0.3);background:var(--goldd);color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">+ New key</button>
+          </div>
+          <div id="keys-list">Loading…</div>
+        </div>
+
+        <div class="card">
+          <div class="card-shimmer"></div>
+          <div class="card-label">Authentication</div>
+          <p style="font-size:13px;color:var(--dim);margin-bottom:14px;">Pass your key in every request header:</p>
+          <div class="code-wrap">
+            <div class="code-header"><div class="code-lang"><div class="lang-dot json"></div>header</div></div>
+            <div class="code-body"><span class="t-b">Authorization</span><span class="t-p">: </span><span class="t-s">Bearer sk-aria-your-key-here</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USAGE -->
+      <div id="p-usage" class="page fade-in" style="display:none;">
+        <div class="page-hero">
+          <div class="page-eyebrow">Usage</div>
+          <div class="page-title">Credits & <em>Usage</em></div>
+          <div class="page-sub">ARIA uses a simple credit system. Each model call costs a fixed number of credits.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-shimmer"></div>
+          <div class="card-label">Credit costs per call</div>
+          <table class="data-table">
+            <thead><tr><th>Model</th><th>ID</th><th>Credits</th><th>Best for</th></tr></thead>
             <tbody>
-              <tr><td><strong>ARIA Fast</strong></td><td><code style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--tx3);">aria-fast</code></td><td><span class="badge green">1 credit</span></td><td>⚡ Very fast</td></tr>
-              <tr><td><strong>ARIA Smart</strong></td><td><code style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--tx3);">aria-smart</code></td><td><span class="badge blue">4 credits</span></td><td>🧠 Balanced</td></tr>
-              <tr><td><strong>ARIA Pro</strong></td><td><code style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--tx3);">aria-pro</code></td><td><span class="badge purple">20 credits</span></td><td>★ Most powerful</td></tr>
+              <tr><td><strong style="color:var(--teal);">ARIA Fast</strong></td><td><ic>aria-fast</ic></td><td><span class="badge b-teal">1 credit</span></td><td style="color:var(--dim);">High-volume, simple tasks</td></tr>
+              <tr><td><strong style="color:var(--gold);">ARIA Smart</strong></td><td><ic>aria-smart</ic></td><td><span class="badge b-gold">4 credits</span></td><td style="color:var(--dim);">Coding, analysis, writing</td></tr>
+              <tr><td><strong style="color:var(--iris);">ARIA Pro</strong></td><td><ic>aria-pro</ic></td><td><span class="badge b-iris">20 credits</span></td><td style="color:var(--dim);">Complex reasoning, research</td></tr>
             </tbody>
           </table>
         </div>
+
         <div class="card">
-          <div class="card-title"><div class="dot"></div>Free tier limits</div>
-          <table class="usage-table">
-            <thead><tr><th>Plan</th><th>Credits</th><th>ARIA Fast calls</th><th>ARIA Smart calls</th></tr></thead>
+          <div class="card-shimmer"></div>
+          <div class="card-label">What you can do with 100 free credits</div>
+          <table class="data-table">
+            <thead><tr><th>Model</th><th>Free calls</th><th>Example</th></tr></thead>
             <tbody>
-              <tr><td><span class="badge orange">Free</span></td><td>100</td><td>100 calls</td><td>25 calls</td></tr>
-              <tr><td><span class="badge blue">Starter</span></td><td>1,000</td><td>1,000 calls</td><td>250 calls</td></tr>
-              <tr><td><span class="badge purple">Pro</span></td><td>10,000</td><td>10,000 calls</td><td>2,500 calls</td></tr>
+              <tr><td><span class="badge b-teal">aria-fast</span></td><td style="font-family:'DM Mono',monospace;color:var(--teal);">100 calls</td><td style="color:var(--dim);">100 short Q&A responses</td></tr>
+              <tr><td><span class="badge b-gold">aria-smart</span></td><td style="font-family:'DM Mono',monospace;color:var(--gold);">25 calls</td><td style="color:var(--dim);">25 code reviews or essays</td></tr>
+              <tr><td><span class="badge b-iris">aria-pro</span></td><td style="font-family:'DM Mono',monospace;color:var(--iris);">5 calls</td><td style="color:var(--dim);">5 complex research tasks</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
 
-    <!-- QUICKSTART -->
-    <div class="tab-content" id="tab-quickstart">
-      <div class="page-header">
-        <div class="ph-title">Quickstart</div>
-        <div class="ph-sub">Start calling ARIA API in under 2 minutes</div>
-      </div>
-      <div class="content">
-
-        <div class="card">
-          <div class="card-title"><div class="dot"></div>1. Get your API key</div>
-          <p style="font-size:13px;color:var(--tx2);">Your key is on the <a onclick="showTab('keys')" style="color:var(--acc);cursor:pointer;">API Keys</a> page. It starts with <code style="font-family:'Geist Mono',monospace;color:var(--acc);">sk-aria-</code></p>
+      <!-- QUICKSTART -->
+      <div id="p-quickstart" class="page fade-in" style="display:none;">
+        <div class="page-hero">
+          <div class="page-eyebrow">Documentation</div>
+          <div class="page-title">Get started in <em>2 minutes</em></div>
+          <div class="page-sub">Three steps to your first AI response.</div>
         </div>
 
         <div class="card">
-          <div class="card-title"><div class="dot"></div>2. Make your first call</div>
+          <div class="card-shimmer"></div>
+          <div class="card-label">Step 1 — Get your key</div>
+          <p style="font-size:13px;color:var(--dim);">Your key is on the <a onclick="go('keys')" style="color:var(--gold);cursor:pointer;">API Keys</a> page. It starts with <ic>sk-aria-</ic></p>
+        </div>
+
+        <div class="card">
+          <div class="card-shimmer"></div>
+          <div class="card-label">Step 2 — cURL</div>
           <div class="code-wrap">
-            <div class="code-head"><span>curl</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
-            <pre class="code-block"><span class="fn">curl</span> <span class="str">https://aria-sigma-gold.vercel.app/v1/chat</span> \
-  <span class="kw">-H</span> <span class="str">"Authorization: Bearer sk-aria-YOUR_KEY"</span> \
-  <span class="kw">-H</span> <span class="str">"Content-Type: application/json"</span> \
-  <span class="kw">-d</span> <span class="str">'{
+            <div class="code-header"><div class="code-lang"><div class="lang-dot curl"></div>curl</div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <div class="code-body"><span class="t-f">curl</span> <span class="t-s">https://aria-sigma-gold.vercel.app/v1/chat</span> \
+  <span class="t-k">-H</span> <span class="t-s">"Authorization: Bearer sk-aria-YOUR_KEY"</span> \
+  <span class="t-k">-H</span> <span class="t-s">"Content-Type: application/json"</span> \
+  <span class="t-k">-d</span> <span class="t-s">'{
     "model": "aria-smart",
-    "messages": [
-      {"role": "user", "content": "Hello ARIA!"}
-    ]
-  }'</span></pre>
+    "messages": [{"role": "user", "content": "Hello ARIA!"}]
+  }'</span></div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title"><div class="dot"></div>3. Python</div>
+          <div class="card-shimmer"></div>
+          <div class="card-label">Step 3 — Python</div>
           <div class="code-wrap">
-            <div class="code-head"><span>python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
-            <pre class="code-block"><span class="kw">import</span> requests
+            <div class="code-header"><div class="code-lang"><div class="lang-dot python"></div>python</div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <div class="code-body"><span class="t-k">import</span> requests
 
-<span class="var">API_KEY</span> <span class="pun">=</span> <span class="str">"sk-aria-YOUR_KEY"</span>
-<span class="var">BASE_URL</span> <span class="pun">=</span> <span class="str">"https://aria-sigma-gold.vercel.app"</span>
+<span class="t-v">API_KEY</span> <span class="t-p">=</span> <span class="t-s">"sk-aria-YOUR_KEY"</span>
 
-<span class="var">response</span> <span class="pun">=</span> requests.<span class="fn">post</span>(
-    <span class="str">f"{BASE_URL}/v1/chat"</span>,
-    headers<span class="pun">={</span>
-        <span class="str">"Authorization"</span><span class="pun">:</span> <span class="str">f"Bearer {API_KEY}"</span>,
-        <span class="str">"Content-Type"</span><span class="pun">:</span> <span class="str">"application/json"</span>
-    <span class="pun">}</span>,
-    json<span class="pun">={</span>
-        <span class="str">"model"</span><span class="pun">:</span> <span class="str">"aria-smart"</span>,
-        <span class="str">"messages"</span><span class="pun">:</span> <span class="pun">[{</span>
-            <span class="str">"role"</span><span class="pun">:</span> <span class="str">"user"</span>,
-            <span class="str">"content"</span><span class="pun">:</span> <span class="str">"Explain quantum computing"</span>
-        <span class="pun">}]</span>
-    <span class="pun">}</span>
+<span class="t-v">res</span> <span class="t-p">=</span> requests<span class="t-p">.</span><span class="t-f">post</span>(
+    <span class="t-s">"https://aria-sigma-gold.vercel.app/v1/chat"</span>,
+    headers<span class="t-p">={</span>
+        <span class="t-s">"Authorization"</span><span class="t-p">:</span> <span class="t-s">f"Bearer {API_KEY}"</span>,
+        <span class="t-s">"Content-Type"</span><span class="t-p">:</span> <span class="t-s">"application/json"</span>
+    <span class="t-p">}</span>,
+    json<span class="t-p">={</span>
+        <span class="t-s">"model"</span><span class="t-p">:</span> <span class="t-s">"aria-smart"</span>,
+        <span class="t-s">"messages"</span><span class="t-p">: [{</span>
+            <span class="t-s">"role"</span><span class="t-p">:</span> <span class="t-s">"user"</span>,
+            <span class="t-s">"content"</span><span class="t-p">:</span> <span class="t-s">"Explain quantum computing"</span>
+        <span class="t-p">}]</span>
+    <span class="t-p">}</span>
 )
 
-<span class="var">data</span> <span class="pun">=</span> response.<span class="fn">json</span>()
-<span class="fn">print</span>(data[<span class="str">"content"</span>][<span class="num">0</span>][<span class="str">"text"</span>])</pre>
+<span class="t-v">data</span> <span class="t-p">=</span> res<span class="t-p">.</span><span class="t-f">json</span>()
+<span class="t-f">print</span>(data[<span class="t-s">"content"</span>][<span class="t-n">0</span>][<span class="t-s">"text"</span>])</div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title"><div class="dot"></div>4. JavaScript / Node.js</div>
+          <div class="card-shimmer"></div>
+          <div class="card-label">Step 3 — JavaScript</div>
           <div class="code-wrap">
-            <div class="code-head"><span>javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
-            <pre class="code-block"><span class="kw">const</span> <span class="var">res</span> <span class="pun">=</span> <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'https://aria-sigma-gold.vercel.app/v1/chat'</span>, {
-  method<span class="pun">:</span> <span class="str">'POST'</span>,
-  headers<span class="pun">:</span> {
-    <span class="str">'Authorization'</span><span class="pun">:</span> <span class="str">'Bearer sk-aria-YOUR_KEY'</span>,
-    <span class="str">'Content-Type'</span><span class="pun">:</span> <span class="str">'application/json'</span>
-  },
-  body<span class="pun">:</span> <span class="fn">JSON</span>.<span class="fn">stringify</span>({
-    model<span class="pun">:</span> <span class="str">'aria-smart'</span>,
-    messages<span class="pun">:</span> [{ role<span class="pun">:</span> <span class="str">'user'</span>, content<span class="pun">:</span> <span class="str">'Hello!'</span> }]
+            <div class="code-header"><div class="code-lang"><div class="lang-dot js"></div>javascript</div><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <div class="code-body"><span class="t-k">const</span> <span class="t-v">res</span> <span class="t-p">=</span> <span class="t-k">await</span> <span class="t-f">fetch</span>(<span class="t-s">'https://aria-sigma-gold.vercel.app/v1/chat'</span>, {
+  method<span class="t-p">:</span> <span class="t-s">'POST'</span>,
+  headers<span class="t-p">: {</span>
+    <span class="t-s">'Authorization'</span><span class="t-p">:</span> <span class="t-s">'Bearer sk-aria-YOUR_KEY'</span>,
+    <span class="t-s">'Content-Type'</span><span class="t-p">:</span> <span class="t-s">'application/json'</span>
+  <span class="t-p">}</span>,
+  body<span class="t-p">:</span> <span class="t-f">JSON</span><span class="t-p">.</span><span class="t-f">stringify</span>({
+    model<span class="t-p">:</span> <span class="t-s">'aria-smart'</span>,
+    messages<span class="t-p">: [{</span> role<span class="t-p">:</span> <span class="t-s">'user'</span>, content<span class="t-p">:</span> <span class="t-s">'Hello!'</span> <span class="t-p">}]</span>
   })
 });
 
-<span class="kw">const</span> <span class="var">data</span> <span class="pun">=</span> <span class="kw">await</span> res.<span class="fn">json</span>();
-console.<span class="fn">log</span>(<span class="var">data</span>.content[<span class="num">0</span>].text);</pre>
+<span class="t-k">const</span> <span class="t-v">data</span> <span class="t-p">=</span> <span class="t-k">await</span> res<span class="t-p">.</span><span class="t-f">json</span>();
+console<span class="t-p">.</span><span class="t-f">log</span>(<span class="t-v">data</span>.content[<span class="t-n">0</span>].text);</div>
           </div>
         </div>
-
       </div>
-    </div>
 
-    <!-- MODELS -->
-    <div class="tab-content" id="tab-models">
-      <div class="page-header">
-        <div class="ph-title">Models</div>
-        <div class="ph-sub">Choose the right model for your use case</div>
-      </div>
-      <div class="content">
-        <div class="models-grid">
+      <!-- MODELS -->
+      <div id="p-models" class="page fade-in" style="display:none;">
+        <div class="page-hero">
+          <div class="page-eyebrow">Models</div>
+          <div class="page-title">Choose your <em>model</em></div>
+          <div class="page-sub">Three tiers built for different needs. All accessible with the same API.</div>
+        </div>
+
+        <div class="model-grid stagger">
           <div class="model-card">
+            <div class="model-card-tag tag-fast">Fastest</div>
+            <div class="mc-icon">⚡</div>
             <div class="mc-name">ARIA Fast</div>
             <div class="mc-id">aria-fast · aria-1</div>
-            <div class="mc-badge badge green">1 credit / call</div>
-            <div class="mc-desc">Best for simple Q&A, classifications, short responses, high-volume applications.</div>
-            <div class="mc-cost"><strong>Speed:</strong> ⚡⚡⚡ Very fast<br><strong>Context:</strong> 200K tokens</div>
+            <div class="mc-desc">Ideal for high-volume applications, simple questions, and real-time interactions where speed is critical.</div>
+            <div class="mc-credit fast">1 credit / call</div>
           </div>
-          <div class="model-card" style="border-color:var(--acc);">
+          <div class="model-card featured">
+            <div class="model-card-tag tag-popular">Most popular</div>
+            <div class="mc-icon">🧠</div>
             <div class="mc-name">ARIA Smart</div>
             <div class="mc-id">aria-smart · aria-2</div>
-            <div class="mc-badge badge blue">4 credits / call</div>
-            <div class="mc-desc">Best balance of speed and intelligence. Great for coding, analysis, writing.</div>
-            <div class="mc-cost"><strong>Speed:</strong> ⚡⚡ Fast<br><strong>Context:</strong> 200K tokens</div>
+            <div class="mc-desc">The perfect balance. Handles coding, analysis, writing, and reasoning with excellent quality.</div>
+            <div class="mc-credit smart">4 credits / call</div>
           </div>
           <div class="model-card">
+            <div class="model-card-tag tag-power">Most powerful</div>
+            <div class="mc-icon">★</div>
             <div class="mc-name">ARIA Pro</div>
             <div class="mc-id">aria-pro · aria-3</div>
-            <div class="mc-badge badge purple">20 credits / call</div>
-            <div class="mc-desc">Most powerful. Best for complex reasoning, research, long documents, hard problems.</div>
-            <div class="mc-cost"><strong>Speed:</strong> ⚡ Moderate<br><strong>Context:</strong> 200K tokens</div>
+            <div class="mc-desc">Maximum intelligence. Best for complex research, long documents, hard problems, and nuanced tasks.</div>
+            <div class="mc-credit pro">20 credits / call</div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- API REFERENCE -->
-    <div class="tab-content" id="tab-reference">
-      <div class="page-header">
-        <div class="ph-title">API Reference</div>
-        <div class="ph-sub">Complete endpoint documentation</div>
+        <div class="card" style="margin-top:20px;">
+          <div class="card-shimmer"></div>
+          <div class="card-label">Context window</div>
+          <p style="font-size:13px;color:var(--dim);">All ARIA models support up to <strong style="color:var(--gold);">200,000 tokens</strong> of context — equivalent to ~150,000 words or an entire novel in a single request.</p>
+        </div>
       </div>
-      <div class="content">
 
-        <div class="card">
-          <div class="card-title"><div class="dot"></div>Base URL</div>
-          <div class="endpoint"><span class="method get">BASE</span>https://aria-sigma-gold.vercel.app</div>
+      <!-- REFERENCE -->
+      <div id="p-reference" class="page fade-in" style="display:none;">
+        <div class="page-hero">
+          <div class="page-eyebrow">API Reference</div>
+          <div class="page-title">Complete <em>Reference</em></div>
+          <div class="page-sub">All endpoints, parameters, and response formats.</div>
         </div>
 
         <div class="card">
-          <div class="card-title"><div class="dot"></div>POST /v1/chat</div>
-          <div class="endpoint"><span class="method post">POST</span>/v1/chat</div>
-          <p style="font-size:13px;color:var(--tx2);margin-bottom:14px;">Send a message and get a response from ARIA.</p>
+          <div class="card-shimmer"></div>
+          <div class="card-label">Base URL</div>
+          <div class="endpoint-row"><span class="method-badge mb-get">BASE</span>https://aria-sigma-gold.vercel.app</div>
+        </div>
 
-          <p style="font-size:12px;color:var(--tx3);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Request body</p>
+        <div class="card">
+          <div class="card-shimmer"></div>
+          <div class="card-label">POST /v1/chat</div>
+          <div class="endpoint-row"><span class="method-badge mb-post">POST</span>/v1/chat</div>
+          <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Send messages and receive a completion from ARIA.</p>
+
+          <p style="font-size:10px;color:var(--mute);letter-spacing:0.1em;text-transform:uppercase;font-weight:500;margin-bottom:8px;">Request</p>
           <div class="code-wrap">
-            <div class="code-head"><span>json</span></div>
-            <pre class="code-block">{
-  <span class="key">"model"</span><span class="pun">:</span>      <span class="str">"aria-smart"</span>,        <span class="com">// aria-fast | aria-smart | aria-pro</span>
-  <span class="key">"messages"</span><span class="pun">:</span>   [{                     <span class="com">// required</span>
-    <span class="key">"role"</span><span class="pun">:</span>    <span class="str">"user"</span>,
-    <span class="key">"content"</span><span class="pun">:</span> <span class="str">"Your message here"</span>
+            <div class="code-header"><div class="code-lang"><div class="lang-dot json"></div>json</div></div>
+            <div class="code-body">{
+  <span class="t-b">"model"</span><span class="t-p">:</span>       <span class="t-s">"aria-smart"</span>,     <span class="t-c">// aria-fast | aria-smart | aria-pro</span>
+  <span class="t-b">"messages"</span><span class="t-p">:</span>    [{                    <span class="t-c">// required</span>
+    <span class="t-b">"role"</span><span class="t-p">:</span>     <span class="t-s">"user"</span>,
+    <span class="t-b">"content"</span><span class="t-p">:</span>  <span class="t-s">"Your message"</span>
   }],
-  <span class="key">"system"</span><span class="pun">:</span>     <span class="str">"You are helpful"</span>,   <span class="com">// optional system prompt</span>
-  <span class="key">"max_tokens"</span><span class="pun">:</span> <span class="num">1024</span>,                 <span class="com">// optional, default 1024</span>
-  <span class="key">"stream"</span><span class="pun">:</span>     <span class="kw">false</span>                 <span class="com">// optional, set true for SSE streaming</span>
-}</pre>
+  <span class="t-b">"system"</span><span class="t-p">:</span>      <span class="t-s">"You are helpful"</span>,  <span class="t-c">// optional</span>
+  <span class="t-b">"max_tokens"</span><span class="t-p">:</span>  <span class="t-n">1024</span>,                <span class="t-c">// optional, default 1024</span>
+  <span class="t-b">"stream"</span><span class="t-p">:</span>      <span class="t-k">false</span>               <span class="t-c">// optional, SSE streaming</span>
+}</div>
           </div>
 
-          <p style="font-size:12px;color:var(--tx3);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin:14px 0 8px;">Response</p>
+          <p style="font-size:10px;color:var(--mute);letter-spacing:0.1em;text-transform:uppercase;font-weight:500;margin:16px 0 8px;">Response</p>
           <div class="code-wrap">
-            <div class="code-head"><span>json</span></div>
-            <pre class="code-block">{
-  <span class="key">"id"</span><span class="pun">:</span>      <span class="str">"msg_01XFDUDYJgAACzvnptvVoYEL"</span>,
-  <span class="key">"type"</span><span class="pun">:</span>    <span class="str">"message"</span>,
-  <span class="key">"role"</span><span class="pun">:</span>    <span class="str">"assistant"</span>,
-  <span class="key">"content"</span><span class="pun">:</span> [{
-    <span class="key">"type"</span><span class="pun">:</span> <span class="str">"text"</span>,
-    <span class="key">"text"</span><span class="pun">:</span> <span class="str">"Hello! How can I help you today?"</span>
-  }],
-  <span class="key">"model"</span><span class="pun">:</span>  <span class="str">"aria-smart"</span>,
-  <span class="key">"usage"</span><span class="pun">:</span>  { <span class="key">"credits_used"</span><span class="pun">:</span> <span class="num">4</span> }
-}</pre>
+            <div class="code-header"><div class="code-lang"><div class="lang-dot json"></div>json</div></div>
+            <div class="code-body">{
+  <span class="t-b">"id"</span><span class="t-p">:</span>       <span class="t-s">"msg_01XFDUDYJgAACzvnptvVoYEL"</span>,
+  <span class="t-b">"type"</span><span class="t-p">:</span>     <span class="t-s">"message"</span>,
+  <span class="t-b">"role"</span><span class="t-p">:</span>     <span class="t-s">"assistant"</span>,
+  <span class="t-b">"content"</span><span class="t-p">:</span>  [{ <span class="t-b">"type"</span><span class="t-p">:</span> <span class="t-s">"text"</span>, <span class="t-b">"text"</span><span class="t-p">:</span> <span class="t-s">"Hello!"</span> }],
+  <span class="t-b">"model"</span><span class="t-p">:</span>    <span class="t-s">"aria-smart"</span>,
+  <span class="t-b">"usage"</span><span class="t-p">:</span>    { <span class="t-b">"credits_used"</span><span class="t-p">:</span> <span class="t-n">4</span> }
+}</div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title"><div class="dot"></div>Error codes</div>
-          <table class="usage-table">
-            <thead><tr><th>Code</th><th>Type</th><th>Meaning</th></tr></thead>
+          <div class="card-shimmer"></div>
+          <div class="card-label">Error codes</div>
+          <table class="data-table">
+            <thead><tr><th>HTTP</th><th>Type</th><th>Meaning</th></tr></thead>
             <tbody>
-              <tr><td>401</td><td><code style="font-size:11px;font-family:'Geist Mono',monospace;">auth_error</code></td><td>Invalid or missing API key</td></tr>
-              <tr><td>402</td><td><code style="font-size:11px;font-family:'Geist Mono',monospace;">credits_exhausted</code></td><td>No credits remaining</td></tr>
-              <tr><td>400</td><td><code style="font-size:11px;font-family:'Geist Mono',monospace;">invalid_model</code></td><td>Unknown model name</td></tr>
-              <tr><td>429</td><td><code style="font-size:11px;font-family:'Geist Mono',monospace;">rate_limited</code></td><td>Too many requests</td></tr>
-              <tr><td>500</td><td><code style="font-size:11px;font-family:'Geist Mono',monospace;">server_error</code></td><td>Internal error</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- BILLING -->
-    <div class="tab-content" id="tab-billing">
-      <div class="page-header">
-        <div class="ph-title">Credits</div>
-        <div class="ph-sub">Manage your balance and top up</div>
-      </div>
-      <div class="content">
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-label">Current Balance</div><div class="stat-val orange" id="bill-credits">—</div><div class="stat-sub">credits</div></div>
-          <div class="stat-card"><div class="stat-label">Plan</div><div class="stat-val green" style="font-size:18px;" id="bill-plan">Free</div></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><div class="dot"></div>Credit packs</div>
-          <p style="font-size:13px;color:var(--tx2);margin-bottom:16px;">Contact <a href="mailto:yash69801@gmail.com" style="color:var(--acc);">yash69801@gmail.com</a> to purchase credits. Payment via UPI / Razorpay.</p>
-          <table class="usage-table">
-            <thead><tr><th>Pack</th><th>Credits</th><th>Price</th><th>Value</th></tr></thead>
-            <tbody>
-              <tr><td>Starter</td><td>1,000</td><td><strong>₹99</strong></td><td>~250 smart calls</td></tr>
-              <tr><td>Growth</td><td>5,000</td><td><strong>₹399</strong></td><td>~1,250 smart calls</td></tr>
-              <tr><td>Pro</td><td>15,000</td><td><strong>₹999</strong></td><td>~3,750 smart calls</td></tr>
-              <tr><td>Enterprise</td><td>Unlimited</td><td><strong>₹2,999/mo</strong></td><td>Unlimited everything</td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;color:var(--rose);">401</td><td><ic>auth_error</ic></td><td style="color:var(--dim);">Invalid or missing API key</td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;color:var(--rose);">402</td><td><ic>credits_exhausted</ic></td><td style="color:var(--dim);">No credits remaining</td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;color:var(--rose);">400</td><td><ic>invalid_model</ic></td><td style="color:var(--dim);">Unknown model name</td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;color:var(--rose);">429</td><td><ic>rate_limited</ic></td><td style="color:var(--dim);">Too many requests</td></tr>
+              <tr><td style="font-family:'DM Mono',monospace;color:var(--rose);">500</td><td><ic>server_error</ic></td><td style="color:var(--dim);">Internal server error</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
 
-  </div>
-</div>
+      <!-- BILLING -->
+      <div id="p-billing" class="page fade-in" style="display:none;">
+        <div class="page-hero">
+          <div class="page-eyebrow">Billing</div>
+          <div class="page-title">Credits & <em>Plans</em></div>
+          <div class="page-sub">Simple credit-based pricing. Pay only for what you use.</div>
+        </div>
+
+        <div class="stat-grid stagger" style="grid-template-columns:1fr 1fr;">
+          <div class="stat"><div class="stat-label">Current credits</div><div class="stat-val sv-gold" id="bill-cred">—</div></div>
+          <div class="stat"><div class="stat-label">Current plan</div><div class="stat-val sv-iris" id="bill-plan" style="font-size:20px;padding-top:6px;">Free</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-shimmer"></div>
+          <div class="card-label">Credit packs</div>
+          <div class="plans-grid stagger">
+            <div class="plan" data-plan="starter">
+              <div class="plan-icon">✦</div>
+              <div class="plan-name">Starter</div>
+              <div class="plan-desc">1,000 credits · ~250 smart calls</div>
+              <div class="plan-price">₹99</div>
+            </div>
+            <div class="plan sel" data-plan="growth" style="position:relative;">
+              <div class="plan-pop">BEST VALUE</div>
+              <div class="plan-icon">⚡</div>
+              <div class="plan-name">Growth</div>
+              <div class="plan-desc">5,000 credits · ~1,250 smart calls</div>
+              <div class="plan-price">₹399</div>
+            </div>
+            <div class="plan" data-plan="pro">
+              <div class="plan-icon">★</div>
+              <div class="plan-name">Pro</div>
+              <div class="plan-desc">15,000 credits · ~3,750 smart calls</div>
+              <div class="plan-price">₹999</div>
+            </div>
+          </div>
+          <p style="font-size:13px;color:var(--dim);line-height:1.6;">To purchase credits, email <a href="mailto:yash69801@gmail.com" style="color:var(--gold);">yash69801@gmail.com</a> with your registered email and preferred pack. Payment via UPI or Razorpay.</p>
+        </div>
+      </div>
+
+    </div><!-- /scroll -->
+  </div><!-- /main -->
+</div><!-- /dash -->
 
 <div class="toast" id="toast"></div>
 
 <script>
-const API_BASE = '';
-let USER = null;
-let KEYS = [];
+const BASE = '';
+let USER = null, KEYS = [];
 
-// ── AUTH ──
-async function register() {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const err = document.getElementById('reg-error');
-  const succ = document.getElementById('reg-success');
+/* ── AUTH ── */
+async function doRegister() {
+  const name = document.getElementById('rn').value.trim();
+  const email = document.getElementById('re').value.trim();
+  const ok = document.getElementById('reg-ok');
+  const err = document.getElementById('reg-err');
   const btn = document.getElementById('reg-btn');
-  err.style.display = 'none'; succ.style.display = 'none';
-  if (!name || !email) { err.textContent = 'Name and email required.'; err.style.display = 'block'; return; }
-  btn.disabled = true; btn.textContent = 'Creating account...';
+  ok.classList.remove('show'); err.classList.remove('show');
+  if (!name || !email) { err.textContent = 'Name and email are required.'; err.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'Creating account…';
   try {
     const r = await fetch('/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email }) });
-    const data = await r.json();
-    if (!r.ok) { err.textContent = data.error || 'Error creating account.'; err.style.display = 'block'; return; }
-    succ.innerHTML = `✓ Account created!<br>Your API key: <strong style="font-family:'Geist Mono',monospace;">${data.api_key}</strong><br>Copy it now — loading dashboard...`;
-    succ.style.display = 'block';
+    const d = await r.json();
+    if (!r.ok) { err.textContent = d.error || 'Registration failed.'; err.classList.add('show'); return; }
+    ok.innerHTML = `✓ Account created! Your key:<br><strong style="font-family:'DM Mono',monospace;word-break:break-all;">${d.api_key}</strong><br><small>Save it — loading dashboard…</small>`;
+    ok.classList.add('show');
     localStorage.setItem('aria_email', email);
-    setTimeout(() => loadDashboard(email), 2000);
-  } catch(e) { err.textContent = 'Network error. Please try again.'; err.style.display = 'block'; }
-  finally { btn.disabled = false; btn.textContent = 'Create account & get API key'; }
+    setTimeout(() => loadDash(email), 2200);
+  } catch { err.textContent = 'Network error. Is the API deployed?'; err.classList.add('show'); }
+  finally { btn.disabled = false; btn.textContent = 'Create account → get API key'; }
 }
 
-async function login() {
-  const email = document.getElementById('login-email').value.trim();
-  const err = document.getElementById('login-error');
+async function doLogin() {
+  const email = document.getElementById('le').value.trim();
+  const err = document.getElementById('login-err');
   const btn = document.getElementById('login-btn');
-  err.style.display = 'none';
-  if (!email) { err.textContent = 'Email required.'; err.style.display = 'block'; return; }
-  btn.disabled = true; btn.textContent = 'Loading...';
+  err.classList.remove('show');
+  if (!email) { err.textContent = 'Email required.'; err.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'Loading…';
   try {
     const r = await fetch(`/keys?email=${encodeURIComponent(email)}`);
-    const data = await r.json();
-    if (!r.ok) { err.textContent = data.error || 'User not found.'; err.style.display = 'block'; return; }
+    const d = await r.json();
+    if (!r.ok) { err.textContent = d.error || 'User not found.'; err.classList.add('show'); return; }
     localStorage.setItem('aria_email', email);
-    loadDashboard(email);
-  } catch(e) { err.textContent = 'Network error.'; err.style.display = 'block'; }
-  finally { btn.disabled = false; btn.textContent = 'View my dashboard'; }
+    loadDash(email);
+  } catch { err.textContent = 'Network error.'; err.classList.add('show'); }
+  finally { btn.disabled = false; btn.textContent = 'Open dashboard'; }
 }
 
-function showLogin() {
-  document.getElementById('register-form').style.display = 'none';
-  document.getElementById('login-form').style.display = 'block';
-  document.getElementById('auth-title').textContent = 'Sign in';
-  document.getElementById('auth-sub').textContent = 'Access your API keys and dashboard.';
-}
+function showLogin() { document.getElementById('reg-view').style.display = 'none'; document.getElementById('login-view').style.display = 'block'; }
+function showRegister() { document.getElementById('reg-view').style.display = 'block'; document.getElementById('login-view').style.display = 'none'; }
 
-function showRegister() {
-  document.getElementById('register-form').style.display = 'block';
-  document.getElementById('login-form').style.display = 'none';
-  document.getElementById('auth-title').textContent = 'Create your account';
-  document.getElementById('auth-sub').textContent = 'Get 100 free credits instantly.';
-}
-
-async function loadDashboard(email) {
+async function loadDash(email) {
   try {
     const r = await fetch(`/keys?email=${encodeURIComponent(email)}`);
-    const data = await r.json();
+    const d = await r.json();
     if (!r.ok) { localStorage.removeItem('aria_email'); return; }
-    USER = data.user; KEYS = data.keys || [];
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'flex';
-    renderDashboard();
+    USER = d.user; KEYS = d.keys || [];
+    document.getElementById('auth-view').style.display = 'none';
+    document.getElementById('dash-view').style.display = 'flex';
+    renderAll();
   } catch(e) { console.error(e); }
 }
 
-function renderDashboard() {
+function renderAll() {
   if (!USER) return;
+  const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : 'Free';
   // Sidebar
-  document.getElementById('sb-credits').textContent = USER.credits;
-  document.getElementById('overview-welcome').textContent = `Welcome back, ${USER.name}`;
-  // Stats
-  document.getElementById('ov-credits').textContent = USER.credits;
+  document.getElementById('sb-cred').textContent = USER.credits;
+  document.getElementById('sb-plan').textContent = cap(USER.plan) + ' plan';
+  document.getElementById('cd-fill').style.width = Math.min(100, USER.credits) + '%';
+  // Topbar
+  document.getElementById('tb-email').textContent = USER.email;
+  // Overview
+  document.getElementById('hero-name').textContent = USER.name.split(' ')[0];
+  document.getElementById('ov-cred').textContent = USER.credits;
   document.getElementById('ov-keys').textContent = KEYS.filter(k => k.active).length;
-  document.getElementById('ov-plan').textContent = USER.plan?.charAt(0).toUpperCase() + USER.plan?.slice(1) || 'Free';
-  document.getElementById('bill-credits').textContent = USER.credits;
-  document.getElementById('bill-plan').textContent = USER.plan?.charAt(0).toUpperCase() + USER.plan?.slice(1) || 'Free';
-  // Key display on overview
-  const firstKey = KEYS[0];
-  if (firstKey) {
-    document.getElementById('ov-key-display').innerHTML = `<div class="key-row">
-      <span class="key-badge active">active</span>
-      <span class="key-val">${firstKey.key}</span>
-      <div class="key-actions">
-        <button class="kbtn" onclick="copyText('${firstKey.key}')">Copy</button>
-      </div>
-    </div>`;
-    document.getElementById('quick-curl').innerHTML = `curl https://aria-sigma-gold.vercel.app/v1/chat \\
-  -H "Authorization: Bearer ${firstKey.key}" \\
-  -H "Content-Type: application/json" \\
-  -d '{"model":"aria-fast","messages":[{"role":"user","content":"Hello!"}]}'`;
+  document.getElementById('ov-plan').textContent = cap(USER.plan);
+  document.getElementById('bill-cred').textContent = USER.credits;
+  document.getElementById('bill-plan').textContent = cap(USER.plan);
+  // Key on overview
+  const k = KEYS[0];
+  if (k) {
+    document.getElementById('ov-key').innerHTML = buildKeyRow(k);
+    document.getElementById('ov-curl').textContent =
+      `curl https://aria-sigma-gold.vercel.app/v1/chat \\\n  -H "Authorization: Bearer ${k.key}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"model":"aria-fast","messages":[{"role":"user","content":"Hello!"}]}'`;
   }
   renderKeys();
 }
 
+function buildKeyRow(k) {
+  return `<div class="key-item">
+    <div class="key-status ${k.active?'':'off'}"></div>
+    <div class="key-name-label">${esc(k.name)}</div>
+    <div class="key-value">${k.key}</div>
+    <div class="key-actions">
+      <button class="ka-btn gold" onclick="copyTxt('${k.key}')">Copy</button>
+      <button class="ka-btn danger" onclick="delKey('${k.id}')">Delete</button>
+    </div>
+  </div>`;
+}
+
 function renderKeys() {
   const el = document.getElementById('keys-list');
-  if (!KEYS.length) { el.innerHTML = '<p style="color:var(--tx3);font-size:13px;">No keys yet.</p>'; return; }
-  el.innerHTML = KEYS.map(k => `
-    <div class="key-row">
-      <span class="key-badge ${k.active ? 'active' : 'inactive'}">${k.active ? 'active' : 'disabled'}</span>
-      <span class="key-name">${escHtml(k.name)}</span>
-      <span class="key-val">${k.key}</span>
-      <div class="key-actions">
-        <button class="kbtn" onclick="copyText('${k.key}')">Copy</button>
-        <button class="kbtn danger" onclick="deleteKey('${k.id}')">Delete</button>
-      </div>
-    </div>`).join('');
+  if (!KEYS.length) { el.innerHTML = '<p style="color:var(--mute);font-size:13px;padding:8px 0;">No keys yet. Create one above.</p>'; return; }
+  el.innerHTML = KEYS.map(buildKeyRow).join('');
 }
 
-async function createKey() {
+async function newKey() {
   if (!USER) return;
-  const name = prompt('Key name (e.g. "Production", "Testing"):') || 'New Key';
+  const name = prompt('Key name (e.g. Production, Test):') || 'New Key';
   const r = await fetch('/keys', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: USER.id, key_name: name }) });
-  const data = await r.json();
-  if (data.success) {
-    KEYS.push({ id: data.id, key: data.api_key, name, active: true });
-    renderKeys(); toast('Key created! ' + data.api_key.slice(0, 20) + '...');
-  }
+  const d = await r.json();
+  if (d.success) { KEYS.push({ id: d.id, key: d.api_key, name, active: true }); renderKeys(); renderAll(); toast('✓ Key created!'); }
 }
 
-async function deleteKey(keyId) {
+async function delKey(id) {
   if (!confirm('Delete this key? This cannot be undone.')) return;
-  await fetch('/keys', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key_id: keyId }) });
-  KEYS = KEYS.filter(k => k.id !== keyId);
-  renderKeys(); toast('Key deleted.');
+  await fetch('/keys', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key_id: id }) });
+  KEYS = KEYS.filter(k => k.id !== id); renderKeys(); renderAll(); toast('Key deleted.');
 }
 
-function logout() {
-  localStorage.removeItem('aria_email');
-  USER = null; KEYS = [];
-  document.getElementById('dashboard').style.display = 'none';
-  document.getElementById('auth-screen').style.display = 'flex';
+function doLogout() { localStorage.removeItem('aria_email'); USER = null; KEYS = []; document.getElementById('dash-view').style.display = 'none'; document.getElementById('auth-view').style.display = 'flex'; }
+
+/* ── NAV ── */
+const PAGES = ['overview','keys','usage','quickstart','models','reference','billing'];
+const TITLES = { overview:'Overview', keys:'API Keys', usage:'Usage & Credits', quickstart:'Quickstart', models:'Models', reference:'API Reference', billing:'Billing' };
+
+function go(name) {
+  PAGES.forEach(p => {
+    const el = document.getElementById('p-' + p);
+    if (el) el.style.display = p === name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.getAttribute('onclick')?.includes(`'${name}'`));
+  });
+  document.getElementById('tb-title').textContent = TITLES[name] || name;
 }
 
-// ── NAV ──
-function showTab(name) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('tab-' + name)?.classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => { if (n.getAttribute('onclick')?.includes(name)) n.classList.add('active'); });
-}
-
-// ── UTILS ──
-function copyText(text) { navigator.clipboard.writeText(text).then(() => toast('Copied!')); }
-function copyCode(btn) { const pre = btn.closest('.code-wrap').querySelector('pre'); navigator.clipboard.writeText(pre.innerText).then(() => { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 1500); }); }
-function escHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+/* ── UTILS ── */
+function copyTxt(t) { navigator.clipboard.writeText(t).then(() => toast('✓ Copied!')); }
+function copyCode(btn) { const pre = btn.closest('.code-wrap').querySelector('.code-body'); navigator.clipboard.writeText(pre.innerText).then(() => { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 1500); }); }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
 
-// ── INIT ──
-const savedEmail = localStorage.getItem('aria_email');
-if (savedEmail) loadDashboard(savedEmail);
+/* ── PLAN CARD SELECT ── */
+document.querySelectorAll('.plan').forEach(p => p.addEventListener('click', () => { document.querySelectorAll('.plan').forEach(x => x.classList.remove('sel')); p.classList.add('sel'); }));
+
+/* ── INIT ── */
+const saved = localStorage.getItem('aria_email');
+if (saved) loadDash(saved);
 </script>
 </body>
 </html>
