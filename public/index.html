@@ -1,1236 +1,781 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ARIA — AI by Yash</title>
+<title>ARIA API — Developer Platform</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✦</text></svg>"/>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400&display=swap" rel="stylesheet"/>
 <style>
-/* ── THEMES ── */
-[data-theme="dark"] {
-  --bg: #0a0a0a;
-  --sb: #111111;
-  --sur: #1a1a1a;
-  --sur2: #222222;
-  --sur3: #2a2a2a;
-  --bor: #2a2a2a;
-  --bor2: #383838;
-  --tx: #ececec;
-  --tx2: #8a8a8a;
-  --tx3: #555555;
-  --acc: #cc785c;
-  --acc2: #d4896d;
-  --accg: rgba(204,120,92,0.12);
-  --grn: #4caf82;
-  --blu: #5b9cf6;
-  --pur: #9b7fe8;
-  --red: #e57373;
-  --hljs: github-dark;
-}
-[data-theme="light"] {
-  --bg: #ffffff;
-  --sb: #f5f5f5;
-  --sur: #f9f9f9;
-  --sur2: #f0f0f0;
-  --sur3: #e8e8e8;
-  --bor: #e0e0e0;
-  --bor2: #d0d0d0;
-  --tx: #111111;
-  --tx2: #555555;
-  --tx3: #999999;
-  --acc: #b8622a;
-  --acc2: #c4723a;
-  --accg: rgba(184,98,42,0.08);
-  --grn: #2e7d52;
-  --blu: #2563eb;
-  --pur: #7c3aed;
-  --red: #dc2626;
-}
-
-/* ── RESET ── */
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;}
-body{font-family:'Geist',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:15px;line-height:1.6;transition:background 0.2s,color 0.2s;}
+:root{
+  --bg:#0a0a0a;--sb:#0f0f0f;--sur:#161616;--sur2:#1e1e1e;--sur3:#252525;
+  --bor:#242424;--bor2:#303030;
+  --tx:#f0f0f0;--tx2:#888;--tx3:#444;
+  --acc:#cc785c;--acc2:#d4896d;--accg:rgba(204,120,92,0.1);
+  --grn:#3dd68c;--grns:rgba(61,214,140,0.1);
+  --blu:#5b9cf6;--blus:rgba(91,156,246,0.1);
+  --pur:#9b7fe8;--purs:rgba(155,127,232,0.1);
+  --red:#e57373;
+}
+html,body{height:100%;font-family:'Geist',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.6;}
 
-/* ── APP LAYOUT ── */
-.app{display:flex;height:100vh;}
+/* ── LAYOUT ── */
+.shell{display:flex;height:100vh;}
+.sidebar{width:220px;flex-shrink:0;background:var(--sb);border-right:1px solid var(--bor);display:flex;flex-direction:column;overflow:hidden;}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
 
 /* ── SIDEBAR ── */
-.sidebar{
-  width:260px;flex-shrink:0;
-  background:var(--sb);
-  border-right:1px solid var(--bor);
-  display:flex;flex-direction:column;
-  transition:width 0.25s ease, transform 0.25s ease;
-  overflow:hidden;
-  position:relative;z-index:10;
-}
-.sidebar.slim{width:56px;}
-.sidebar.slim .hide-slim{display:none!important;}
+.sb-brand{padding:20px 16px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bor);}
+.sb-logo{width:30px;height:30px;border-radius:8px;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;}
+.sb-name{font-size:15px;font-weight:700;letter-spacing:-0.02em;}
+.sb-name span{color:var(--acc);}
+.sb-tag{font-size:9px;color:var(--tx3);letter-spacing:0.1em;text-transform:uppercase;margin-top:1px;}
 
-.sb-top{padding:14px 10px 10px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.sb-logo{
-  width:32px;height:32px;border-radius:8px;
-  background:var(--acc);color:white;
-  display:flex;align-items:center;justify-content:center;
-  font-size:15px;font-weight:700;flex-shrink:0;
-  box-shadow:0 2px 8px var(--accg);
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto;}
+.nav-sec{font-size:10px;color:var(--tx3);letter-spacing:0.1em;text-transform:uppercase;padding:10px 8px 4px;}
+.nav-item{
+  padding:7px 10px;border-radius:7px;cursor:pointer;
+  display:flex;align-items:center;gap:9px;margin-bottom:1px;
+  font-size:13px;color:var(--tx2);transition:all 0.12s;border:1px solid transparent;
 }
-.sb-name{font-size:15px;font-weight:600;letter-spacing:-0.02em;}
-.sb-tog{
-  margin-left:auto;width:26px;height:26px;border-radius:6px;
-  border:1px solid var(--bor2);background:none;color:var(--tx2);
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:11px;flex-shrink:0;transition:all 0.15s;
-}
-.sb-tog:hover{background:var(--sur2);color:var(--tx);}
+.nav-item:hover{background:var(--sur2);color:var(--tx);}
+.nav-item.active{background:var(--sur2);color:var(--tx);border-color:var(--bor2);}
+.nav-icon{font-size:14px;flex-shrink:0;}
 
-.new-btn{
-  margin:4px 8px 8px;padding:8px 12px;
-  background:none;border:1px solid var(--bor2);
-  border-radius:8px;color:var(--tx2);
-  font-family:'Geist',sans-serif;font-size:13px;
-  cursor:pointer;display:flex;align-items:center;gap:8px;
-  transition:all 0.15s;white-space:nowrap;overflow:hidden;
-}
-.new-btn:hover{background:var(--sur2);color:var(--tx);border-color:var(--tx3);}
-
-.conv-list{flex:1;overflow-y:auto;padding:0 6px 8px;}
-.conv-list::-webkit-scrollbar{width:3px;}
-.conv-list::-webkit-scrollbar-thumb{background:var(--bor2);border-radius:2px;}
-.conv-sec{padding:10px 6px 4px;font-size:11px;color:var(--tx3);letter-spacing:0.06em;font-weight:500;}
-.conv-item{
-  padding:8px 10px;border-radius:8px;cursor:pointer;
-  display:flex;align-items:center;gap:8px;
-  margin-bottom:1px;transition:background 0.1s;
-  border:1px solid transparent;position:relative;
-  group:true;
-}
-.conv-item:hover{background:var(--sur2);}
-.conv-item.active{background:var(--sur);border-color:var(--bor2);}
-.conv-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.conv-dot.haiku{background:var(--grn);}
-.conv-dot.sonnet{background:var(--acc);}
-.conv-dot.opus{background:var(--pur);}
-.conv-label{font-size:13px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
-.conv-item.active .conv-label{color:var(--tx);}
-.conv-x{
-  display:none;width:16px;height:16px;border-radius:4px;
-  border:none;background:none;color:var(--tx3);
-  cursor:pointer;font-size:11px;align-items:center;justify-content:center;
-  flex-shrink:0;transition:all 0.1s;
-}
-.conv-item:hover .conv-x{display:flex;}
-.conv-x:hover{color:var(--red);background:rgba(229,115,115,0.1);}
-
-.sb-foot{padding:10px;border-top:1px solid var(--bor);flex-shrink:0;}
-.plan-chip{
-  padding:8px 10px;border-radius:8px;
-  border:1px solid var(--bor);cursor:pointer;
-  transition:all 0.15s;
-}
-.plan-chip:hover{border-color:var(--acc);background:var(--accg);}
-.plan-chip-top{font-size:12px;font-weight:500;color:var(--tx2);}
-.plan-chip-sub{font-size:11px;color:var(--tx3);margin-top:1px;}
-
-/* ── MAIN ── */
-.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
-
-/* ── TOPBAR ── */
-.topbar{
-  height:50px;padding:0 16px;
-  border-bottom:1px solid var(--bor);
-  display:flex;align-items:center;gap:10px;
-  flex-shrink:0;background:var(--bg);
-}
-.mob-tog{display:none;width:30px;height:30px;border-radius:7px;border:1px solid var(--bor2);background:none;color:var(--tx2);cursor:pointer;align-items:center;justify-content:center;font-size:14px;}
-
-.model-tabs{display:flex;gap:2px;background:var(--sur);border:1px solid var(--bor);border-radius:9px;padding:3px;}
-.mtab{
-  padding:5px 12px;border-radius:6px;border:none;
-  background:transparent;font-family:'Geist',sans-serif;
-  font-size:12px;color:var(--tx3);cursor:pointer;
-  display:flex;align-items:center;gap:5px;
-  transition:all 0.15s;font-weight:500;white-space:nowrap;
-}
-.mtab:hover{color:var(--tx2);background:var(--sur2);}
-.mtab.on{color:var(--tx);background:var(--sur2);}
-.mtab[data-m="haiku"].on{color:var(--grn);}
-.mtab[data-m="sonnet"].on{color:var(--acc);}
-.mtab[data-m="opus"].on{color:var(--pur);}
-.mdot{width:6px;height:6px;border-radius:50%;}
-.mtab[data-m="haiku"] .mdot{background:var(--grn);}
-.mtab[data-m="sonnet"] .mdot{background:var(--acc);}
-.mtab[data-m="opus"] .mdot{background:var(--pur);}
-
-.tb-right{margin-left:auto;display:flex;align-items:center;gap:5px;}
-.tb-btn{
-  width:32px;height:32px;border-radius:7px;
-  border:1px solid var(--bor);background:none;
-  color:var(--tx2);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;transition:all 0.15s;
-}
-.tb-btn:hover{background:var(--sur);color:var(--tx);}
-.tb-btn.on{background:var(--accg);color:var(--acc);border-color:var(--acc);}
-.usage-pill{font-size:11px;color:var(--tx3);padding:3px 9px;border-radius:20px;border:1px solid var(--bor);font-family:'Geist Mono',monospace;}
-
-/* ── SYSTEM DRAWER ── */
-.sys-bar{
-  display:none;padding:10px 18px;
-  border-bottom:1px solid var(--bor);
-  background:var(--sur);flex-shrink:0;
-}
-.sys-bar.open{display:flex;gap:10px;align-items:flex-start;}
-.sys-label{font-size:11px;color:var(--tx3);font-weight:500;padding-top:9px;white-space:nowrap;letter-spacing:0.04em;text-transform:uppercase;}
-.sys-ta{
-  flex:1;background:var(--bg);border:1px solid var(--bor2);
-  border-radius:8px;padding:8px 12px;color:var(--tx);
-  font-family:'Geist Mono',monospace;font-size:12px;
-  outline:none;resize:none;min-height:38px;max-height:100px;
-  line-height:1.5;transition:border-color 0.15s;
-}
-.sys-ta::placeholder{color:var(--tx3);}
-.sys-ta:focus{border-color:var(--acc);}
-
-/* ── CHAT ── */
-.chat-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
-.chat-scroll::-webkit-scrollbar{width:4px;}
-.chat-scroll::-webkit-scrollbar-thumb{background:var(--bor2);border-radius:2px;}
-.chat-body{flex:1;max-width:800px;width:100%;margin:0 auto;padding:28px 20px 12px;display:flex;flex-direction:column;gap:0;}
-
-/* ── WELCOME ── */
-.welcome{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  text-align:center;padding:40px 20px;gap:18px;
-}
-.wl-logo{
-  width:60px;height:60px;border-radius:16px;
-  background:var(--acc);
-  display:flex;align-items:center;justify-content:center;
-  font-size:28px;color:white;font-weight:700;
-  box-shadow:0 4px 20px var(--accg);
-  animation:breathe 3s ease-in-out infinite;
-}
-@keyframes breathe{0%,100%{box-shadow:0 4px 20px var(--accg);}50%{box-shadow:0 4px 32px rgba(204,120,92,0.3);}}
-.wl-h{font-size:26px;font-weight:600;letter-spacing:-0.03em;}
-.wl-s{font-size:14px;color:var(--tx2);max-width:380px;line-height:1.6;}
-.starters{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:520px;width:100%;margin-top:6px;}
-.sc{
-  padding:12px 14px;border:1px solid var(--bor2);
-  border-radius:10px;background:var(--sur);
-  cursor:pointer;text-align:left;transition:all 0.15s;
-}
-.sc:hover{border-color:var(--acc);background:var(--accg);transform:translateY(-1px);}
-.sc-t{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:2px;}
-.sc-d{font-size:11px;color:var(--tx3);}
-
-/* ── MESSAGES ── */
-.msg-wrap{padding:18px 0;animation:fi 0.22s ease;}
-@keyframes fi{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
-
-/* User */
-.msg-user{display:flex;justify-content:flex-end;margin-bottom:14px;}
-.ub{
-  max-width:82%;background:var(--sur);
-  border:1px solid var(--bor2);
-  border-radius:12px 12px 3px 12px;
-  padding:11px 15px;font-size:15px;
-  line-height:1.6;color:var(--tx);
-  word-break:break-word;position:relative;
-}
-.ub-edit{
-  position:absolute;top:6px;right:6px;
-  width:20px;height:20px;border-radius:5px;
-  border:none;background:none;color:var(--tx3);
-  cursor:pointer;font-size:11px;opacity:0;
-  display:flex;align-items:center;justify-content:center;
-  transition:all 0.15s;
-}
-.ub:hover .ub-edit{opacity:1;}
-.ub-edit:hover{color:var(--tx);background:var(--sur2);}
-
-/* Assistant */
-.msg-ai{display:flex;flex-direction:column;gap:6px;}
-.ai-head{display:flex;align-items:center;gap:8px;}
-.ai-av{
-  width:22px;height:22px;border-radius:6px;
-  background:var(--acc);color:white;
-  display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;flex-shrink:0;
-}
-.ai-name{font-size:13px;font-weight:500;color:var(--tx2);}
-.ai-badge{font-size:10px;padding:1px 6px;border-radius:4px;font-weight:500;}
-.ai-time{font-size:11px;color:var(--tx3);}
-
-/* Content */
-.ai-content{
-  font-size:15px;line-height:1.75;color:var(--tx);
-  padding-left:30px;word-break:break-word;
-}
-.ai-content p{margin-bottom:10px;}
-.ai-content p:last-child{margin-bottom:0;}
-.ai-content h1,.ai-content h2,.ai-content h3{font-weight:600;margin:14px 0 6px;letter-spacing:-0.01em;}
-.ai-content h1{font-size:20px;}
-.ai-content h2{font-size:17px;}
-.ai-content h3{font-size:15px;}
-.ai-content ul,.ai-content ol{margin:8px 0 8px 20px;}
-.ai-content li{margin-bottom:3px;}
-.ai-content strong{font-weight:600;color:var(--tx);}
-.ai-content em{color:var(--tx2);}
-.ai-content blockquote{border-left:3px solid var(--bor2);padding-left:14px;margin:10px 0;color:var(--tx2);font-style:italic;}
-.ai-content a{color:var(--acc);text-decoration:none;}
-.ai-content a:hover{text-decoration:underline;}
-.ai-content hr{border:none;border-top:1px solid var(--bor);margin:14px 0;}
-.ai-content table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;}
-.ai-content th{background:var(--sur2);border:1px solid var(--bor2);padding:7px 11px;text-align:left;font-weight:600;}
-.ai-content td{border:1px solid var(--bor);padding:7px 11px;}
-
-/* CODE BLOCKS — highlighted */
-.code-block{position:relative;margin:12px 0;}
-.code-block pre{
-  border-radius:10px;padding:14px 16px;
-  overflow-x:auto;font-family:'Geist Mono',monospace;
-  font-size:13px;line-height:1.6;
-  border:1px solid var(--bor2);
-  background:var(--sur)!important;
-  margin:0;
-}
-.code-block-head{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 14px;background:var(--sur2);
-  border:1px solid var(--bor2);border-bottom:none;
-  border-radius:10px 10px 0 0;
-  font-family:'Geist Mono',monospace;font-size:11px;color:var(--tx3);
-}
-.code-block pre{border-radius:0 0 10px 10px;}
-.copy-code{
-  background:none;border:1px solid var(--bor2);border-radius:5px;
-  color:var(--tx3);font-size:11px;padding:2px 8px;
-  cursor:pointer;font-family:'Geist',sans-serif;transition:all 0.15s;
-}
-.copy-code:hover{color:var(--tx);border-color:var(--tx3);}
-.ai-content code:not(pre code){
+.sb-foot{padding:10px;border-top:1px solid var(--bor);}
+.credit-chip{
+  padding:10px 12px;border-radius:8px;
   background:var(--sur2);border:1px solid var(--bor);
-  padding:1px 5px;border-radius:4px;
-  font-family:'Geist Mono',monospace;font-size:13px;color:#d4a96a;
 }
+.cc-label{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.08em;}
+.cc-val{font-size:22px;font-weight:700;color:var(--acc);font-family:'Geist Mono',monospace;margin:2px 0;}
+.cc-sub{font-size:11px;color:var(--tx3);}
 
-/* Streaming cursor */
-.cursor{display:inline-block;width:2px;height:1em;background:var(--acc);margin-left:1px;vertical-align:text-bottom;animation:blink 0.7s steps(1) infinite;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-
-/* Action buttons */
-.ai-actions{
-  display:flex;gap:4px;padding-left:30px;
-  opacity:0;transition:opacity 0.15s;margin-top:2px;
+/* ── HEADER ── */
+.page-header{
+  padding:24px 32px 0;
+  flex-shrink:0;
 }
-.msg-wrap:hover .ai-actions{opacity:1;}
-.act{
-  padding:3px 9px;border-radius:5px;border:1px solid var(--bor);
-  background:none;color:var(--tx3);font-family:'Geist',sans-serif;
-  font-size:11px;cursor:pointer;transition:all 0.1s;
-  display:flex;align-items:center;gap:4px;
+.ph-title{font-size:22px;font-weight:700;letter-spacing:-0.03em;margin-bottom:4px;}
+.ph-sub{font-size:13px;color:var(--tx2);}
+
+/* ── CONTENT ── */
+.content{padding:20px 32px 48px;flex:1;}
+
+/* ── TABS ── */
+.tabs{display:none;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* ── CARDS ── */
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:20px;margin-bottom:16px;}
+.card-title{font-size:13px;font-weight:600;color:var(--tx2);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.stat-card{background:var(--sur);border:1px solid var(--bor);border-radius:12px;padding:16px 18px;}
+.stat-label{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;}
+.stat-val{font-size:28px;font-weight:700;letter-spacing:-0.03em;font-family:'Geist Mono',monospace;}
+.stat-val.green{color:var(--grn);}
+.stat-val.blue{color:var(--blu);}
+.stat-val.purple{color:var(--pur);}
+.stat-val.orange{color:var(--acc);}
+.stat-sub{font-size:11px;color:var(--tx3);margin-top:3px;}
+
+/* ── API KEY DISPLAY ── */
+.key-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--sur2);border:1px solid var(--bor2);
+  border-radius:9px;padding:12px 14px;margin-bottom:10px;
 }
-.act:hover{color:var(--tx);background:var(--sur2);}
-
-/* Thinking block */
-.thinking-block{
-  padding-left:30px;margin-bottom:8px;
+.key-badge{
+  font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;
+  text-transform:uppercase;letter-spacing:0.08em;flex-shrink:0;
 }
-.thinking-inner{
-  padding:10px 14px;background:var(--sur2);
-  border:1px solid var(--bor);border-radius:8px;
-  font-size:13px;color:var(--tx3);font-style:italic;
-  border-left:3px solid var(--pur);
+.key-badge.active{background:var(--grns);color:var(--grn);}
+.key-badge.inactive{background:var(--sur3);color:var(--tx3);}
+.key-val{
+  flex:1;font-family:'Geist Mono',monospace;font-size:13px;
+  color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.thinking-label{font-size:10px;color:var(--pur);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;font-style:normal;}
+.key-name{font-size:12px;color:var(--tx3);min-width:80px;}
+.key-actions{display:flex;gap:6px;flex-shrink:0;}
+.kbtn{
+  padding:4px 10px;border-radius:6px;border:1px solid var(--bor2);
+  background:none;color:var(--tx2);font-size:11px;cursor:pointer;
+  font-family:'Geist',sans-serif;transition:all 0.12s;
+}
+.kbtn:hover{color:var(--tx);background:var(--sur3);}
+.kbtn.danger:hover{color:var(--red);border-color:var(--red);}
 
-/* Attached images */
-.msg-imgs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
-.msg-img{width:150px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--bor2);}
+/* ── CODE BLOCK ── */
+.code-wrap{position:relative;margin:10px 0;}
+.code-head{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--sur2);border:1px solid var(--bor2);border-bottom:none;
+  border-radius:9px 9px 0 0;padding:8px 14px;
+  font-size:11px;color:var(--tx3);font-family:'Geist Mono',monospace;
+}
+.code-block{
+  background:var(--sur2);border:1px solid var(--bor2);
+  border-radius:0 0 9px 9px;padding:14px 16px;
+  overflow-x:auto;font-family:'Geist Mono',monospace;
+  font-size:12.5px;line-height:1.7;color:#c9d1d9;
+  margin:0;white-space:pre;
+}
+.copy-btn{
+  background:none;border:1px solid var(--bor2);border-radius:5px;
+  color:var(--tx3);font-size:11px;padding:2px 8px;cursor:pointer;
+  font-family:'Geist',sans-serif;transition:all 0.12s;
+}
+.copy-btn:hover{color:var(--tx);border-color:var(--tx3);}
 
-/* Typing */
-.typing{display:flex;align-items:center;gap:4px;padding-left:30px;margin-top:4px;}
-.td{width:6px;height:6px;border-radius:50%;background:var(--tx3);animation:td 1.2s ease infinite;}
-.td:nth-child(2){animation-delay:0.2s;}
-.td:nth-child(3){animation-delay:0.4s;}
-@keyframes td{0%,60%,100%{transform:translateY(0);opacity:0.3;}30%{transform:translateY(-5px);opacity:1;}}
+/* ── SYNTAX ── */
+.kw{color:#ff7b72;} .str{color:#a5d6ff;} .com{color:#8b949e;font-style:italic;}
+.fn{color:#d2a8ff;} .num{color:#79c0ff;} .key{color:#7ee787;} .pun{color:#c9d1d9;}
+.var{color:#ffa657;}
 
-/* ── INPUT ── */
-.input-area{border-top:1px solid var(--bor);padding:10px 16px 14px;background:var(--bg);flex-shrink:0;}
-.input-inner{max-width:800px;margin:0 auto;}
-.att-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
-.att-t{position:relative;width:48px;height:48px;border-radius:7px;overflow:hidden;border:1px solid var(--bor2);}
-.att-t img{width:100%;height:100%;object-fit:cover;}
-.att-del{position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;background:rgba(0,0,0,0.75);border:none;color:white;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+/* ── MODEL CARDS ── */
+.models-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+.model-card{
+  background:var(--sur);border:1px solid var(--bor);border-radius:12px;
+  padding:18px;transition:all 0.15s;cursor:default;
+}
+.model-card:hover{border-color:var(--bor2);}
+.mc-name{font-size:15px;font-weight:700;letter-spacing:-0.02em;margin-bottom:4px;}
+.mc-id{font-family:'Geist Mono',monospace;font-size:11px;color:var(--tx3);margin-bottom:10px;}
+.mc-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;margin-bottom:10px;}
+.mc-desc{font-size:12px;color:var(--tx2);line-height:1.5;margin-bottom:10px;}
+.mc-cost{font-size:12px;color:var(--tx3);}
+.mc-cost strong{color:var(--tx);}
 
-.input-box{
-  display:flex;gap:8px;align-items:flex-end;
-  background:var(--sur);border:1px solid var(--bor2);
-  border-radius:12px;padding:9px 10px 9px 14px;
+/* ── FORMS ── */
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:11px;color:var(--tx3);font-weight:500;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;}
+.form-group input{
+  width:100%;padding:9px 12px;background:var(--sur2);
+  border:1px solid var(--bor2);border-radius:8px;
+  color:var(--tx);font-family:'Geist',sans-serif;font-size:13px;outline:none;
   transition:border-color 0.15s;
 }
-.input-box:focus-within{border-color:var(--bor2);}
-.ita{
-  flex:1;background:none;border:none;
-  color:var(--tx);font-family:'Geist',sans-serif;
-  font-size:15px;outline:none;resize:none;
-  min-height:24px;max-height:150px;line-height:1.6;
+.form-group input:focus{border-color:var(--acc);}
+.form-group input::placeholder{color:var(--tx3);}
+.form-hint{font-size:11px;color:var(--tx3);margin-top:3px;}
+
+.submit-btn{
+  padding:10px 20px;background:var(--acc);color:white;border:none;
+  border-radius:8px;font-family:'Geist',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:background 0.15s;
 }
-.ita::placeholder{color:var(--tx3);}
-.in-btns{display:flex;gap:5px;align-items:flex-end;flex-shrink:0;}
-.in-btn{
-  width:30px;height:30px;border-radius:7px;border:none;
-  background:none;color:var(--tx3);cursor:pointer;
+.submit-btn:hover{background:var(--acc2);}
+.submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* ── BADGE ── */
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;}
+.badge.green{background:var(--grns);color:var(--grn);}
+.badge.blue{background:var(--blus);color:var(--blu);}
+.badge.purple{background:var(--purs);color:var(--pur);}
+.badge.orange{background:var(--accg);color:var(--acc);}
+
+/* ── USAGE TABLE ── */
+.usage-table{width:100%;border-collapse:collapse;font-size:13px;}
+.usage-table th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--bor2);font-size:11px;color:var(--tx3);font-weight:500;letter-spacing:0.06em;text-transform:uppercase;}
+.usage-table td{padding:10px 12px;border-bottom:1px solid var(--bor);}
+.usage-table tr:last-child td{border-bottom:none;}
+
+/* ── AUTH SCREEN ── */
+.auth-screen{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:40px 20px;
+}
+.auth-box{
+  width:100%;max-width:400px;
+  background:var(--sur);border:1px solid var(--bor);
+  border-radius:16px;padding:28px;
+}
+.auth-logo{
+  width:44px;height:44px;border-radius:12px;background:var(--acc);
   display:flex;align-items:center;justify-content:center;
-  font-size:14px;transition:all 0.15s;flex-shrink:0;
+  font-size:22px;font-weight:700;color:white;margin-bottom:16px;
 }
-.in-btn:hover{color:var(--tx2);}
-.in-btn.recording{color:var(--red);animation:pulse-rec 1s ease infinite;}
-@keyframes pulse-rec{0%,100%{opacity:1;}50%{opacity:0.5;}}
-.send{
-  width:30px;height:30px;border-radius:7px;border:none;
-  background:var(--acc);color:white;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;transition:all 0.15s;flex-shrink:0;
+.auth-title{font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:6px;}
+.auth-sub{font-size:13px;color:var(--tx2);margin-bottom:22px;line-height:1.5;}
+.auth-switch{font-size:12px;color:var(--tx3);margin-top:12px;text-align:center;}
+.auth-switch a{color:var(--acc);cursor:pointer;text-decoration:none;}
+.auth-switch a:hover{text-decoration:underline;}
+.auth-success{
+  background:var(--grns);border:1px solid var(--grn);
+  border-radius:8px;padding:12px 14px;margin-top:14px;
+  font-size:13px;color:var(--grn);display:none;
 }
-.send:hover:not(:disabled){background:var(--acc2);}
-.send:disabled{background:var(--sur3);color:var(--tx3);cursor:not-allowed;}
-.input-hint{font-size:11px;color:var(--tx3);text-align:center;margin-top:7px;font-family:'Geist Mono',monospace;}
-
-/* ── MODALS ── */
-.overlay{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,0.55);z-index:200;
-  align-items:center;justify-content:center;padding:16px;
-  backdrop-filter:blur(4px);
+.auth-error{
+  background:rgba(229,115,115,0.1);border:1px solid var(--red);
+  border-radius:8px;padding:10px 12px;margin-top:10px;
+  font-size:12px;color:var(--red);display:none;
 }
-.overlay.open{display:flex;}
-.modal{
-  background:var(--sb);border:1px solid var(--bor2);
-  border-radius:16px;padding:22px;
-  width:100%;max-width:440px;
-  animation:mi 0.18s ease;
-}
-@keyframes mi{from{opacity:0;transform:scale(0.97);}to{opacity:1;transform:scale(1);}}
-.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
-.mt{font-size:17px;font-weight:600;letter-spacing:-0.02em;}
-.mx{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:16px;padding:3px;}
-.mx:hover{color:var(--tx);}
-
-/* Plans */
-.plans{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;}
-.popt{
-  padding:13px 14px;border-radius:10px;
-  border:1px solid var(--bor2);cursor:pointer;
-  display:flex;align-items:center;gap:12px;
-  transition:all 0.15s;position:relative;
-}
-.popt:hover,.popt.sel{border-color:var(--acc);background:var(--accg);}
-.po-ico{font-size:20px;flex-shrink:0;}
-.po-body{flex:1;}
-.po-name{font-size:14px;font-weight:600;}
-.po-desc{font-size:12px;color:var(--tx2);margin-top:1px;}
-.po-price{font-size:15px;font-weight:700;color:var(--acc);flex-shrink:0;}
-.pop-badge{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--acc);color:white;font-size:9px;font-weight:700;padding:1px 8px;border-radius:4px;letter-spacing:0.08em;}
-
-/* Settings */
-.sg{margin-bottom:14px;}
-.sg label{display:block;font-size:11px;color:var(--tx3);font-weight:500;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:5px;}
-.sg input,.sg select{
-  width:100%;padding:8px 11px;
-  background:var(--bg);border:1px solid var(--bor2);
-  border-radius:7px;color:var(--tx);
-  font-family:'Geist',sans-serif;font-size:13px;outline:none;
-}
-.sg input:focus,.sg select:focus{border-color:var(--acc);}
-.sg .hint{font-size:11px;color:var(--tx3);margin-top:3px;}
-.sg-row{display:flex;gap:10px;}
-.sg-row .sg{flex:1;}
-.rrow{display:flex;align-items:center;gap:8px;}
-.rrow input[type=range]{flex:1;accent-color:var(--acc);}
-.rv{font-size:12px;color:var(--acc);font-family:'Geist Mono',monospace;min-width:22px;}
-
-.mbtn{
-  width:100%;padding:10px;background:var(--acc);color:white;
-  border:none;border-radius:8px;font-family:'Geist',sans-serif;
-  font-size:14px;font-weight:600;cursor:pointer;transition:background 0.15s;
-}
-.mbtn:hover{background:var(--acc2);}
-.mbtn.ghost{background:none;border:1px solid var(--bor2);color:var(--tx2);margin-top:5px;}
-.mbtn.ghost:hover{background:var(--sur2);color:var(--tx);}
 
 /* ── TOAST ── */
 .toast{
   position:fixed;bottom:18px;right:18px;
   background:var(--sur3);border:1px solid var(--bor2);
   color:var(--tx);padding:9px 15px;border-radius:8px;
-  font-size:13px;opacity:0;transition:opacity 0.2s;
-  pointer-events:none;z-index:999;max-width:260px;
+  font-size:12px;opacity:0;transition:opacity 0.2s;
+  pointer-events:none;z-index:999;
 }
 .toast.show{opacity:1;}
 
-/* ── STOP BTN ── */
-.stop-btn{
-  display:none;margin:0 auto 8px;padding:6px 18px;
-  background:none;border:1px solid var(--bor2);
-  border-radius:20px;color:var(--tx2);font-family:'Geist',sans-serif;
-  font-size:12px;cursor:pointer;transition:all 0.15s;
-}
-.stop-btn:hover{border-color:var(--red);color:var(--red);}
-.stop-btn.show{display:block;}
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--bor);margin:20px 0;}
 
-@media(max-width:680px){
-  .sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);}
-  .sidebar.mob-open{transform:translateX(0);}
-  .mob-tog{display:flex;}
-  .starters{grid-template-columns:1fr;}
-  .chat-body{padding:20px 14px 10px;}
+/* ── ENDPOINT BADGE ── */
+.endpoint{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--sur2);border:1px solid var(--bor2);
+  border-radius:8px;padding:8px 14px;
+  font-family:'Geist Mono',monospace;font-size:12px;color:var(--tx2);
+  margin-bottom:12px;
+}
+.method{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;}
+.method.post{background:rgba(61,214,140,0.15);color:var(--grn);}
+.method.get{background:rgba(91,156,246,0.15);color:var(--blu);}
+
+/* Mobile */
+@media(max-width:640px){
+  .sidebar{display:none;}
+  .content{padding:16px;}
+  .page-header{padding:16px 16px 0;}
 }
 </style>
 </head>
 <body>
-<div class="app">
 
-<!-- SIDEBAR -->
-<div class="sidebar" id="sb">
-  <div class="sb-top">
-    <div class="sb-logo">A</div>
-    <div class="sb-name hide-slim" id="sb-name">ARIA</div>
-    <button class="sb-tog" id="sb-tog">◀</button>
-  </div>
-  <button class="new-btn" id="new-btn">
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
-    <span class="hide-slim">New chat</span>
-  </button>
-  <div class="conv-list" id="conv-list"><div class="conv-sec hide-slim">Conversations</div></div>
-  <div class="sb-foot">
-    <div class="plan-chip hide-slim" id="plan-chip">
-      <div class="plan-chip-top" id="pc-top">✦ Free Plan</div>
-      <div class="plan-chip-sub" id="pc-sub">20 messages/day</div>
+<!-- AUTH SCREEN -->
+<div id="auth-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;">
+  <div class="auth-box">
+    <div class="auth-logo">A</div>
+    <div class="auth-title" id="auth-title">Create your account</div>
+    <div class="auth-sub" id="auth-sub">Get 100 free credits instantly. No credit card required.</div>
+
+    <div id="register-form">
+      <div class="form-group"><label>Your Name</label><input type="text" id="reg-name" placeholder="Yash Raj"/></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="yash@example.com"/></div>
+      <button class="submit-btn" id="reg-btn" onclick="register()" style="width:100%;">Create account & get API key</button>
+      <div class="auth-error" id="reg-error"></div>
+      <div class="auth-success" id="reg-success"></div>
+      <div class="auth-switch">Already have an account? <a onclick="showLogin()">Sign in</a></div>
+    </div>
+
+    <div id="login-form" style="display:none;">
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="yash@example.com"/></div>
+      <button class="submit-btn" id="login-btn" onclick="login()" style="width:100%;">View my dashboard</button>
+      <div class="auth-error" id="login-error"></div>
+      <div class="auth-switch">New here? <a onclick="showRegister()">Create account</a></div>
     </div>
   </div>
 </div>
 
-<!-- MAIN -->
-<div class="main">
+<!-- DASHBOARD -->
+<div class="shell" id="dashboard" style="display:none;">
 
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <button class="mob-tog" id="mob-tog">☰</button>
-    <div class="model-tabs">
-      <button class="mtab" data-m="haiku"><div class="mdot"></div>Haiku<span style="font-size:9px;color:var(--tx3);">fast</span></button>
-      <button class="mtab on" data-m="sonnet"><div class="mdot"></div>Sonnet<span style="font-size:9px;color:var(--tx3);">smart</span></button>
-      <button class="mtab" data-m="opus"><div class="mdot"></div>Opus<span id="opus-lock" style="font-size:9px;">🔒</span></button>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">A</div>
+      <div>
+        <div class="sb-name">ARI<span>A</span></div>
+        <div class="sb-tag">API Platform</div>
+      </div>
     </div>
-    <div class="tb-right">
-      <div class="usage-pill" id="usage-pill">20 left</div>
-      <button class="tb-btn" id="sys-btn" title="System prompt">⚙</button>
-      <button class="tb-btn" id="theme-btn" title="Toggle theme">☾</button>
-      <button class="tb-btn" id="set-btn" title="Settings">⊙</button>
-      <button class="tb-btn" id="up-btn" title="Upgrade" style="color:var(--grn);">★</button>
+
+    <div class="sb-nav">
+      <div class="nav-sec">Dashboard</div>
+      <div class="nav-item active" onclick="showTab('overview')"><span class="nav-icon">⬡</span>Overview</div>
+      <div class="nav-item" onclick="showTab('keys')"><span class="nav-icon">⚿</span>API Keys</div>
+      <div class="nav-item" onclick="showTab('usage')"><span class="nav-icon">◈</span>Usage</div>
+
+      <div class="nav-sec">Docs</div>
+      <div class="nav-item" onclick="showTab('quickstart')"><span class="nav-icon">▷</span>Quickstart</div>
+      <div class="nav-item" onclick="showTab('models')"><span class="nav-icon">◎</span>Models</div>
+      <div class="nav-item" onclick="showTab('reference')"><span class="nav-icon">⊞</span>API Reference</div>
+
+      <div class="nav-sec">Account</div>
+      <div class="nav-item" onclick="showTab('billing')"><span class="nav-icon">◈</span>Credits</div>
+      <div class="nav-item" onclick="logout()"><span class="nav-icon">→</span>Sign out</div>
+    </div>
+
+    <div class="sb-foot">
+      <div class="credit-chip">
+        <div class="cc-label">Credits</div>
+        <div class="cc-val" id="sb-credits">—</div>
+        <div class="cc-sub">remaining</div>
+      </div>
     </div>
   </div>
 
-  <!-- SYSTEM PROMPT -->
-  <div class="sys-bar" id="sys-bar">
-    <span class="sys-label">System</span>
-    <textarea class="sys-ta" id="sys-ta" rows="1" placeholder="Give ARIA a role, personality, or specific instructions…"></textarea>
-  </div>
+  <!-- MAIN -->
+  <div class="main">
 
-  <!-- CHAT -->
-  <div class="chat-scroll" id="chat-scroll">
-    <div class="chat-body" id="chat-body">
-      <div class="welcome" id="welcome">
-        <div class="wl-logo">A</div>
-        <div class="wl-h" id="wl-h">How can I help?</div>
-        <div class="wl-s">Streaming AI powered by Claude. Ask anything.</div>
-        <div class="starters">
-          <div class="sc" data-p="Explain how attention mechanisms work in transformers. Use clear analogies and a diagram in ASCII."><div class="sc-t">Explain attention</div><div class="sc-d">How transformers actually work</div></div>
-          <div class="sc" data-p="Write a complete REST API in Python using FastAPI with JWT auth, CRUD operations, and error handling."><div class="sc-t">FastAPI REST API</div><div class="sc-d">Full code with auth</div></div>
-          <div class="sc" data-p="I'm feeling overwhelmed with too many tasks. Help me build a simple prioritization system."><div class="sc-t">Prioritize my work</div><div class="sc-d">Cut through the noise</div></div>
-          <div class="sc" data-p="Write a viral Twitter thread about the hidden psychology behind why people procrastinate, with actionable fixes."><div class="sc-t">Viral Twitter thread</div><div class="sc-d">Psychology + hooks</div></div>
+    <!-- OVERVIEW -->
+    <div class="tab-content active" id="tab-overview">
+      <div class="page-header">
+        <div class="ph-title">Overview</div>
+        <div class="ph-sub" id="overview-welcome">Welcome back</div>
+      </div>
+      <div class="content">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Credits Left</div><div class="stat-val orange" id="ov-credits">—</div><div class="stat-sub">top up anytime</div></div>
+          <div class="stat-card"><div class="stat-label">API Keys</div><div class="stat-val blue" id="ov-keys">—</div><div class="stat-sub">active keys</div></div>
+          <div class="stat-card"><div class="stat-label">Plan</div><div class="stat-val green" id="ov-plan" style="font-size:20px;">Free</div><div class="stat-sub">upgrade anytime</div></div>
+          <div class="stat-card"><div class="stat-label">Base URL</div><div class="stat-val" style="font-size:11px;font-family:'Geist Mono',monospace;color:var(--tx2);padding-top:4px;" id="ov-base">aria-sigma-gold.vercel.app</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Your API Key</div>
+          <div id="ov-key-display">Loading...</div>
+          <div style="margin-top:12px;font-size:12px;color:var(--tx3);">Keep this secret. Never expose it in frontend code.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Quick test</div>
+          <div class="code-wrap">
+            <div class="code-head"><span>curl</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre class="code-block" id="quick-curl">Loading...</pre>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <button class="stop-btn" id="stop-btn">⏹ Stop generating</button>
+    <!-- API KEYS -->
+    <div class="tab-content" id="tab-keys">
+      <div class="page-header">
+        <div class="ph-title">API Keys</div>
+        <div class="ph-sub">Manage your secret keys. Never share them publicly.</div>
+      </div>
+      <div class="content">
+        <div class="card">
+          <div class="card-title" style="justify-content:space-between;display:flex;align-items:center;">
+            <span><div class="dot" style="display:inline-block;margin-right:8px;"></div>Active Keys</span>
+            <button class="submit-btn" onclick="createKey()" style="padding:6px 14px;font-size:12px;">+ New Key</button>
+          </div>
+          <div id="keys-list">Loading...</div>
+        </div>
 
-  <!-- INPUT -->
-  <div class="input-area">
-    <div class="input-inner">
-      <div class="att-row" id="att-row" style="display:none;"></div>
-      <div class="input-box">
-        <textarea class="ita" id="ita" placeholder="Message ARIA…" rows="1"></textarea>
-        <div class="in-btns">
-          <button class="in-btn" id="att-btn" title="Attach image">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1" y="1" width="13" height="13" rx="2"/><circle cx="4.5" cy="4.5" r="1.2"/><path d="M1 10l3.5-3.5 2 2 3-3.5 3.5 4.5"/></svg>
-          </button>
-          <button class="in-btn" id="mic-btn" title="Voice input">
-            <svg width="13" height="15" viewBox="0 0 13 15" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="1" width="6" height="8" rx="3"/><path d="M1 7.5A5.5 5.5 0 0 0 12 7.5M6.5 13v2"/></svg>
-          </button>
-          <button class="send" id="send-btn" disabled>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 11L11 6 1 1v3.5L7.5 6 1 7.5z"/></svg>
-          </button>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Using your key</div>
+          <p style="font-size:13px;color:var(--tx2);margin-bottom:12px;">Pass your key in the Authorization header:</p>
+          <div class="code-wrap">
+            <div class="code-head"><span>http header</span></div>
+            <pre class="code-block"><span class="key">Authorization</span><span class="pun">: </span><span class="str">Bearer sk-aria-your-key-here</span></pre>
+          </div>
         </div>
       </div>
-      <div class="input-hint">Enter to send · Shift+Enter newline · 📎 image · 🎤 voice</div>
     </div>
-  </div>
-</div>
-</div>
 
-<!-- UPGRADE MODAL -->
-<div class="overlay" id="up-modal">
-  <div class="modal">
-    <div class="mh"><div class="mt">Choose a plan</div><button class="mx" id="up-x">✕</button></div>
-    <div class="plans">
-      <div class="popt" data-plan="free"><div class="po-ico">✦</div><div class="po-body"><div class="po-name">Free</div><div class="po-desc">20 msgs/day · Haiku + Sonnet</div></div><div class="po-price">₹0</div></div>
-      <div class="popt sel" data-plan="pro" style="position:relative;"><div class="pop-badge">POPULAR</div><div class="po-ico">⚡</div><div class="po-body"><div class="po-name">Pro</div><div class="po-desc">500 msgs/day · All models · Opus</div></div><div class="po-price">₹499<small style="font-weight:400;font-size:10px;color:var(--tx3);">/mo</small></div></div>
-      <div class="popt" data-plan="ultra"><div class="po-ico">★</div><div class="po-body"><div class="po-name">Ultra</div><div class="po-desc">Unlimited · Priority · API access</div></div><div class="po-price">₹999<small style="font-weight:400;font-size:10px;color:var(--tx3);">/mo</small></div></div>
-    </div>
-    <button class="mbtn" id="up-confirm">Continue with Pro</button>
-    <button class="mbtn ghost" id="up-cancel">Maybe later</button>
-  </div>
-</div>
-
-<!-- SETTINGS MODAL -->
-<div class="overlay" id="set-modal">
-  <div class="modal">
-    <div class="mh"><div class="mt">Settings</div><button class="mx" id="set-x">✕</button></div>
-    <div class="sg"><label>Persona name</label><input type="text" id="s-persona" placeholder="ARIA" maxlength="20"/></div>
-    <div class="sg-row">
-      <div class="sg"><label>Response length</label>
-        <select id="s-tokens">
-          <option value="512">Short</option>
-          <option value="1024" selected>Balanced</option>
-          <option value="2048">Detailed</option>
-          <option value="4096">Very long</option>
-          <option value="8192">Maximum</option>
-        </select>
+    <!-- USAGE -->
+    <div class="tab-content" id="tab-usage">
+      <div class="page-header">
+        <div class="ph-title">Usage</div>
+        <div class="ph-sub">Credit consumption per model</div>
       </div>
-      <div class="sg"><label>Style</label>
-        <select id="s-style">
-          <option value="balanced" selected>Balanced</option>
-          <option value="concise">Concise</option>
-          <option value="detailed">Detailed</option>
-          <option value="friendly">Friendly</option>
-          <option value="technical">Technical</option>
-          <option value="socratic">Socratic</option>
-        </select>
+      <div class="content">
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Credit costs</div>
+          <table class="usage-table">
+            <thead><tr><th>Model</th><th>ID</th><th>Credits/call</th><th>Speed</th></tr></thead>
+            <tbody>
+              <tr><td><strong>ARIA Fast</strong></td><td><code style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--tx3);">aria-fast</code></td><td><span class="badge green">1 credit</span></td><td>⚡ Very fast</td></tr>
+              <tr><td><strong>ARIA Smart</strong></td><td><code style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--tx3);">aria-smart</code></td><td><span class="badge blue">4 credits</span></td><td>🧠 Balanced</td></tr>
+              <tr><td><strong>ARIA Pro</strong></td><td><code style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--tx3);">aria-pro</code></td><td><span class="badge purple">20 credits</span></td><td>★ Most powerful</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Free tier limits</div>
+          <table class="usage-table">
+            <thead><tr><th>Plan</th><th>Credits</th><th>ARIA Fast calls</th><th>ARIA Smart calls</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge orange">Free</span></td><td>100</td><td>100 calls</td><td>25 calls</td></tr>
+              <tr><td><span class="badge blue">Starter</span></td><td>1,000</td><td>1,000 calls</td><td>250 calls</td></tr>
+              <tr><td><span class="badge purple">Pro</span></td><td>10,000</td><td>10,000 calls</td><td>2,500 calls</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-    <div class="sg">
-      <label>Temperature <span class="rv" id="tv">0.7</span></label>
-      <div class="rrow"><input type="range" id="s-temp" min="0" max="1" step="0.1" value="0.7"/></div>
-      <div class="hint">Lower = focused · Higher = creative</div>
+
+    <!-- QUICKSTART -->
+    <div class="tab-content" id="tab-quickstart">
+      <div class="page-header">
+        <div class="ph-title">Quickstart</div>
+        <div class="ph-sub">Start calling ARIA API in under 2 minutes</div>
+      </div>
+      <div class="content">
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>1. Get your API key</div>
+          <p style="font-size:13px;color:var(--tx2);">Your key is on the <a onclick="showTab('keys')" style="color:var(--acc);cursor:pointer;">API Keys</a> page. It starts with <code style="font-family:'Geist Mono',monospace;color:var(--acc);">sk-aria-</code></p>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>2. Make your first call</div>
+          <div class="code-wrap">
+            <div class="code-head"><span>curl</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre class="code-block"><span class="fn">curl</span> <span class="str">https://aria-sigma-gold.vercel.app/v1/chat</span> \
+  <span class="kw">-H</span> <span class="str">"Authorization: Bearer sk-aria-YOUR_KEY"</span> \
+  <span class="kw">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="kw">-d</span> <span class="str">'{
+    "model": "aria-smart",
+    "messages": [
+      {"role": "user", "content": "Hello ARIA!"}
+    ]
+  }'</span></pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>3. Python</div>
+          <div class="code-wrap">
+            <div class="code-head"><span>python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre class="code-block"><span class="kw">import</span> requests
+
+<span class="var">API_KEY</span> <span class="pun">=</span> <span class="str">"sk-aria-YOUR_KEY"</span>
+<span class="var">BASE_URL</span> <span class="pun">=</span> <span class="str">"https://aria-sigma-gold.vercel.app"</span>
+
+<span class="var">response</span> <span class="pun">=</span> requests.<span class="fn">post</span>(
+    <span class="str">f"{BASE_URL}/v1/chat"</span>,
+    headers<span class="pun">={</span>
+        <span class="str">"Authorization"</span><span class="pun">:</span> <span class="str">f"Bearer {API_KEY}"</span>,
+        <span class="str">"Content-Type"</span><span class="pun">:</span> <span class="str">"application/json"</span>
+    <span class="pun">}</span>,
+    json<span class="pun">={</span>
+        <span class="str">"model"</span><span class="pun">:</span> <span class="str">"aria-smart"</span>,
+        <span class="str">"messages"</span><span class="pun">:</span> <span class="pun">[{</span>
+            <span class="str">"role"</span><span class="pun">:</span> <span class="str">"user"</span>,
+            <span class="str">"content"</span><span class="pun">:</span> <span class="str">"Explain quantum computing"</span>
+        <span class="pun">}]</span>
+    <span class="pun">}</span>
+)
+
+<span class="var">data</span> <span class="pun">=</span> response.<span class="fn">json</span>()
+<span class="fn">print</span>(data[<span class="str">"content"</span>][<span class="num">0</span>][<span class="str">"text"</span>])</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>4. JavaScript / Node.js</div>
+          <div class="code-wrap">
+            <div class="code-head"><span>javascript</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre class="code-block"><span class="kw">const</span> <span class="var">res</span> <span class="pun">=</span> <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'https://aria-sigma-gold.vercel.app/v1/chat'</span>, {
+  method<span class="pun">:</span> <span class="str">'POST'</span>,
+  headers<span class="pun">:</span> {
+    <span class="str">'Authorization'</span><span class="pun">:</span> <span class="str">'Bearer sk-aria-YOUR_KEY'</span>,
+    <span class="str">'Content-Type'</span><span class="pun">:</span> <span class="str">'application/json'</span>
+  },
+  body<span class="pun">:</span> <span class="fn">JSON</span>.<span class="fn">stringify</span>({
+    model<span class="pun">:</span> <span class="str">'aria-smart'</span>,
+    messages<span class="pun">:</span> [{ role<span class="pun">:</span> <span class="str">'user'</span>, content<span class="pun">:</span> <span class="str">'Hello!'</span> }]
+  })
+});
+
+<span class="kw">const</span> <span class="var">data</span> <span class="pun">=</span> <span class="kw">await</span> res.<span class="fn">json</span>();
+console.<span class="fn">log</span>(<span class="var">data</span>.content[<span class="num">0</span>].text);</pre>
+          </div>
+        </div>
+
+      </div>
     </div>
-    <button class="mbtn" id="set-save">Save settings</button>
+
+    <!-- MODELS -->
+    <div class="tab-content" id="tab-models">
+      <div class="page-header">
+        <div class="ph-title">Models</div>
+        <div class="ph-sub">Choose the right model for your use case</div>
+      </div>
+      <div class="content">
+        <div class="models-grid">
+          <div class="model-card">
+            <div class="mc-name">ARIA Fast</div>
+            <div class="mc-id">aria-fast · aria-1</div>
+            <div class="mc-badge badge green">1 credit / call</div>
+            <div class="mc-desc">Best for simple Q&A, classifications, short responses, high-volume applications.</div>
+            <div class="mc-cost"><strong>Speed:</strong> ⚡⚡⚡ Very fast<br><strong>Context:</strong> 200K tokens</div>
+          </div>
+          <div class="model-card" style="border-color:var(--acc);">
+            <div class="mc-name">ARIA Smart</div>
+            <div class="mc-id">aria-smart · aria-2</div>
+            <div class="mc-badge badge blue">4 credits / call</div>
+            <div class="mc-desc">Best balance of speed and intelligence. Great for coding, analysis, writing.</div>
+            <div class="mc-cost"><strong>Speed:</strong> ⚡⚡ Fast<br><strong>Context:</strong> 200K tokens</div>
+          </div>
+          <div class="model-card">
+            <div class="mc-name">ARIA Pro</div>
+            <div class="mc-id">aria-pro · aria-3</div>
+            <div class="mc-badge badge purple">20 credits / call</div>
+            <div class="mc-desc">Most powerful. Best for complex reasoning, research, long documents, hard problems.</div>
+            <div class="mc-cost"><strong>Speed:</strong> ⚡ Moderate<br><strong>Context:</strong> 200K tokens</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API REFERENCE -->
+    <div class="tab-content" id="tab-reference">
+      <div class="page-header">
+        <div class="ph-title">API Reference</div>
+        <div class="ph-sub">Complete endpoint documentation</div>
+      </div>
+      <div class="content">
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Base URL</div>
+          <div class="endpoint"><span class="method get">BASE</span>https://aria-sigma-gold.vercel.app</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>POST /v1/chat</div>
+          <div class="endpoint"><span class="method post">POST</span>/v1/chat</div>
+          <p style="font-size:13px;color:var(--tx2);margin-bottom:14px;">Send a message and get a response from ARIA.</p>
+
+          <p style="font-size:12px;color:var(--tx3);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;">Request body</p>
+          <div class="code-wrap">
+            <div class="code-head"><span>json</span></div>
+            <pre class="code-block">{
+  <span class="key">"model"</span><span class="pun">:</span>      <span class="str">"aria-smart"</span>,        <span class="com">// aria-fast | aria-smart | aria-pro</span>
+  <span class="key">"messages"</span><span class="pun">:</span>   [{                     <span class="com">// required</span>
+    <span class="key">"role"</span><span class="pun">:</span>    <span class="str">"user"</span>,
+    <span class="key">"content"</span><span class="pun">:</span> <span class="str">"Your message here"</span>
+  }],
+  <span class="key">"system"</span><span class="pun">:</span>     <span class="str">"You are helpful"</span>,   <span class="com">// optional system prompt</span>
+  <span class="key">"max_tokens"</span><span class="pun">:</span> <span class="num">1024</span>,                 <span class="com">// optional, default 1024</span>
+  <span class="key">"stream"</span><span class="pun">:</span>     <span class="kw">false</span>                 <span class="com">// optional, set true for SSE streaming</span>
+}</pre>
+          </div>
+
+          <p style="font-size:12px;color:var(--tx3);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin:14px 0 8px;">Response</p>
+          <div class="code-wrap">
+            <div class="code-head"><span>json</span></div>
+            <pre class="code-block">{
+  <span class="key">"id"</span><span class="pun">:</span>      <span class="str">"msg_01XFDUDYJgAACzvnptvVoYEL"</span>,
+  <span class="key">"type"</span><span class="pun">:</span>    <span class="str">"message"</span>,
+  <span class="key">"role"</span><span class="pun">:</span>    <span class="str">"assistant"</span>,
+  <span class="key">"content"</span><span class="pun">:</span> [{
+    <span class="key">"type"</span><span class="pun">:</span> <span class="str">"text"</span>,
+    <span class="key">"text"</span><span class="pun">:</span> <span class="str">"Hello! How can I help you today?"</span>
+  }],
+  <span class="key">"model"</span><span class="pun">:</span>  <span class="str">"aria-smart"</span>,
+  <span class="key">"usage"</span><span class="pun">:</span>  { <span class="key">"credits_used"</span><span class="pun">:</span> <span class="num">4</span> }
+}</pre>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Error codes</div>
+          <table class="usage-table">
+            <thead><tr><th>Code</th><th>Type</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td>401</td><td><code style="font-size:11px;font-family:'Geist Mono',monospace;">auth_error</code></td><td>Invalid or missing API key</td></tr>
+              <tr><td>402</td><td><code style="font-size:11px;font-family:'Geist Mono',monospace;">credits_exhausted</code></td><td>No credits remaining</td></tr>
+              <tr><td>400</td><td><code style="font-size:11px;font-family:'Geist Mono',monospace;">invalid_model</code></td><td>Unknown model name</td></tr>
+              <tr><td>429</td><td><code style="font-size:11px;font-family:'Geist Mono',monospace;">rate_limited</code></td><td>Too many requests</td></tr>
+              <tr><td>500</td><td><code style="font-size:11px;font-family:'Geist Mono',monospace;">server_error</code></td><td>Internal error</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BILLING -->
+    <div class="tab-content" id="tab-billing">
+      <div class="page-header">
+        <div class="ph-title">Credits</div>
+        <div class="ph-sub">Manage your balance and top up</div>
+      </div>
+      <div class="content">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Current Balance</div><div class="stat-val orange" id="bill-credits">—</div><div class="stat-sub">credits</div></div>
+          <div class="stat-card"><div class="stat-label">Plan</div><div class="stat-val green" style="font-size:18px;" id="bill-plan">Free</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><div class="dot"></div>Credit packs</div>
+          <p style="font-size:13px;color:var(--tx2);margin-bottom:16px;">Contact <a href="mailto:yash69801@gmail.com" style="color:var(--acc);">yash69801@gmail.com</a> to purchase credits. Payment via UPI / Razorpay.</p>
+          <table class="usage-table">
+            <thead><tr><th>Pack</th><th>Credits</th><th>Price</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td>Starter</td><td>1,000</td><td><strong>₹99</strong></td><td>~250 smart calls</td></tr>
+              <tr><td>Growth</td><td>5,000</td><td><strong>₹399</strong></td><td>~1,250 smart calls</td></tr>
+              <tr><td>Pro</td><td>15,000</td><td><strong>₹999</strong></td><td>~3,750 smart calls</td></tr>
+              <tr><td>Enterprise</td><td>Unlimited</td><td><strong>₹2,999/mo</strong></td><td>Unlimited everything</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-<input type="file" id="file-inp" accept="image/*" multiple style="display:none;"/>
 
 <script>
-(function(){
-'use strict';
+const API_BASE = '';
+let USER = null;
+let KEYS = [];
 
-/* ── CONSTANTS ── */
-const SK = 'aria-v3';
-const MODELS = {
-  haiku:  'claude-haiku-4-5-20251001',
-  sonnet: 'claude-sonnet-4-6',
-  opus:   'claude-opus-4-6',
-};
-const LIMITS = { free:20, pro:500, ultra:999999 };
-const PLAN_INFO = {
-  free:  { top:'✦ Free Plan',  sub:'20 messages/day' },
-  pro:   { top:'⚡ Pro Plan',   sub:'500 messages/day' },
-  ultra: { top:'★ Ultra Plan', sub:'Unlimited messages' },
-};
-const STYLES = {
-  concise:   'Be concise and direct. No padding.',
-  detailed:  'Be thorough and comprehensive.',
-  friendly:  'Be warm and conversational.',
-  technical: 'Be precise. Use technical language.',
-  socratic:  'Guide with questions. Be Socratic.',
-  balanced:  '',
-};
-
-/* ── STATE ── */
-let S = {
-  convs:[], activeId:null,
-  plan:'free', model:'sonnet',
-  used:0, usedDate:'',
-  cfg:{ persona:'ARIA', tokens:1024, style:'balanced', temp:0.7 },
-  sys:'', theme:'dark',
-};
-let imgs=[]; // pending images for upload
-let busy=false;
-let abortCtrl=null;
-let recognition=null; // speech recognition
-
-/* ── UTILS ── */
-const $  = id => document.getElementById(id);
-const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-/* ── PERSIST ── */
-function load(){
-  try{ const r=localStorage.getItem(SK); if(r) S={...S,...JSON.parse(r)}; }catch(e){}
-  const today=new Date().toISOString().split('T')[0];
-  if(S.usedDate!==today){ S.used=0; S.usedDate=today; }
-  if(!S.convs) S.convs=[];
-  document.documentElement.setAttribute('data-theme', S.theme||'dark');
-}
-function save(){ try{ localStorage.setItem(SK,JSON.stringify(S)); }catch(e){} }
-
-/* ── MARKDOWN → HTML ── */
-function md(text){
-  let h = esc(text);
-
-  // Fenced code blocks — extract and replace with placeholders
-  const codeBlocks=[];
-  h=h.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>{
-    const idx=codeBlocks.length;
-    codeBlocks.push({lang:lang||'text', code:code.trim()});
-    return `%%CODE_${idx}%%`;
-  });
-
-  // Inline code
-  h=h.replace(/`([^`\n]+)`/g,'<code>$1</code>');
-  // Bold/italic
-  h=h.replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>');
-  h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  h=h.replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
-  // Headers
-  h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>');
-  h=h.replace(/^## (.+)$/gm,'<h2>$1</h2>');
-  h=h.replace(/^# (.+)$/gm,'<h1>$1</h1>');
-  // Blockquote
-  h=h.replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>');
-  // HR
-  h=h.replace(/^---$/gm,'<hr>');
-  // Links
-  h=h.replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
-  // Tables
-  h=h.replace(/\|(.+)\|\n\|[-| :]+\|\n((?:\|.+\|\n?)*)/g,(_,hdr,rows)=>{
-    const ths=hdr.split('|').filter(c=>c.trim()).map(c=>`<th>${c.trim()}</th>`).join('');
-    const trs=rows.trim().split('\n').map(row=>{
-      const tds=row.split('|').filter(c=>c.trim()).map(c=>`<td>${c.trim()}</td>`).join('');
-      return `<tr>${tds}</tr>`;
-    }).join('');
-    return `<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
-  });
-  // Lists
-  h=h.replace(/^\d+\. (.+)$/gm,'<li>$1</li>');
-  h=h.replace(/((?:^<li>.*<\/li>\n?)+)/gm,m=>'<ol>'+m+'</ol>');
-  h=h.replace(/^[*\-] (.+)$/gm,'<li>$1</li>');
-  h=h.replace(/((?:^<li>.*<\/li>\n?)+)/gm,m=>{
-    if(m.includes('<ol>')) return m;
-    return '<ul>'+m+'</ul>';
-  });
-  // Paragraphs
-  h=h.replace(/\n\n+/g,'</p><p>');
-  h='<p>'+h+'</p>';
-  h=h.replace(/\n/g,'<br>');
-  // Clean up
-  ['h1','h2','h3','ul','ol','table','blockquote','hr'].forEach(t=>{
-    h=h.replace(new RegExp(`<p>(<br>)*(<${t}[^>]*>[\\s\\S]*?<\\/${t}>)(<br>)*<\\/p>`,'g'),'$2');
-    h=h.replace(new RegExp(`<p>(<br>)*(<${t}\\/>)(<br>)*<\\/p>`,'g'),'$2');
-  });
-  h=h.replace(/<p>(<br>)*<\/p>/g,'');
-
-  // Re-inject code blocks with syntax highlighting
-  h=h.replace(/%%CODE_(\d+)%%/g,(_,i)=>{
-    const {lang,code}=codeBlocks[parseInt(i)];
-    let highlighted;
-    try{
-      highlighted = lang && hljs.getLanguage(lang)
-        ? hljs.highlight(code,{language:lang}).value
-        : hljs.highlightAuto(code).value;
-    }catch(e){ highlighted=esc(code); }
-    return `<div class="code-block">
-      <div class="code-block-head">
-        <span>${esc(lang||'code')}</span>
-        <button class="copy-code" onclick="copyCode(this)">Copy</button>
-      </div>
-      <pre><code class="hljs language-${esc(lang)}">${highlighted}</code></pre>
-    </div>`;
-  });
-
-  return h;
+// ── AUTH ──
+async function register() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const err = document.getElementById('reg-error');
+  const succ = document.getElementById('reg-success');
+  const btn = document.getElementById('reg-btn');
+  err.style.display = 'none'; succ.style.display = 'none';
+  if (!name || !email) { err.textContent = 'Name and email required.'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Creating account...';
+  try {
+    const r = await fetch('/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email }) });
+    const data = await r.json();
+    if (!r.ok) { err.textContent = data.error || 'Error creating account.'; err.style.display = 'block'; return; }
+    succ.innerHTML = `✓ Account created!<br>Your API key: <strong style="font-family:'Geist Mono',monospace;">${data.api_key}</strong><br>Copy it now — loading dashboard...`;
+    succ.style.display = 'block';
+    localStorage.setItem('aria_email', email);
+    setTimeout(() => loadDashboard(email), 2000);
+  } catch(e) { err.textContent = 'Network error. Please try again.'; err.style.display = 'block'; }
+  finally { btn.disabled = false; btn.textContent = 'Create account & get API key'; }
 }
 
-window.copyCode=function(btn){
-  const pre=btn.closest('.code-block').querySelector('code');
-  navigator.clipboard.writeText(pre.innerText).then(()=>{
-    btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy',1500);
-  });
-};
-
-/* ── SIDEBAR ── */
-function renderSB(){
-  const el=$('conv-list');
-  const convs=[...S.convs].reverse();
-  let html='<div class="conv-sec hide-slim">Conversations</div>';
-  if(!convs.length) html+='<div style="padding:8px 8px;font-size:12px;color:var(--tx3);font-style:italic;" class="hide-slim">No conversations yet</div>';
-  else html+=convs.map(c=>{
-    const first=c.msgs.find(m=>m.role==='user')?.text?.slice(0,36)||'New chat';
-    return `<div class="conv-item${c.id===S.activeId?' active':''}" data-id="${c.id}">
-      <div class="conv-dot ${c.model}"></div>
-      <div class="conv-label hide-slim">${esc(first)}</div>
-      <button class="conv-x" data-id="${c.id}">✕</button>
-    </div>`;
-  }).join('');
-  el.innerHTML=html;
-  el.querySelectorAll('.conv-item').forEach(el=>el.addEventListener('click',e=>{
-    if(e.target.classList.contains('conv-x')) return;
-    loadConv(el.dataset.id);
-  }));
-  el.querySelectorAll('.conv-x').forEach(b=>b.addEventListener('click',e=>{
-    e.stopPropagation(); delConv(b.dataset.id);
-  }));
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const err = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  err.style.display = 'none';
+  if (!email) { err.textContent = 'Email required.'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Loading...';
+  try {
+    const r = await fetch(`/keys?email=${encodeURIComponent(email)}`);
+    const data = await r.json();
+    if (!r.ok) { err.textContent = data.error || 'User not found.'; err.style.display = 'block'; return; }
+    localStorage.setItem('aria_email', email);
+    loadDashboard(email);
+  } catch(e) { err.textContent = 'Network error.'; err.style.display = 'block'; }
+  finally { btn.disabled = false; btn.textContent = 'View my dashboard'; }
 }
 
-function renderPlan(){
-  const p=PLAN_INFO[S.plan]||PLAN_INFO.free;
-  $('pc-top').textContent=p.top;
-  $('pc-sub').textContent=p.sub;
-  const lim=LIMITS[S.plan];
-  const left=lim===999999?'∞':(lim-S.used);
-  $('usage-pill').textContent=left+' left';
-  $('opus-lock').style.display=S.plan==='free'?'inline':'none';
+function showLogin() {
+  document.getElementById('register-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('auth-title').textContent = 'Sign in';
+  document.getElementById('auth-sub').textContent = 'Access your API keys and dashboard.';
 }
 
-/* ── CONVERSATIONS ── */
-function newConv(){
-  const c={id:uid(),model:S.model,msgs:[],createdAt:Date.now()};
-  S.convs.push(c); S.activeId=c.id; save(); renderSB(); renderConv(c); return c;
-}
-function activeConv(){ return S.convs.find(c=>c.id===S.activeId)||null; }
-function loadConv(id){
-  S.activeId=id; const c=activeConv();
-  if(c){ S.model=c.model; updateModelUI(); }
-  save(); renderSB(); renderConv(c);
-}
-function delConv(id){
-  S.convs=S.convs.filter(c=>c.id!==id);
-  if(S.activeId===id){ S.activeId=null; renderConv(null); }
-  save(); renderSB(); toast('Deleted.');
-}
-function updateModelUI(){
-  document.querySelectorAll('.mtab').forEach(b=>b.classList.toggle('on',b.dataset.m===S.model));
+function showRegister() {
+  document.getElementById('register-form').style.display = 'block';
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('auth-title').textContent = 'Create your account';
+  document.getElementById('auth-sub').textContent = 'Get 100 free credits instantly.';
 }
 
-/* ── CHAT RENDER ── */
-function renderConv(conv){
-  const body=$('chat-body');
-  if(!conv||!conv.msgs.length){ body.innerHTML=welcomeHTML(); bindWelcome(); return; }
-  body.innerHTML=conv.msgs.map((m,i)=>buildMsg(m,conv.model,i)).join('');
-  bindCopies();
-  scrollBottom();
+async function loadDashboard(email) {
+  try {
+    const r = await fetch(`/keys?email=${encodeURIComponent(email)}`);
+    const data = await r.json();
+    if (!r.ok) { localStorage.removeItem('aria_email'); return; }
+    USER = data.user; KEYS = data.keys || [];
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'flex';
+    renderDashboard();
+  } catch(e) { console.error(e); }
 }
 
-function welcomeHTML(){
-  const n=esc(S.cfg.persona||'ARIA');
-  return `<div class="welcome" id="welcome">
-    <div class="wl-logo">A</div>
-    <div class="wl-h" id="wl-h">How can I help?</div>
-    <div class="wl-s">${n} — streaming AI powered by Claude. Ask anything.</div>
-    <div class="starters">
-      <div class="sc" data-p="Explain how attention mechanisms work in transformers. Use clear analogies."><div class="sc-t">Explain attention</div><div class="sc-d">How transformers actually work</div></div>
-      <div class="sc" data-p="Write a complete REST API in Python using FastAPI with JWT auth and CRUD operations."><div class="sc-t">FastAPI REST API</div><div class="sc-d">Full production code</div></div>
-      <div class="sc" data-p="I'm overwhelmed with tasks. Build me a simple prioritization framework."><div class="sc-t">Prioritize my work</div><div class="sc-d">Cut through the noise</div></div>
-      <div class="sc" data-p="Write a viral Twitter thread about why people procrastinate, with actionable fixes."><div class="sc-t">Viral Twitter thread</div><div class="sc-d">Psychology + hooks</div></div>
-    </div>
-  </div>`;
-}
-
-function bindWelcome(){
-  document.querySelectorAll('.sc').forEach(c=>c.addEventListener('click',()=>{
-    $('ita').value=c.dataset.p; autoResize(); $('send-btn').disabled=false; $('ita').focus();
-  }));
-}
-
-function buildMsg(m,model,idx){
-  if(m.role==='user'){
-    const imgHtml=m.imgs?.length?`<div class="msg-imgs">${m.imgs.map(s=>`<img src="${s}" class="msg-img" alt=""/>`).join('')}</div>`:'';
-    return `<div class="msg-wrap">
-      <div class="msg-user">
-        <div class="ub">
-          ${imgHtml}${esc(m.text).replace(/\n/g,'<br>')}
-          <button class="ub-edit" onclick="editMsg(${idx})" title="Edit">✎</button>
-        </div>
+function renderDashboard() {
+  if (!USER) return;
+  // Sidebar
+  document.getElementById('sb-credits').textContent = USER.credits;
+  document.getElementById('overview-welcome').textContent = `Welcome back, ${USER.name}`;
+  // Stats
+  document.getElementById('ov-credits').textContent = USER.credits;
+  document.getElementById('ov-keys').textContent = KEYS.filter(k => k.active).length;
+  document.getElementById('ov-plan').textContent = USER.plan?.charAt(0).toUpperCase() + USER.plan?.slice(1) || 'Free';
+  document.getElementById('bill-credits').textContent = USER.credits;
+  document.getElementById('bill-plan').textContent = USER.plan?.charAt(0).toUpperCase() + USER.plan?.slice(1) || 'Free';
+  // Key display on overview
+  const firstKey = KEYS[0];
+  if (firstKey) {
+    document.getElementById('ov-key-display').innerHTML = `<div class="key-row">
+      <span class="key-badge active">active</span>
+      <span class="key-val">${firstKey.key}</span>
+      <div class="key-actions">
+        <button class="kbtn" onclick="copyText('${firstKey.key}')">Copy</button>
       </div>
     </div>`;
+    document.getElementById('quick-curl').innerHTML = `curl https://aria-sigma-gold.vercel.app/v1/chat \\
+  -H "Authorization: Bearer ${firstKey.key}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"model":"aria-fast","messages":[{"role":"user","content":"Hello!"}]}'`;
   }
-  const mc={haiku:'var(--grn)',sonnet:'var(--acc)',opus:'var(--pur)'};
-  const col=mc[model]||mc.sonnet;
-  const time=m.time?new Date(m.time).toLocaleTimeString('en',{hour:'2-digit',minute:'2-digit'}):'';
-  const persona=esc(S.cfg.persona||'ARIA');
-  const thinkHtml=m.thinking?`<div class="thinking-block"><div class="thinking-inner"><div class="thinking-label">Extended thinking</div>${esc(m.thinking)}</div></div>`:'';
-  return `<div class="msg-wrap" data-idx="${idx}">
-    <div class="msg-ai">
-      <div class="ai-head">
-        <div class="ai-av">A</div>
-        <div class="ai-name">${persona}</div>
-        <span class="ai-badge" style="background:${col}22;color:${col};">${model}</span>
-        <span class="ai-time">${time}</span>
+  renderKeys();
+}
+
+function renderKeys() {
+  const el = document.getElementById('keys-list');
+  if (!KEYS.length) { el.innerHTML = '<p style="color:var(--tx3);font-size:13px;">No keys yet.</p>'; return; }
+  el.innerHTML = KEYS.map(k => `
+    <div class="key-row">
+      <span class="key-badge ${k.active ? 'active' : 'inactive'}">${k.active ? 'active' : 'disabled'}</span>
+      <span class="key-name">${escHtml(k.name)}</span>
+      <span class="key-val">${k.key}</span>
+      <div class="key-actions">
+        <button class="kbtn" onclick="copyText('${k.key}')">Copy</button>
+        <button class="kbtn danger" onclick="deleteKey('${k.id}')">Delete</button>
       </div>
-      ${thinkHtml}
-      <div class="ai-content">${md(m.text)}</div>
-      <div class="ai-actions">
-        <button class="act" data-copy="${esc(m.text)}">⎘ Copy</button>
-        <button class="act" onclick="regen(${idx})">↺ Regenerate</button>
-      </div>
-    </div>
-  </div>`;
+    </div>`).join('');
 }
 
-window.editMsg=function(idx){
-  const conv=activeConv(); if(!conv) return;
-  const msg=conv.msgs[idx];
-  if(!msg) return;
-  $('ita').value=msg.text;
-  autoResize(); $('send-btn').disabled=false;
-  // Remove this message and everything after
-  conv.msgs=conv.msgs.slice(0,idx);
-  save(); renderConv(conv); $('ita').focus();
-};
-
-window.regen=function(idx){
-  const conv=activeConv(); if(!conv) return;
-  // Remove from idx onwards and resend
-  conv.msgs=conv.msgs.slice(0,idx);
-  save(); renderConv(conv);
-  const lastUser=conv.msgs[conv.msgs.length-1];
-  if(lastUser&&lastUser.role==='user') doSend(lastUser.text,[]);
-};
-
-function appendUserMsg(text, imgPreviews){
-  const ws=$('welcome'); if(ws) ws.remove();
-  const body=$('chat-body');
-  const imgHtml=imgPreviews.length?`<div class="msg-imgs">${imgPreviews.map(s=>`<img src="${s}" class="msg-img" alt=""/>`).join('')}</div>`:'';
-  const d=document.createElement('div');
-  d.innerHTML=`<div class="msg-wrap"><div class="msg-user"><div class="ub">${imgHtml}${esc(text).replace(/\n/g,'<br>')}</div></div></div>`;
-  body.appendChild(d.firstElementChild);
-  scrollBottom();
-}
-
-let streamingEl=null;
-let streamingContent='';
-
-function appendAIShell(model){
-  const ws=$('welcome'); if(ws) ws.remove();
-  const body=$('chat-body');
-  const mc={haiku:'var(--grn)',sonnet:'var(--acc)',opus:'var(--pur)'};
-  const col=mc[model]||mc.sonnet;
-  const persona=esc(S.cfg.persona||'ARIA');
-  const d=document.createElement('div');
-  d.className='msg-wrap'; d.id='streaming-msg';
-  d.innerHTML=`<div class="msg-ai">
-    <div class="ai-head">
-      <div class="ai-av">A</div>
-      <div class="ai-name">${persona}</div>
-      <span class="ai-badge" style="background:${col}22;color:${col};">${model}</span>
-    </div>
-    <div class="ai-content" id="stream-content"><span class="cursor"></span></div>
-  </div>`;
-  body.appendChild(d);
-  streamingEl=d; streamingContent='';
-  scrollBottom();
-}
-
-function updateStream(chunk){
-  streamingContent+=chunk;
-  const el=$('stream-content');
-  if(el){ el.innerHTML=md(streamingContent)+'<span class="cursor"></span>'; }
-  scrollBottom();
-}
-
-function finalizeStream(model){
-  const el=document.getElementById('streaming-msg');
-  if(el) el.removeAttribute('id');
-  streamingEl=null;
-}
-
-function showTyping(){
-  const ws=$('welcome'); if(ws) ws.remove();
-  const body=$('chat-body');
-  const d=document.createElement('div');
-  d.className='msg-wrap'; d.id='typing-el';
-  const persona=esc(S.cfg.persona||'ARIA');
-  d.innerHTML=`<div class="msg-ai"><div class="ai-head"><div class="ai-av">A</div><div class="ai-name">${persona}</div></div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
-  body.appendChild(d); scrollBottom();
-}
-function hideTyping(){ const t=$('typing-el'); if(t) t.remove(); }
-
-function bindCopies(){
-  document.querySelectorAll('.act[data-copy]').forEach(b=>b.addEventListener('click',()=>navigator.clipboard.writeText(b.dataset.copy).then(()=>toast('Copied!'))));
-}
-function scrollBottom(){ const s=$('chat-scroll'); setTimeout(()=>s.scrollTop=s.scrollHeight,30); }
-
-/* ── SEND ── */
-async function send(text){
-  if(busy) return;
-  const lim=LIMITS[S.plan]||20;
-  if(S.used>=lim){ toast('Limit reached! Upgrade for more.'); $('up-modal').classList.add('open'); return; }
-  if(S.model==='opus'&&S.plan==='free'){ toast('Opus needs Pro. Using Sonnet.'); S.model='sonnet'; updateModelUI(); }
-  let conv=activeConv(); if(!conv) conv=newConv();
-  conv.model=S.model;
-  await doSend(text, [...imgs]);
-}
-
-async function doSend(text, curImgs){
-  const conv=activeConv(); if(!conv) return;
-  busy=true; $('send-btn').disabled=true; $('stop-btn').classList.add('show');
-
-  // Add user message
-  const userMsg={role:'user',text:text.trim(),imgs:curImgs.map(i=>i.preview),time:Date.now()};
-  conv.msgs.push(userMsg);
-  appendUserMsg(text.trim(), curImgs.map(i=>i.preview));
-  clearImgs();
-  $('ita').value=''; $('ita').style.height='24px';
-
-  S.used++; renderPlan(); save(); renderSB();
-
-  // Build messages
-  const apiMsgs=[];
-  for(const m of conv.msgs.slice(0,-1)){
-    apiMsgs.push({role:m.role,content:m.role==='user'?m.text:m.text});
-  }
-  // Current with images
-  let curContent;
-  if(curImgs.length){
-    curContent=[
-      ...curImgs.map(img=>({type:'image',source:{type:'base64',media_type:img.mediaType,data:img.base64}})),
-      {type:'text',text:text.trim()||'What do you see?'}
-    ];
-  } else { curContent=text.trim(); }
-  apiMsgs.push({role:'user',content:curContent});
-
-  const sys=buildSys();
-  showTyping();
-
-  try{
-    abortCtrl=new AbortController();
-    const resp=await fetch('/api/chat',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      signal:abortCtrl.signal,
-      body:JSON.stringify({
-        model:MODELS[S.model]||MODELS.sonnet,
-        max_tokens:parseInt(S.cfg.tokens)||1024,
-        system:sys,
-        messages:apiMsgs.filter(m=>m.content&&(typeof m.content==='string'?m.content.trim():m.content.length)),
-        stream:true,
-      })
-    });
-
-    if(!resp.ok){
-      const err=await resp.json().catch(()=>({}));
-      throw new Error(err?.error?.message||`HTTP ${resp.status}`);
-    }
-
-    hideTyping(); appendAIShell(S.model);
-
-    const reader=resp.body.getReader();
-    const dec=new TextDecoder();
-    let fullText='';
-
-    while(true){
-      const {done,value}=await reader.read();
-      if(done) break;
-      const chunk=dec.decode(value,{stream:true});
-      const lines=chunk.split('\n');
-      for(const line of lines){
-        if(!line.startsWith('data:')) continue;
-        const data=line.slice(5).trim();
-        if(data==='[DONE]') break;
-        try{
-          const j=JSON.parse(data);
-          if(j.choices?.[0]?.delta?.content){
-            fullText+=j.choices[0].delta.content;
-            updateStream(j.choices[0].delta.content);
-          }
-        }catch(e){}
-      }
-    }
-
-    finalizeStream(S.model);
-    const aiMsg={role:'assistant',text:fullText||'(no response)',time:Date.now()};
-    conv.msgs.push(aiMsg); save(); renderSB();
-    bindCopies();
-
-  }catch(err){
-    hideTyping();
-    if(err.name==='AbortError'){
-      // User stopped — save what we have
-      const aiMsg={role:'assistant',text:streamingContent||'(stopped)',time:Date.now()};
-      conv.msgs.push(aiMsg); save();
-    } else {
-      const body=$('chat-body');
-      const d=document.createElement('div');
-      d.innerHTML=`<div class="msg-wrap"><div class="msg-ai"><div class="ai-head"><div class="ai-av">A</div></div><div class="ai-content" style="color:var(--red);">⚠ ${esc(err.message)}</div></div></div>`;
-      body.appendChild(d.firstElementChild);
-    }
-    finalizeStream(S.model);
-  } finally{
-    busy=false; abortCtrl=null;
-    $('send-btn').disabled=false;
-    $('stop-btn').classList.remove('show');
+async function createKey() {
+  if (!USER) return;
+  const name = prompt('Key name (e.g. "Production", "Testing"):') || 'New Key';
+  const r = await fetch('/keys', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: USER.id, key_name: name }) });
+  const data = await r.json();
+  if (data.success) {
+    KEYS.push({ id: data.id, key: data.api_key, name, active: true });
+    renderKeys(); toast('Key created! ' + data.api_key.slice(0, 20) + '...');
   }
 }
 
-function buildSys(){
-  const custom=$('sys-ta').value.trim();
-  if(custom) return custom;
-  const n=S.cfg.persona||'ARIA';
-  const style=STYLES[S.cfg.style]||'';
-  return `You are ${n}, an advanced AI assistant powered by Claude. ${style} Be honest, helpful, and genuinely useful. Format responses with markdown when it helps clarity.`.trim();
+async function deleteKey(keyId) {
+  if (!confirm('Delete this key? This cannot be undone.')) return;
+  await fetch('/keys', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key_id: keyId }) });
+  KEYS = KEYS.filter(k => k.id !== keyId);
+  renderKeys(); toast('Key deleted.');
 }
 
-/* ── IMAGES ── */
-function handleFiles(files){
-  Array.from(files).forEach(f=>{
-    if(!f.type.startsWith('image/')) return;
-    const r=new FileReader();
-    r.onload=e=>{
-      imgs.push({base64:e.target.result.split(',')[1],mediaType:f.type,preview:e.target.result});
-      renderImgs(); $('send-btn').disabled=false;
-    };
-    r.readAsDataURL(f);
-  });
-}
-function renderImgs(){
-  const el=$('att-row');
-  if(!imgs.length){ el.style.display='none'; el.innerHTML=''; return; }
-  el.style.display='flex';
-  el.innerHTML=imgs.map((img,i)=>`<div class="att-t"><img src="${img.preview}"/><button class="att-del" data-i="${i}">✕</button></div>`).join('');
-  el.querySelectorAll('.att-del').forEach(b=>b.addEventListener('click',()=>{ imgs.splice(parseInt(b.dataset.i),1); renderImgs(); }));
-}
-function clearImgs(){ imgs=[]; renderImgs(); }
-
-/* ── VOICE ── */
-function initVoice(){
-  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SpeechRecognition){ toast('Voice not supported in this browser'); return; }
-  if(recognition){ recognition.stop(); recognition=null; $('mic-btn').classList.remove('recording'); return; }
-  recognition=new SpeechRecognition();
-  recognition.continuous=false; recognition.interimResults=false; recognition.lang='en-US';
-  recognition.onresult=e=>{ const t=e.results[0][0].transcript; $('ita').value+=t; autoResize(); $('send-btn').disabled=!$('ita').value.trim(); };
-  recognition.onend=()=>{ recognition=null; $('mic-btn').classList.remove('recording'); };
-  recognition.onerror=()=>{ recognition=null; $('mic-btn').classList.remove('recording'); toast('Voice error'); };
-  recognition.start();
-  $('mic-btn').classList.add('recording');
+function logout() {
+  localStorage.removeItem('aria_email');
+  USER = null; KEYS = [];
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
 }
 
-/* ── HELPERS ── */
-function autoResize(){
-  const el=$('ita'); el.style.height='24px'; el.style.height=Math.min(el.scrollHeight,150)+'px';
+// ── NAV ──
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { if (n.getAttribute('onclick')?.includes(name)) n.classList.add('active'); });
 }
-function toast(msg){
-  const t=$('toast'); t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
-}
 
-/* ── EVENTS ── */
-$('new-btn').addEventListener('click',()=>{ newConv(); renderSB(); });
+// ── UTILS ──
+function copyText(text) { navigator.clipboard.writeText(text).then(() => toast('Copied!')); }
+function copyCode(btn) { const pre = btn.closest('.code-wrap').querySelector('pre'); navigator.clipboard.writeText(pre.innerText).then(() => { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 1500); }); }
+function escHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
 
-document.querySelectorAll('.mtab').forEach(btn=>btn.addEventListener('click',()=>{
-  const m=btn.dataset.m;
-  if(m==='opus'&&S.plan==='free'){ toast('Opus needs Pro!'); $('up-modal').classList.add('open'); return; }
-  S.model=m; const c=activeConv(); if(c) c.model=m;
-  updateModelUI(); save();
-}));
-
-$('ita').addEventListener('input',function(){ autoResize(); $('send-btn').disabled=!this.value.trim()&&!imgs.length; });
-$('ita').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); if(!$('send-btn').disabled) send($('ita').value); } });
-$('send-btn').addEventListener('click',()=>send($('ita').value));
-$('stop-btn').addEventListener('click',()=>{ if(abortCtrl) abortCtrl.abort(); });
-
-$('att-btn').addEventListener('click',()=>$('file-inp').click());
-$('file-inp').addEventListener('change',e=>{ handleFiles(e.target.files); e.target.value=''; });
-$('mic-btn').addEventListener('click',initVoice);
-
-$('sys-btn').addEventListener('click',()=>{ $('sys-bar').classList.toggle('open'); $('sys-btn').classList.toggle('on'); });
-$('sys-ta').addEventListener('input',e=>{ S.sys=e.target.value; save(); });
-
-$('sb-tog').addEventListener('click',()=>{ $('sb').classList.toggle('slim'); $('sb-tog').textContent=$('sb').classList.contains('slim')?'▶':'◀'; });
-$('mob-tog').addEventListener('click',()=>$('sb').classList.toggle('mob-open'));
-
-// Theme
-$('theme-btn').addEventListener('click',()=>{
-  S.theme=S.theme==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',S.theme);
-  $('theme-btn').textContent=S.theme==='dark'?'☾':'☀';
-  // Swap hljs theme
-  const link=$('hljs-theme');
-  link.href=S.theme==='dark'
-    ?'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'
-    :'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
-  save();
-});
-
-// Upgrade
-['up-btn','plan-chip'].forEach(id=>$(id)?.addEventListener('click',()=>$('up-modal').classList.add('open')));
-['up-x','up-cancel'].forEach(id=>$(id)?.addEventListener('click',()=>$('up-modal').classList.remove('open')));
-$('up-modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
-document.querySelectorAll('.popt').forEach(c=>c.addEventListener('click',()=>{
-  document.querySelectorAll('.popt').forEach(x=>x.classList.remove('sel')); c.classList.add('sel');
-  const labels={free:'Stay Free',pro:'Continue with Pro',ultra:'Continue with Ultra'};
-  $('up-confirm').textContent=labels[c.dataset.plan]||'Continue';
-}));
-$('up-confirm').addEventListener('click',()=>{
-  const sel=document.querySelector('.popt.sel');
-  S.plan=sel?.dataset.plan||'pro'; renderPlan(); save();
-  $('up-modal').classList.remove('open');
-  toast('🎉 '+(PLAN_INFO[S.plan]?.top||'Upgraded')+' activated!');
-});
-
-// Settings
-$('set-btn').addEventListener('click',()=>{
-  $('s-persona').value=S.cfg.persona||'ARIA';
-  $('s-tokens').value=S.cfg.tokens||1024;
-  $('s-style').value=S.cfg.style||'balanced';
-  $('s-temp').value=S.cfg.temp||0.7;
-  $('tv').textContent=S.cfg.temp||0.7;
-  $('set-modal').classList.add('open');
-});
-['set-x'].forEach(id=>$(id)?.addEventListener('click',()=>$('set-modal').classList.remove('open')));
-$('set-modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
-$('s-temp').addEventListener('input',e=>$('tv').textContent=e.target.value);
-$('set-save').addEventListener('click',()=>{
-  S.cfg.persona=$('s-persona').value.trim()||'ARIA';
-  S.cfg.tokens=$('s-tokens').value;
-  S.cfg.style=$('s-style').value;
-  S.cfg.temp=parseFloat($('s-temp').value);
-  save(); $('set-modal').classList.remove('open'); toast('Saved!');
-  $('sb-name').textContent=S.cfg.persona;
-});
-
-/* ── INIT ── */
-load();
-updateModelUI(); renderPlan(); renderSB();
-if(S.sys) $('sys-ta').value=S.sys;
-$('sb-name').textContent=S.cfg.persona||'ARIA';
-$('theme-btn').textContent=S.theme==='dark'?'☾':'☀';
-if(S.theme==='light'){
-  document.getElementById('hljs-theme').href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
-}
-const conv=S.activeId?activeConv():null;
-if(conv&&conv.msgs.length) renderConv(conv);
-else{ renderConv(null); bindWelcome(); }
-
-})();
+// ── INIT ──
+const savedEmail = localStorage.getItem('aria_email');
+if (savedEmail) loadDashboard(savedEmail);
 </script>
 </body>
 </html>
