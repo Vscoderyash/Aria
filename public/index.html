@@ -611,6 +611,9 @@ ic{
       <div class="nav-item" onclick="go('reference')">
         <div class="nav-icon">⊞</div>API Reference
       </div>
+      <div class="nav-item" onclick="go('architecture')">
+        <div class="nav-icon">◬</div>Architecture
+      </div>
 
       <div class="nav-group-label">Account</div>
       <div class="nav-item" onclick="go('billing')">
@@ -970,6 +973,21 @@ console<span class="t-p">.</span><span class="t-f">log</span>(<span class="t-v">
         </div>
       </div>
 
+      <!-- ARCHITECTURE -->
+      <div id="p-architecture" class="page fade-in" style="display:none;">
+        <div class="page-hero">
+          <div class="page-eyebrow">Architecture</div>
+          <div class="page-title">Multi-agent <em>system</em></div>
+          <div class="page-sub">How ARIA processes every request — orchestration, validation, feedback loops, failure handling, and horizontal scaling.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-shimmer"></div>
+          <div class="card-label">Interactive system diagram</div>
+          <div id="arch-diagram"></div>
+        </div>
+      </div>
+
     </div><!-- /scroll -->
   </div><!-- /main -->
 </div><!-- /dash -->
@@ -1095,8 +1113,8 @@ async function delKey(id) {
 function doLogout() { localStorage.removeItem('aria_email'); USER = null; KEYS = []; document.getElementById('dash-view').style.display = 'none'; document.getElementById('auth-view').style.display = 'flex'; }
 
 /* ── NAV ── */
-const PAGES = ['overview','keys','usage','quickstart','models','reference','billing'];
-const TITLES = { overview:'Overview', keys:'API Keys', usage:'Usage & Credits', quickstart:'Quickstart', models:'Models', reference:'API Reference', billing:'Billing' };
+const PAGES = ['overview','keys','usage','quickstart','models','reference','billing','architecture'];
+const TITLES = { overview:'Overview', keys:'API Keys', usage:'Usage & Credits', quickstart:'Quickstart', models:'Models', reference:'API Reference', billing:'Billing', architecture:'Architecture' };
 
 function go(name) {
   PAGES.forEach(p => {
@@ -1124,3 +1142,40 @@ if (saved) loadDash(saved);
 </script>
 </body>
 </html>
+<script>
+// Patch: add conversation history and agent trace to usage tab
+(function() {
+  const orig = window.renderAll;
+  // After page loads, enhance the usage tab with real stats
+  window.addEventListener('DOMContentLoaded', () => {
+    const usagePage = document.getElementById('p-usage');
+    if (!usagePage) return;
+    // Add agent trace section
+    const traceCard = document.createElement('div');
+    traceCard.className = 'card';
+    traceCard.id = 'trace-card';
+    traceCard.innerHTML = `
+      <div class="card-shimmer"></div>
+      <div class="card-label">Agent pipeline trace</div>
+      <div id="trace-list" style="font-size:13px;color:var(--dim);">Make an API call to see agent traces here.</div>
+    `;
+    usagePage.querySelector('.content')?.appendChild(traceCard);
+  });
+})();
+
+// Global: show agent trace from API response
+window.showTrace = function(trace) {
+  const el = document.getElementById('trace-list');
+  if (!el || !trace) return;
+  const agents = trace.agents || [];
+  el.innerHTML = `<div style="margin-bottom:8px;font-size:12px;color:var(--mute);">Model: ${trace.model} · Attempts: ${trace.attempts}</div>` +
+    agents.map(a => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--edge);">
+        <div style="width:8px;height:8px;border-radius:50%;background:${a.status==='success'?'#1D9E75':a.status==='failed'?'#E24B4A':'#BA7517'};flex-shrink:0;"></div>
+        <div style="flex:1;font-weight:500;">${a.name}</div>
+        <div style="font-size:11px;color:var(--mute);">${a.score!=null?'score: '+a.score.toFixed(2):''} ${a.attempt>1?'attempt '+a.attempt:''}</div>
+        <div style="font-size:11px;padding:2px 8px;border-radius:4px;background:${a.status==='success'?'var(--teald)':a.status==='failed'?'var(--rosed)':'var(--goldd)'};color:${a.status==='success'?'var(--teal)':a.status==='failed'?'var(--rose)':'var(--gold)'};">${a.status}</div>
+      </div>
+    `).join('');
+};
+</script>
