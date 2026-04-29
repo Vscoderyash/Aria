@@ -1,9 +1,9 @@
 {
   "rewrites": [
-    { "source": "/v1/chat",      "destination": "/api/v1/chat" },
-    { "source": "/v1/messages",  "destination": "/api/v1/chat" },
-    { "source": "/register",     "destination": "/api/keys" },
-    { "source": "/keys",         "destination": "/api/keys" },
-    { "source": "/(.*)",         "destination": "/public/index.html" }
+    { "source": "/v1/chat",     "destination": "/api/v1/chat" },
+    { "source": "/v1/messages", "destination": "/api/v1/chat" },
+    { "source": "/register",    "destination": "/api/keys" },
+    { "source": "/keys",        "destination": "/api/keys" },
+    { "source": "/(.*)",        "destination": "/public/index.html" }
   ]
 }
