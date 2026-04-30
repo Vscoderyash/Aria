@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ARIA</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+--bg:#f5f0e8;--surface:#fff;--sidebar:#eeebe3;--hover:#e8e3d8;
+--text:#1a1915;--muted:#6b6760;--border:rgba(0,0,0,0.08);
+--brand:#c96b3c;--haiku:#5da87e;--sonnet:#c96b3c;--opus:#8b5cf6;
+}
+[data-theme=dark]{
+--bg:#1a1813;--surface:#222018;--sidebar:#1a1813;--hover:#2a2720;
+--text:#ede8de;--muted:#a09880;--border:rgba(255,255,255,0.06);
+--brand:#d97840;--haiku:#4a9a6a;--sonnet:#d97840;--opus:#9b72f8;
+}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;}
+.app{display:flex;height:100vh;}
+.sidebar{width:260px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.sb-head{padding:16px;border-bottom:1px solid var(--border);}
+.logo{font-size:18px;font-weight:700;}
+.new-btn{width:100%;margin:8px 0;padding:10px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;}
+.new-btn:hover{background:var(--hover);}
+.convs{flex:1;overflow-y:auto;padding:8px;}
+.conv{padding:10px;border-radius:8px;cursor:pointer;margin-bottom:2px;font-size:13px;color:var(--muted);}
+.conv:hover,.conv.active{background:var(--hover);color:var(--text);}
+.main{flex:1;display:flex;flex-direction:column;}
+.topbar{height:52px;padding:0 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.models{display:flex;gap:4px;background:var(--hover);border-radius:20px;padding:3px;}
+.model{padding:6px 14px;border-radius:20px;background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;}
+.model.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.chat{flex:1;overflow-y:auto;padding:32px 20px;}
+.msg{margin-bottom:24px;}
+.msg-user{text-align:right;}
+.msg-user-bubble{display:inline-block;max-width:80%;background:var(--surface);border:1px solid var(--border);border-radius:18px 18px 4px 18px;padding:12px 16px;text-align:left;}
+.msg-ai-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.avatar{width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
+.msg-ai-content{font-size:15px;line-height:1.7;}
+.input-area{padding:16px 20px;border-top:1px solid var(--border);}
+.input-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:12px 16px;display:flex;gap:10px;align-items:center;}
+.input{flex:1;background:none;border:none;outline:none;font-size:15px;color:var(--text);}
+.send{width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.send:disabled{background:var(--border);cursor:not-allowed;}
+.typing{display:flex;gap:4px;padding:12px 0;}
+.td{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite;}
+.td:nth-child(2){animation-delay:0.15s;}
+.td:nth-child(3){animation-delay:0.3s;}
+@keyframes blink{0%,60%,100%{opacity:0.3;}30%{opacity:1;}}
+</style>
+</head>
+<body data-theme="light">
+<div class="app">
+<div class="sidebar">
+<div class="sb-head">
+<div class="logo">ARIA</div>
+<button class="new-btn" onclick="newChat()">+ New chat</button>
+</div>
+<div class="convs" id="convs"></div>
+</div>
+<div class="main">
+<div class="topbar">
+<div class="models">
+<button class="model" data-m="haiku" onclick="setModel('haiku')">Haiku</button>
+<button class="model active" data-m="sonnet" onclick="setModel('sonnet')">Sonnet</button>
+<button class="model" data-m="opus" onclick="setModel('opus')">Opus</button>
+</div>
+</div>
+<div class="chat" id="chat"></div>
+<div class="input-area">
+<div class="input-box">
+<input class="input" id="input" placeholder="Message ARIA…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send();}"/>
+<button class="send" id="send" onclick="send()" disabled>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+const MODELS = {
+  haiku: 'anthropic/claude-haiku-4-5',
+  sonnet: 'anthropic/claude-sonnet-4-5',
+  opus: 'anthropic/claude-opus-4-5'
+};
+const KEY = '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';
+
+let convs = JSON.parse(localStorage.getItem('aria_convs') || '[]');
+let activeId = localStorage.getItem('aria_active');
+let model = localStorage.getItem('aria_model') || 'sonnet';
+
+const save = () => {
+  localStorage.setItem('aria_convs', JSON.stringify(convs));
+  localStorage.setItem('aria_active', activeId);
+  localStorage.setItem('aria_model', model);
+};
+
+const renderConvs = () => {
+  const el = document.getElementById('convs');
+  el.innerHTML = convs.map(c => {
+    const title = c.msgs.find(m => m.role === 'user')?.content.slice(0, 30) || 'New chat';
+    return `<div class="conv ${c.id === activeId ? 'active' : ''}" onclick="loadConv('${c.id}')">${title}</div>`;
+  }).join('');
+};
+
+const renderChat = () => {
+  const conv = convs.find(c => c.id === activeId);
+  const el = document.getElementById('chat');
+  if (!conv || !conv.msgs.length) {
+    el.innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px;">How can I help?</div>';
+    return;
+  }
+  el.innerHTML = conv.msgs.map(m => {
+    if (m.role === 'user') {
+      return `<div class="msg msg-user"><div class="msg-user-bubble">${esc(m.content)}</div></div>`;
+    }
+    return `<div class="msg"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="msg-ai-content">${md(m.content)}</div></div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+};
+
+const newChat = () => {
+  const id = Date.now().toString(36);
+  convs.push({ id, msgs: [] });
+  activeId = id;
+  save();
+  renderConvs();
+  renderChat();
+};
+
+const loadConv = (id) => {
+  activeId = id;
+  save();
+  renderConvs();
+  renderChat();
+};
+
+const setModel = (m) => {
+  model = m;
+  save();
+  document.querySelectorAll('.model').forEach(b => b.classList.toggle('active', b.dataset.m === m));
+};
+
+const send = async () => {
+  const input = document.getElementById('input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  let conv = convs.find(c => c.id === activeId);
+  if (!conv) { newChat(); conv = convs.find(c => c.id === activeId); }
+
+  conv.msgs.push({ role: 'user', content: text });
+  input.value = '';
+  document.getElementById('send').disabled = true;
+  save();
+  renderChat();
+
+  const chat = document.getElementById('chat');
+  chat.innerHTML += '<div class="msg"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>';
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${KEY}`,
+        'HTTP-Referer': 'https://aria-sigma-gold.vercel.app',
+      },
+      body: JSON.stringify({
+        model: MODELS[model],
+        messages: conv.msgs.map(m => ({ role: m.role, content: m.content })),
+        stream: false,
+      })
+    });
+
+    const data = await resp.json();
+    const reply = data.choices?.[0]?.message?.content || 'Error';
+    conv.msgs.push({ role: 'assistant', content: reply });
+    save();
+    renderChat();
+  } catch (e) {
+    conv.msgs.push({ role: 'assistant', content: `⚠ ${e.message}` });
+    renderChat();
+  }
+
+  document.getElementById('send').disabled = false;
+};
+
+document.getElementById('input').oninput = (e) => {
+  document.getElementById('send').disabled = !e.target.value.trim();
+};
+
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const md = (text) => {
+  let h = esc(text);
+  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => `<pre style="background:var(--hover);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0;"><code>${esc(code.trim())}</code></pre>`);
+  h = h.replace(/`([^`\n]+)`/g, '<code style="background:var(--hover);padding:2px 6px;border-radius:4px;">$1</code>');
+  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  h = h.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  h = h.replace(/^### (.+)$/gm, '<h3 style="margin:12px 0 6px;">$1</h3>');
+  h = h.replace(/^## (.+)$/gm, '<h2 style="margin:14px 0 8px;">$1</h2>');
+  h = h.replace(/^# (.+)$/gm, '<h1 style="margin:16px 0 8px;">$1</h1>');
+  h = h.replace(/\n\n+/g, '</p><p>');
+  h = '<p>' + h + '</p>';
+  h = h.replace(/\n/g, '<br>');
+  h = h.replace(/<p>(<br>)*<\/p>/g, '');
+  return h;
+};
+
+if (!convs.length) newChat();
+setModel(model);
+renderConvs();
+renderChat();
+</script>
+</body>
+</html>
