@@ -1132,12 +1132,18 @@ function renderSB() {
 function renderUser() {
   const name = S.cfg.persona || 'ARIA';
   const initials = name.charAt(0).toUpperCase();
-  document.getElementById('sb-avatar').textContent = initials;
-  document.getElementById('sb-name').textContent = S.cfg.persona || 'ARIA';
+  const sbAvatar = document.getElementById('sb-avatar');
+  const sbName = document.getElementById('sb-name');
+  const sbPlan = document.getElementById('sb-plan');
+  const sbCred = document.getElementById('sb-cred');
+  const welcomeTitle = document.getElementById('welcome-title');
+
+  if (sbAvatar) sbAvatar.textContent = initials;
+  if (sbName) sbName.textContent = S.cfg.persona || 'ARIA';
   const lim = LIMITS[S.plan];
-  document.getElementById('sb-plan').textContent = PLAN_INFO[S.plan]?.sub || '';
-  document.getElementById('sb-cred').textContent = lim === 999999 ? '∞' : (lim - S.used) + ' left';
-  document.getElementById('welcome-title').textContent = `How can I help you?`;
+  if (sbPlan) sbPlan.textContent = PLAN_INFO[S.plan]?.sub || '';
+  if (sbCred) sbCred.textContent = lim === 999999 ? '∞' : (lim - S.used) + ' left';
+  if (welcomeTitle) welcomeTitle.textContent = `How can I help you?`;
   document.title = `${name}`;
 }
 
