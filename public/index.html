@@ -1352,31 +1352,50 @@ async function doSend(text, curImgs) {
   document.getElementById('input-ta').style.height = '24px';
   S.used++; save(); renderSB(); renderUser();
 
-  // Build API messages
-  const apiMsgs = conv.msgs.slice(0, -1).map(m => ({ role: m.role, content: m.content || '' }));
-  let curContent;
-  if (curImgs.length) {
-    curContent = [
-      ...curImgs.map(img => ({ type:'image', source:{ type:'base64', media_type:img.mediaType, data:img.base64 } })),
-      { type:'text', text: text.trim() || 'What do you see?' }
-    ];
-  } else { curContent = text.trim(); }
-  apiMsgs.push({ role:'user', content: curContent });
-
+  // Build OpenRouter messages
+  const orMsgs = [];
   const sysPrompt = buildSystem();
+  if (sysPrompt) orMsgs.push({ role:'system', content:sysPrompt });
+
+  for (const m of conv.msgs.slice(0, -1)) {
+    orMsgs.push({ role: m.role, content: m.content || '' });
+  }
+
+  // Current message with images
+  if (curImgs.length) {
+    const parts = curImgs.map(img => ({
+      type: 'image_url',
+      image_url: { url: `data:${img.mediaType};base64,${img.base64}` }
+    }));
+    parts.push({ type: 'text', text: text.trim() || 'What do you see?' });
+    orMsgs.push({ role: 'user', content: parts });
+  } else {
+    orMsgs.push({ role: 'user', content: text.trim() });
+  }
+
+  const modelMap = {
+    'aria-fast': 'anthropic/claude-haiku-4-5',
+    'aria-smart': 'anthropic/claude-sonnet-4-5',
+    'aria-pro': 'anthropic/claude-opus-4-5',
+  };
+
   showTyping();
 
   try {
     abortCtrl = new AbortController();
-    const resp = await fetch('/v1/chat', {
+    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer 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',
+        'HTTP-Referer': 'https://aria-sigma-gold.vercel.app',
+        'X-Title': 'ARIA',
+      },
       signal: abortCtrl.signal,
       body: JSON.stringify({
-        model: S.model,
+        model: modelMap[S.model] || 'anthropic/claude-sonnet-4-5',
         max_tokens: parseInt(S.cfg.tokens) || 1024,
-        system: sysPrompt,
-        messages: apiMsgs.filter(m => m.content && (typeof m.content === 'string' ? m.content.trim() : m.content.length)),
+        messages: orMsgs,
         stream: true,
       })
     });
@@ -1403,8 +1422,10 @@ async function doSend(text, curImgs) {
         if (data === '[DONE]') break;
         try {
           const j = JSON.parse(data);
-          if (j.type === 'content_block_delta' && j.delta?.type === 'text_delta') {
-            fullText += j.delta.text; updateStream(j.delta.text);
+          const delta = j.choices?.[0]?.delta?.content;
+          if (delta) {
+            fullText += delta;
+            updateStream(delta);
           }
         } catch(e) {}
       }
