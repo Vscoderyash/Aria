@@ -643,6 +643,20 @@ const detectIntent = (msg) => {
   return r;
 };
 
+/* ── AD FILTER ── */
+const AD_PATTERNS = [
+  /\n?\n?🌸\s*Ad\s*🌸[\s\S]*?(?=\n\n|\n[A-Z]|$)/gi,
+  /\n?\n?Powered by Pollinations\.AI[\s\S]*?(?:\n\n|$)/gi,
+  /\n?\n?\[Support our mission\][^\n]*/gi,
+  /\n?\n?Support our mission[\s\S]*?accessible for everyone\.?/gi,
+  /\s*https?:\/\/pollinations\.ai\/redirect\/\S+/gi,
+];
+const stripAds = txt => {
+  let s = txt;
+  for (const p of AD_PATTERNS) s = s.replace(p, '');
+  return s.trimEnd();
+};
+
 /* ── SYSTEM PROMPT ── */
 const IDENTITY = `CRITICAL IDENTITY RULES — follow these above all else:
 • Your name is ARIA (Advanced Reasoning Intelligence Assistant).
@@ -1092,12 +1106,13 @@ const send = async () => {
       for (const line of dec.decode(value).split('\n')) {
         if (!line.startsWith('data: ')) continue;
         const raw = line.slice(6).trim(); if (raw === '[DONE]') break outer;
-        try { const delta = JSON.parse(raw)?.choices?.[0]?.delta?.content || ''; if (delta) { full += delta; updateRow(tid, full); } } catch {}
+        try { const delta = JSON.parse(raw)?.choices?.[0]?.delta?.content || ''; if (delta) { full += delta; updateRow(tid, stripAds(full)); } } catch {}
       }
     }
 
-    updateRow(tid, full, true);
-    conv.msgs.push({ role: 'assistant', content: full });
+    const clean = stripAds(full);
+    updateRow(tid, clean, true);
+    conv.msgs.push({ role: 'assistant', content: clean });
     setStatus(`Done · ${MDL_LABEL[model]}`, 'ready');
 
     // Auto-learn from conversation
