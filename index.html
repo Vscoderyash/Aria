@@ -9,55 +9,63 @@
 :root{
 --bg:#f5f0e8;--surface:#fff;--sidebar:#eeebe3;--hover:#e8e3d8;
 --text:#1a1915;--muted:#6b6760;--border:rgba(0,0,0,0.08);
---brand:#c96b3c;--haiku:#5da87e;--sonnet:#c96b3c;--opus:#8b5cf6;
+--brand:#c96b3c;
 }
 [data-theme=dark]{
 --bg:#1a1813;--surface:#222018;--sidebar:#1a1813;--hover:#2a2720;
 --text:#ede8de;--muted:#a09880;--border:rgba(255,255,255,0.06);
---brand:#d97840;--haiku:#4a9a6a;--sonnet:#d97840;--opus:#9b72f8;
+--brand:#d97840;
 }
 body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;}
 .app{display:flex;height:100vh;}
 .sidebar{width:260px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
-.sb-head{padding:16px;border-bottom:1px solid var(--border);}
+.sb-head{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .logo{font-size:18px;font-weight:700;}
+.theme-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;padding:4px 8px;font-size:12px;}
 .new-btn{width:100%;margin:8px 0;padding:10px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;}
 .new-btn:hover{background:var(--hover);}
 .convs{flex:1;overflow-y:auto;padding:8px;}
-.conv{padding:10px;border-radius:8px;cursor:pointer;margin-bottom:2px;font-size:13px;color:var(--muted);}
+.conv{padding:10px;border-radius:8px;cursor:pointer;margin-bottom:2px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .conv:hover,.conv.active{background:var(--hover);color:var(--text);}
 .main{flex:1;display:flex;flex-direction:column;min-width:0;}
 .topbar{height:52px;padding:0 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
 .models{display:flex;gap:4px;background:var(--hover);border-radius:20px;padding:3px;}
 .model{padding:6px 14px;border-radius:20px;background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;}
 .model.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.badge{font-size:10px;background:#4caf50;color:#fff;padding:1px 5px;border-radius:6px;margin-left:4px;}
 .chat{flex:1;overflow-y:auto;padding:32px 20px;}
-.empty{height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px;}
+.empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:18px;}
+.empty p{font-size:13px;}
+.suggestions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px;}
+.sug{padding:8px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;background:var(--surface);transition:.15s;}
+.sug:hover{border-color:var(--brand);color:var(--brand);}
 .msg{margin-bottom:24px;}
 .msg-user{text-align:right;}
-.msg-user-bubble{display:inline-block;max-width:80%;background:var(--surface);border:1px solid var(--border);border-radius:18px 18px 4px 18px;padding:12px 16px;text-align:left;}
+.msg-user-bubble{display:inline-block;max-width:80%;background:var(--surface);border:1px solid var(--border);border-radius:18px 18px 4px 18px;padding:12px 16px;text-align:left;white-space:pre-wrap;word-break:break-word;}
 .msg-ai-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.avatar{width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
-.msg-ai-content{font-size:15px;line-height:1.7;}
-.msg-ai-content pre{background:var(--hover);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0;}
-.msg-ai-content code{background:var(--hover);padding:2px 6px;border-radius:4px;font-size:13px;}
-.msg-ai-content pre code{background:none;padding:0;}
+.avatar{width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
+.msg-ai-content{font-size:15px;line-height:1.7;word-break:break-word;}
 .msg-ai-content p{margin-bottom:8px;}
 .msg-ai-content p:last-child{margin-bottom:0;}
+.msg-ai-content pre{background:var(--hover);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0;font-size:13px;}
+.msg-ai-content code{background:var(--hover);padding:2px 5px;border-radius:4px;font-size:13px;}
+.msg-ai-content pre code{background:none;padding:0;}
 .msg-ai-content h1,.msg-ai-content h2,.msg-ai-content h3{margin:12px 0 6px;}
 .msg-ai-content ul,.msg-ai-content ol{padding-left:20px;margin:6px 0;}
 .msg-ai-content li{margin:3px 0;}
-.error-msg{color:#e05c5c;}
+.msg-ai-content strong{font-weight:600;}
+.msg-ai-content blockquote{border-left:3px solid var(--brand);padding-left:10px;margin:8px 0;color:var(--muted);}
+.error-text{color:#d32f2f;}
 .input-area{padding:16px 20px;border-top:1px solid var(--border);}
-.input-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:12px 16px;display:flex;gap:10px;align-items:center;}
-.input{flex:1;background:none;border:none;outline:none;font-size:15px;color:var(--text);}
+.input-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:12px 16px;display:flex;gap:10px;align-items:flex-end;}
+.input{flex:1;background:none;border:none;outline:none;font-size:15px;color:var(--text);resize:none;max-height:120px;font-family:inherit;line-height:1.5;}
 .send{width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;flex-shrink:0;}
 .send:disabled{opacity:0.4;cursor:not-allowed;}
-.typing{display:flex;gap:4px;padding:12px 0;}
-.td{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite;}
-.td:nth-child(2){animation-delay:0.15s;}
-.td:nth-child(3){animation-delay:0.3s;}
-@keyframes blink{0%,60%,100%{opacity:0.3;}30%{opacity:1;}}
+.typing{display:flex;gap:4px;padding:8px 0;align-items:center;}
+.td{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite;}
+.td:nth-child(2){animation-delay:0.2s;}
+.td:nth-child(3){animation-delay:0.4s;}
+@keyframes blink{0%,60%,100%{opacity:0.2;}30%{opacity:1;}}
 .cursor{display:inline-block;width:2px;height:1em;background:var(--text);vertical-align:text-bottom;animation:cur .7s infinite;}
 @keyframes cur{0%,100%{opacity:1;}50%{opacity:0;}}
 </style>
@@ -67,22 +75,25 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 <div class="sidebar">
 <div class="sb-head">
 <div class="logo">ARIA</div>
-<button class="new-btn" onclick="newChat()">+ New chat</button>
+<button class="theme-btn" onclick="toggleTheme()">&#9790;</button>
 </div>
+<button class="new-btn" onclick="newChat()">+ New chat</button>
 <div class="convs" id="convs"></div>
 </div>
 <div class="main">
 <div class="topbar">
 <div class="models">
-<button class="model" data-m="haiku" onclick="setModel('haiku')">Haiku</button>
-<button class="model active" data-m="sonnet" onclick="setModel('sonnet')">Sonnet</button>
-<button class="model" data-m="opus" onclick="setModel('opus')">Opus</button>
+<button class="model" data-m="fast" onclick="setModel('fast')">Fast<span class="badge">FREE</span></button>
+<button class="model active" data-m="balanced" onclick="setModel('balanced')">Balanced<span class="badge">FREE</span></button>
+<button class="model" data-m="smart" onclick="setModel('smart')">Smart<span class="badge">FREE</span></button>
 </div>
 </div>
 <div class="chat" id="chat"></div>
 <div class="input-area">
 <div class="input-box">
-<input class="input" id="input" placeholder="Message ARIA…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send();}"/>
+<textarea class="input" id="input" placeholder="Message ARIA…" rows="1"
+  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send();}"
+  oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
 <button class="send" id="send" onclick="send()" disabled>
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
 </button>
@@ -92,17 +103,18 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 </div>
 
 <script>
+// Pollinations.ai — completely free, no API key needed
+const API = 'https://text.pollinations.ai/openai';
 const MODELS = {
-  haiku:  'anthropic/claude-haiku-4-5',
-  sonnet: 'anthropic/claude-sonnet-4-5',
-  opus:   'anthropic/claude-opus-4-5'
+  fast:     'mistral',        // fast & free
+  balanced: 'openai',         // GPT-4o quality, free
+  smart:    'openai-large',   // most capable, free
 };
-const KEY = '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';
-const API = 'https://openrouter.ai/api/v1/chat/completions';
 
 let convs = JSON.parse(localStorage.getItem('aria_convs') || '[]');
 let activeId = localStorage.getItem('aria_active');
-let model = localStorage.getItem('aria_model') || 'sonnet';
+let model = localStorage.getItem('aria_model') || 'balanced';
+let busy = false;
 
 const save = () => {
   localStorage.setItem('aria_convs', JSON.stringify(convs));
@@ -110,98 +122,105 @@ const save = () => {
   localStorage.setItem('aria_model', model);
 };
 
+const toggleTheme = () => {
+  const t = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.body.dataset.theme = t;
+  localStorage.setItem('aria_theme', t);
+};
+
 const renderConvs = () => {
-  const el = document.getElementById('convs');
-  el.innerHTML = convs.map(c => {
-    const title = c.msgs.find(m => m.role === 'user')?.content.slice(0, 30) || 'New chat';
-    return `<div class="conv ${c.id === activeId ? 'active' : ''}" onclick="loadConv('${c.id}')">${esc(title)}</div>`;
+  document.getElementById('convs').innerHTML = convs.map(c => {
+    const title = c.msgs.find(m => m.role === 'user')?.content.slice(0, 32) || 'New chat';
+    return `<div class="conv${c.id===activeId?' active':''}" onclick="loadConv('${c.id}')">${esc(title)}</div>`;
   }).join('');
 };
 
 const renderChat = () => {
   const conv = convs.find(c => c.id === activeId);
   const el = document.getElementById('chat');
-  if (!conv || !conv.msgs.length) {
-    el.innerHTML = '<div class="empty">How can I help?</div>';
+  if (!conv?.msgs.length) {
+    el.innerHTML = `<div class="empty">
+      <div style="font-size:2.5rem">✦</div>
+      <strong>What can I help you with?</strong>
+      <p>Powered by Pollinations AI &mdash; completely free</p>
+      <div class="suggestions">
+        <div class="sug" onclick="sendText('Explain machine learning in simple terms')">Explain ML</div>
+        <div class="sug" onclick="sendText('Write a Python web scraper')">Python script</div>
+        <div class="sug" onclick="sendText('Give me 5 startup ideas for 2025')">Startup ideas</div>
+        <div class="sug" onclick="sendText('What are REST API best practices?')">API best practices</div>
+      </div>
+    </div>`;
     return;
   }
   el.innerHTML = conv.msgs.map(m => {
-    if (m.role === 'user') {
-      return `<div class="msg msg-user"><div class="msg-user-bubble">${esc(m.content)}</div></div>`;
-    }
-    const cls = m.error ? 'msg-ai-content error-msg' : 'msg-ai-content';
-    return `<div class="msg"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="${cls}">${m.error ? esc(m.content) : md(m.content)}</div></div>`;
+    if (m.role === 'user') return `<div class="msg msg-user"><div class="msg-user-bubble">${esc(m.content)}</div></div>`;
+    return `<div class="msg"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div>
+      <div class="msg-ai-content${m.error?' error-text':''}">${m.error ? esc(m.content) : md(m.content)}</div></div>`;
   }).join('');
   el.scrollTop = el.scrollHeight;
 };
 
 const newChat = () => {
   const id = Date.now().toString(36);
-  convs.push({ id, msgs: [] });
+  convs.unshift({ id, msgs: [] });
   activeId = id;
-  save();
-  renderConvs();
-  renderChat();
+  save(); renderConvs(); renderChat();
 };
 
-const loadConv = (id) => {
-  activeId = id;
-  save();
-  renderConvs();
-  renderChat();
-};
+const loadConv = id => { activeId = id; save(); renderConvs(); renderChat(); };
 
-const setModel = (m) => {
-  model = m;
-  save();
+const setModel = m => {
+  model = m; save();
   document.querySelectorAll('.model').forEach(b => b.classList.toggle('active', b.dataset.m === m));
 };
 
+const sendText = text => {
+  document.getElementById('input').value = text;
+  send();
+};
+
 const send = async () => {
-  const input = document.getElementById('input');
-  const text = input.value.trim();
+  if (busy) return;
+  const inp = document.getElementById('input');
+  const text = inp.value.trim();
   if (!text) return;
 
   let conv = convs.find(c => c.id === activeId);
   if (!conv) { newChat(); conv = convs.find(c => c.id === activeId); }
 
   conv.msgs.push({ role: 'user', content: text });
-  input.value = '';
+  inp.value = ''; inp.style.height = 'auto';
   document.getElementById('send').disabled = true;
-  save();
-  renderChat();
+  busy = true; save(); renderChat();
 
-  // Add typing indicator
+  // Typing indicator
   const chat = document.getElementById('chat');
-  const typingId = 'typing-' + Date.now();
-  chat.innerHTML += `<div class="msg" id="${typingId}"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="msg-ai-content"><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>`;
+  const tid = 'ty' + Date.now();
+  chat.innerHTML += `<div class="msg" id="${tid}"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
   chat.scrollTop = chat.scrollHeight;
 
   try {
     const resp = await fetch(API, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${KEY}`,
-        'HTTP-Referer': location.origin,
-        'X-Title': 'ARIA',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: MODELS[model],
-        messages: conv.msgs.map(m => ({ role: m.role, content: m.content })),
+        messages: [
+          { role: 'system', content: 'You are ARIA, a helpful and knowledgeable AI assistant. Be concise, clear, and use markdown formatting when helpful.' },
+          ...conv.msgs.map(m => ({ role: m.role, content: m.content }))
+        ],
         stream: true,
       })
     });
 
     if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      throw new Error(err?.error?.message || `HTTP ${resp.status}`);
+      const err = await resp.text();
+      throw new Error(`${resp.status}: ${err.slice(0,200)}`);
     }
 
-    // Remove typing indicator, add streaming bubble
-    document.getElementById(typingId)?.remove();
-    const bubbleId = 'bubble-' + Date.now();
-    chat.innerHTML += `<div class="msg" id="${bubbleId}"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="msg-ai-content" id="content-${bubbleId}"><span class="cursor"></span></div></div>`;
+    document.getElementById(tid)?.remove();
+    const bid = 'b' + Date.now();
+    chat.innerHTML += `<div class="msg" id="${bid}"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="msg-ai-content" id="c${bid}"><span class="cursor"></span></div></div>`;
     chat.scrollTop = chat.scrollHeight;
 
     const reader = resp.body.getReader();
@@ -211,8 +230,7 @@ const send = async () => {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      const lines = dec.decode(value).split('\n');
-      for (const line of lines) {
+      for (const line of dec.decode(value).split('\n')) {
         if (!line.startsWith('data: ')) continue;
         const raw = line.slice(6).trim();
         if (raw === '[DONE]') break;
@@ -220,61 +238,58 @@ const send = async () => {
           const delta = JSON.parse(raw)?.choices?.[0]?.delta?.content || '';
           if (delta) {
             full += delta;
-            const el = document.getElementById('content-' + bubbleId);
+            const el = document.getElementById('c' + bid);
             if (el) { el.innerHTML = md(full) + '<span class="cursor"></span>'; chat.scrollTop = chat.scrollHeight; }
           }
         } catch {}
       }
     }
 
-    // Finalise
-    const el = document.getElementById('content-' + bubbleId);
+    const el = document.getElementById('c' + bid);
     if (el) el.innerHTML = md(full);
     conv.msgs.push({ role: 'assistant', content: full });
-    save();
-    renderConvs();
 
-  } catch (e) {
-    document.getElementById(typingId)?.remove();
-    const errMsg = e.message || 'Unknown error';
-    conv.msgs.push({ role: 'assistant', content: `⚠️ ${errMsg}`, error: true });
-    save();
+  } catch(e) {
+    document.getElementById(tid)?.remove();
+    const msg = e.message || 'Network error';
+    conv.msgs.push({ role: 'assistant', content: '⚠️ ' + msg, error: true });
     renderChat();
   }
 
+  save(); renderConvs();
+  busy = false;
   document.getElementById('send').disabled = false;
   document.getElementById('input').focus();
 };
 
-document.getElementById('input').oninput = (e) => {
-  document.getElementById('send').disabled = !e.target.value.trim();
-};
+const esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-const md = (text) => {
+const md = text => {
   let h = esc(text);
-  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
-    `<pre><code>${esc(code.trim())}</code></pre>`);
+  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_,l,c) => `<pre><code>${esc(c.trim())}</code></pre>`);
   h = h.replace(/`([^`\n]+)`/g, '<code>$1</code>');
   h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   h = h.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
   h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
   h = h.replace(/^## (.+)$/gm, '<h2>$1</h2>');
   h = h.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  h = h.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
   h = h.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>');
   h = h.replace(/(<li>[\s\S]+?<\/li>)/g, '<ul>$1</ul>');
   h = h.replace(/\n\n+/g, '</p><p>');
   h = '<p>' + h + '</p>';
   h = h.replace(/\n/g, '<br>');
-  h = h.replace(/<p>(<br>)*<\/p>/g, '');
+  h = h.replace(/<p>(<br>|\s)*<\/p>/g, '');
   return h;
 };
 
-if (!convs.length || !activeId || !convs.find(c => c.id === activeId)) newChat();
+// Init
+document.body.dataset.theme = localStorage.getItem('aria_theme') || 'light';
+if (!convs.length || !convs.find(c => c.id === activeId)) newChat();
 setModel(model);
 renderConvs();
 renderChat();
+document.getElementById('input').oninput = e => document.getElementById('send').disabled = !e.target.value.trim();
 </script>
 </body>
 </html>
