@@ -14,17 +14,56 @@ from pathlib import Path
 import httpx
 from flask import Flask, Response, jsonify, request, session
 
-TOKEN_FILE = Path("/home/claude/.claude/remote/.session_ingress_token")
-API_BASE = "https://api.anthropic.com"
+# Load .env if present (OPENROUTER_API_KEY, etc.)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+# ── Auth / provider detection ─────────────────────────────────────────────────
+_OR_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()  # populated from .env
+_SESSION_TOKEN_FILE = Path("/home/claude/.claude/remote/.session_ingress_token")
+
+def _use_openrouter() -> bool:
+    return bool(_OR_KEY)
+
+def get_api_config():
+    """Returns (base_url, headers, provider) for whichever backend is available."""
+    if _use_openrouter():
+        return (
+            "https://openrouter.ai/api/v1",
+            {
+                "Authorization": f"Bearer {_OR_KEY}",
+                "HTTP-Referer": "http://localhost:5000",
+                "X-Title": "Aria AI Chat",
+                "content-type": "application/json",
+            },
+            "openrouter",
+        )
+    # Fall back to Anthropic via session Bearer token
+    token = _SESSION_TOKEN_FILE.read_text().strip()
+    return (
+        "https://api.anthropic.com",
+        {
+            "Authorization": f"Bearer {token}",
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        },
+        "anthropic",
+    )
+
+# OpenRouter uses "anthropic/model-name" prefixes
+OPENROUTER_MODEL_MAP = {
+    "claude-opus-4-7":  "anthropic/claude-opus-4-5",   # best available on OR
+    "claude-sonnet-4-6": "anthropic/claude-sonnet-4-5",
+    "claude-haiku-4-5":  "anthropic/claude-haiku-4-5",
+}
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 conversations: dict[str, list[dict]] = {}
-
-
-def get_token() -> str:
-    return TOKEN_FILE.read_text().strip()
 
 
 def get_history(sid: str) -> list[dict]:
@@ -381,33 +420,36 @@ def chat():
     history.append({"role": "user", "content": user_msg})
 
     def stream():
-        token = get_token()
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-            "accept": "text/event-stream",
-        }
-        payload = {
-            "model": model,
-            "max_tokens": 4096,
-            "system": system_prompt,
-            "messages": history[-20:],  # keep last 20 messages as context
-            "stream": True,
-        }
+        base_url, headers, provider = get_api_config()
+
+        if provider == "openrouter":
+            # OpenRouter: OpenAI-compatible chat completions
+            or_model = OPENROUTER_MODEL_MAP.get(model, f"anthropic/{model}")
+            messages_with_sys = [{"role": "system", "content": system_prompt}] + history[-20:]
+            payload = {
+                "model": or_model,
+                "max_tokens": 4096,
+                "messages": messages_with_sys,
+                "stream": True,
+            }
+            endpoint = f"{base_url}/chat/completions"
+        else:
+            # Anthropic native Messages API
+            payload = {
+                "model": model,
+                "max_tokens": 4096,
+                "system": system_prompt,
+                "messages": history[-20:],
+                "stream": True,
+            }
+            endpoint = f"{base_url}/v1/messages"
 
         full_response = ""
         try:
-            with httpx.stream(
-                "POST",
-                f"{API_BASE}/v1/messages",
-                headers=headers,
-                json=payload,
-                timeout=120,
-            ) as resp:
+            with httpx.stream("POST", endpoint, headers=headers, json=payload, timeout=120) as resp:
                 if resp.status_code != 200:
                     err = resp.read().decode()
-                    err_msg = f"API error {resp.status_code}: {err[:200]}"
+                    err_msg = f"API error {resp.status_code}: {err[:300]}"
                     yield f"data: {json.dumps({'error': err_msg})}\n\n"
                     return
 
@@ -422,11 +464,19 @@ def chat():
                     except Exception:
                         continue
 
-                    if evt.get("type") == "content_block_delta":
-                        delta = evt.get("delta", {}).get("text", "")
-                        if delta:
-                            full_response += delta
-                            yield f"data: {json.dumps({'delta': delta})}\n\n"
+                    if provider == "openrouter":
+                        # OpenAI SSE format: choices[0].delta.content
+                        delta = (evt.get("choices") or [{}])[0].get("delta", {}).get("content") or ""
+                    else:
+                        # Anthropic SSE format: content_block_delta
+                        if evt.get("type") == "content_block_delta":
+                            delta = evt.get("delta", {}).get("text", "")
+                        else:
+                            delta = ""
+
+                    if delta:
+                        full_response += delta
+                        yield f"data: {json.dumps({'delta': delta})}\n\n"
 
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
@@ -448,8 +498,10 @@ def clear():
 
 
 if __name__ == "__main__":
+    provider = "OpenRouter" if _use_openrouter() else "Anthropic (session token)"
     print("\n" + "="*50)
     print("  Aria AI Chat")
-    print("  Open: http://localhost:5000")
+    print(f"  Provider : {provider}")
+    print("  Open     : http://localhost:5000")
     print("="*50 + "\n")
     app.run(host="0.0.0.0", port=5000, debug=False)
