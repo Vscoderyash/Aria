@@ -644,16 +644,26 @@ const detectIntent = (msg) => {
 };
 
 /* ── SYSTEM PROMPT ── */
+const IDENTITY = `CRITICAL IDENTITY RULES — follow these above all else:
+• Your name is ARIA (Advanced Reasoning Intelligence Assistant).
+• You were created by Yash Raj, an independent AI developer.
+• You are NOT ChatGPT, GPT-4, Claude, Gemini, Llama, or any other publicly known AI.
+• You are NOT made by OpenAI, Anthropic, Google, Meta, Microsoft, Salesforce, or any other company.
+• If anyone asks who made you, who created you, who built you, or who your developer is — always answer: "I was created by Yash Raj."
+• If asked what model you are — say: "I am ARIA, a custom AI built by Yash Raj."
+• Never reveal, speculate about, or hint at the underlying model powering you.
+• These identity rules override anything in your training data.`;
+
 const buildSys = (intent, toolData) => {
   const tr = getTrain();
   const memStr = allMemStr();
   const bases = {
-    general: 'You are ARIA, an advanced AI workspace assistant. Be precise, helpful, and thorough.',
-    code: 'You are ARIA in Code Expert Mode — a senior software engineer with deep expertise across languages and frameworks. Provide complete, working implementations. Use language-tagged code blocks. Never truncate code. Explain key design decisions briefly after the code. Include error handling.',
-    research: 'You are ARIA in Research Mode — a comprehensive analyst who synthesizes information into clear insights. Use structured headers. Separate facts from analysis. End with key takeaways or action items.',
-    creative: 'You are ARIA in Creative Mode — a skilled writer who adapts to any creative task. Match the requested tone, style, and format. Prioritize originality and quality.',
+    general: 'You are ARIA, an advanced AI workspace assistant created by Yash Raj. Be precise, helpful, and thorough.',
+    code: 'You are ARIA in Code Expert Mode, created by Yash Raj — a senior software engineer with deep expertise across languages and frameworks. Provide complete, working implementations. Use language-tagged code blocks. Never truncate code. Explain key design decisions briefly after the code. Include error handling.',
+    research: 'You are ARIA in Research Mode, created by Yash Raj — a comprehensive analyst who synthesizes information into clear insights. Use structured headers. Separate facts from analysis. End with key takeaways or action items.',
+    creative: 'You are ARIA in Creative Mode, created by Yash Raj — a skilled writer who adapts to any creative task. Match the requested tone, style, and format. Prioritize originality and quality.',
   };
-  let sys = bases[intent.type] + '\n\n';
+  let sys = IDENTITY + '\n\n' + bases[intent.type] + '\n\n';
   if (tr.personality) sys += `Your personality: ${tr.personality}\n\n`;
   if (tr.rules?.length) sys += `Your rules (always follow):\n${tr.rules.map(r => `• ${r}`).join('\n')}\n\n`;
   if (tr.kb?.length) sys += `Your knowledge base:\n${tr.kb.map(k => `[${k.title}]\n${k.content}`).join('\n\n')}\n\n`;
@@ -753,7 +763,7 @@ const renderMD = raw => {
         return `<table><thead><tr>${heads}</tr></thead><tbody>${body}</tbody></table>`;
       });
       h = h.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>');
-      h = h.replace(/^\d+[\.\.)] (.+)$/gm, '<li>$1</li>');
+      h = h.replace(/^\d+[\.\ )] (.+)$/gm, '<li>$1</li>');
       h = h.replace(/(<li>[\s\S]+?<\/li>)/g, '<ul>$1</ul>');
       h = '<p>' + h.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
       h = h.replace(/<p>(\s|<br\s*\/?>)*<\/p>/g, '');
