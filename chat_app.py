@@ -55,7 +55,7 @@ def get_api_config():
 
 # OpenRouter uses "anthropic/model-name" prefixes
 OPENROUTER_MODEL_MAP = {
-    "claude-opus-4-7":  "anthropic/claude-opus-4-5",   # best available on OR
+    "claude-opus-4-7":  "anthropic/claude-opus-4-5",
     "claude-sonnet-4-6": "anthropic/claude-sonnet-4-5",
     "claude-haiku-4-5":  "anthropic/claude-haiku-4-5",
 }
@@ -86,7 +86,6 @@ HTML = """<!DOCTYPE html>
   body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;
     height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
-  /* ── Header ── */
   header{display:flex;align-items:center;justify-content:space-between;
     padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--border);
     box-shadow:0 2px 12px rgba(0,0,0,.4)}
@@ -99,9 +98,7 @@ HTML = """<!DOCTYPE html>
     background:var(--surface2);color:var(--text);cursor:pointer;font-size:.85rem;
     transition:all .15s}
   .btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
-  .btn-icon{padding:7px 10px}
 
-  /* ── Sidebar ── */
   .layout{display:flex;flex:1;overflow:hidden}
   aside{width:240px;background:var(--surface);border-right:1px solid var(--border);
     display:flex;flex-direction:column;padding:12px;gap:8px;overflow-y:auto}
@@ -117,7 +114,6 @@ HTML = """<!DOCTYPE html>
   .model-select:focus{outline:none;border-color:var(--accent)}
   .stat{font-size:.78rem;color:var(--muted);padding:4px 8px}
 
-  /* ── Chat area ── */
   main{flex:1;display:flex;flex-direction:column;overflow:hidden}
   #messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
   #messages::-webkit-scrollbar{width:5px}
@@ -165,7 +161,6 @@ HTML = """<!DOCTYPE html>
     cursor:pointer;font-size:.85rem;transition:all .15s;background:var(--surface2)}
   .suggestion:hover{border-color:var(--accent);color:var(--accent2)}
 
-  /* ── Input bar ── */
   .input-bar{padding:16px 20px;background:var(--surface);border-top:1px solid var(--border)}
   .input-wrap{display:flex;align-items:flex-end;gap:10px;max-width:860px;margin:0 auto;
     background:var(--surface2);border:1px solid var(--border);border-radius:14px;
@@ -423,7 +418,6 @@ def chat():
         base_url, headers, provider = get_api_config()
 
         if provider == "openrouter":
-            # OpenRouter: OpenAI-compatible chat completions
             or_model = OPENROUTER_MODEL_MAP.get(model, f"anthropic/{model}")
             messages_with_sys = [{"role": "system", "content": system_prompt}] + history[-20:]
             payload = {
@@ -434,7 +428,6 @@ def chat():
             }
             endpoint = f"{base_url}/chat/completions"
         else:
-            # Anthropic native Messages API
             payload = {
                 "model": model,
                 "max_tokens": 4096,
@@ -465,10 +458,8 @@ def chat():
                         continue
 
                     if provider == "openrouter":
-                        # OpenAI SSE format: choices[0].delta.content
                         delta = (evt.get("choices") or [{}])[0].get("delta", {}).get("content") or ""
                     else:
-                        # Anthropic SSE format: content_block_delta
                         if evt.get("type") == "content_block_delta":
                             delta = evt.get("delta", {}).get("text", "")
                         else:
