@@ -26,28 +26,40 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 .convs{flex:1;overflow-y:auto;padding:8px;}
 .conv{padding:10px;border-radius:8px;cursor:pointer;margin-bottom:2px;font-size:13px;color:var(--muted);}
 .conv:hover,.conv.active{background:var(--hover);color:var(--text);}
-.main{flex:1;display:flex;flex-direction:column;}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
 .topbar{height:52px;padding:0 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
 .models{display:flex;gap:4px;background:var(--hover);border-radius:20px;padding:3px;}
-.model{padding:6px 14px;border-radius:20px;background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;}
+.model{padding:6px 14px;border-radius:20px;background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;}
 .model.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
 .chat{flex:1;overflow-y:auto;padding:32px 20px;}
+.empty{height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px;}
 .msg{margin-bottom:24px;}
 .msg-user{text-align:right;}
 .msg-user-bubble{display:inline-block;max-width:80%;background:var(--surface);border:1px solid var(--border);border-radius:18px 18px 4px 18px;padding:12px 16px;text-align:left;}
 .msg-ai-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .avatar{width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;}
 .msg-ai-content{font-size:15px;line-height:1.7;}
+.msg-ai-content pre{background:var(--hover);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0;}
+.msg-ai-content code{background:var(--hover);padding:2px 6px;border-radius:4px;font-size:13px;}
+.msg-ai-content pre code{background:none;padding:0;}
+.msg-ai-content p{margin-bottom:8px;}
+.msg-ai-content p:last-child{margin-bottom:0;}
+.msg-ai-content h1,.msg-ai-content h2,.msg-ai-content h3{margin:12px 0 6px;}
+.msg-ai-content ul,.msg-ai-content ol{padding-left:20px;margin:6px 0;}
+.msg-ai-content li{margin:3px 0;}
+.error-msg{color:#e05c5c;}
 .input-area{padding:16px 20px;border-top:1px solid var(--border);}
 .input-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:12px 16px;display:flex;gap:10px;align-items:center;}
 .input{flex:1;background:none;border:none;outline:none;font-size:15px;color:var(--text);}
-.send{width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.send:disabled{background:var(--border);cursor:not-allowed;}
+.send{width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;flex-shrink:0;}
+.send:disabled{opacity:0.4;cursor:not-allowed;}
 .typing{display:flex;gap:4px;padding:12px 0;}
 .td{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite;}
 .td:nth-child(2){animation-delay:0.15s;}
 .td:nth-child(3){animation-delay:0.3s;}
 @keyframes blink{0%,60%,100%{opacity:0.3;}30%{opacity:1;}}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--text);vertical-align:text-bottom;animation:cur .7s infinite;}
+@keyframes cur{0%,100%{opacity:1;}50%{opacity:0;}}
 </style>
 </head>
 <body data-theme="light">
@@ -81,11 +93,12 @@ body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text)
 
 <script>
 const MODELS = {
-  haiku: 'anthropic/claude-haiku-4-5',
+  haiku:  'anthropic/claude-haiku-4-5',
   sonnet: 'anthropic/claude-sonnet-4-5',
-  opus: 'anthropic/claude-opus-4-5'
+  opus:   'anthropic/claude-opus-4-5'
 };
-const KEY = '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';
+const KEY = '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';
+const API = 'https://openrouter.ai/api/v1/chat/completions';
 
 let convs = JSON.parse(localStorage.getItem('aria_convs') || '[]');
 let activeId = localStorage.getItem('aria_active');
@@ -101,7 +114,7 @@ const renderConvs = () => {
   const el = document.getElementById('convs');
   el.innerHTML = convs.map(c => {
     const title = c.msgs.find(m => m.role === 'user')?.content.slice(0, 30) || 'New chat';
-    return `<div class="conv ${c.id === activeId ? 'active' : ''}" onclick="loadConv('${c.id}')">${title}</div>`;
+    return `<div class="conv ${c.id === activeId ? 'active' : ''}" onclick="loadConv('${c.id}')">${esc(title)}</div>`;
   }).join('');
 };
 
@@ -109,14 +122,15 @@ const renderChat = () => {
   const conv = convs.find(c => c.id === activeId);
   const el = document.getElementById('chat');
   if (!conv || !conv.msgs.length) {
-    el.innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px;">How can I help?</div>';
+    el.innerHTML = '<div class="empty">How can I help?</div>';
     return;
   }
   el.innerHTML = conv.msgs.map(m => {
     if (m.role === 'user') {
       return `<div class="msg msg-user"><div class="msg-user-bubble">${esc(m.content)}</div></div>`;
     }
-    return `<div class="msg"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="msg-ai-content">${md(m.content)}</div></div>`;
+    const cls = m.error ? 'msg-ai-content error-msg' : 'msg-ai-content';
+    return `<div class="msg"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="${cls}">${m.error ? esc(m.content) : md(m.content)}</div></div>`;
   }).join('');
   el.scrollTop = el.scrollHeight;
 };
@@ -157,36 +171,79 @@ const send = async () => {
   save();
   renderChat();
 
+  // Add typing indicator
   const chat = document.getElementById('chat');
-  chat.innerHTML += '<div class="msg"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>';
+  const typingId = 'typing-' + Date.now();
+  chat.innerHTML += `<div class="msg" id="${typingId}"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="msg-ai-content"><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>`;
   chat.scrollTop = chat.scrollHeight;
 
   try {
-    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const resp = await fetch(API, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${KEY}`,
-        'HTTP-Referer': 'https://aria-sigma-gold.vercel.app',
+        'HTTP-Referer': location.origin,
+        'X-Title': 'ARIA',
       },
       body: JSON.stringify({
         model: MODELS[model],
         messages: conv.msgs.map(m => ({ role: m.role, content: m.content })),
-        stream: false,
+        stream: true,
       })
     });
 
-    const data = await resp.json();
-    const reply = data.choices?.[0]?.message?.content || 'Error';
-    conv.msgs.push({ role: 'assistant', content: reply });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${resp.status}`);
+    }
+
+    // Remove typing indicator, add streaming bubble
+    document.getElementById(typingId)?.remove();
+    const bubbleId = 'bubble-' + Date.now();
+    chat.innerHTML += `<div class="msg" id="${bubbleId}"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="msg-ai-content" id="content-${bubbleId}"><span class="cursor"></span></div></div>`;
+    chat.scrollTop = chat.scrollHeight;
+
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let full = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const lines = dec.decode(value).split('\n');
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (raw === '[DONE]') break;
+        try {
+          const delta = JSON.parse(raw)?.choices?.[0]?.delta?.content || '';
+          if (delta) {
+            full += delta;
+            const el = document.getElementById('content-' + bubbleId);
+            if (el) { el.innerHTML = md(full) + '<span class="cursor"></span>'; chat.scrollTop = chat.scrollHeight; }
+          }
+        } catch {}
+      }
+    }
+
+    // Finalise
+    const el = document.getElementById('content-' + bubbleId);
+    if (el) el.innerHTML = md(full);
+    conv.msgs.push({ role: 'assistant', content: full });
     save();
-    renderChat();
+    renderConvs();
+
   } catch (e) {
-    conv.msgs.push({ role: 'assistant', content: `⚠ ${e.message}` });
+    document.getElementById(typingId)?.remove();
+    const errMsg = e.message || 'Unknown error';
+    conv.msgs.push({ role: 'assistant', content: `⚠️ ${errMsg}`, error: true });
+    save();
     renderChat();
   }
 
   document.getElementById('send').disabled = false;
+  document.getElementById('input').focus();
 };
 
 document.getElementById('input').oninput = (e) => {
@@ -197,13 +254,16 @@ const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','
 
 const md = (text) => {
   let h = esc(text);
-  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => `<pre style="background:var(--hover);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0;"><code>${esc(code.trim())}</code></pre>`);
-  h = h.replace(/`([^`\n]+)`/g, '<code style="background:var(--hover);padding:2px 6px;border-radius:4px;">$1</code>');
+  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
+    `<pre><code>${esc(code.trim())}</code></pre>`);
+  h = h.replace(/`([^`\n]+)`/g, '<code>$1</code>');
   h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   h = h.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-  h = h.replace(/^### (.+)$/gm, '<h3 style="margin:12px 0 6px;">$1</h3>');
-  h = h.replace(/^## (.+)$/gm, '<h2 style="margin:14px 0 8px;">$1</h2>');
-  h = h.replace(/^# (.+)$/gm, '<h1 style="margin:16px 0 8px;">$1</h1>');
+  h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  h = h.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  h = h.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  h = h.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>');
+  h = h.replace(/(<li>[\s\S]+?<\/li>)/g, '<ul>$1</ul>');
   h = h.replace(/\n\n+/g, '</p><p>');
   h = '<p>' + h + '</p>';
   h = h.replace(/\n/g, '<br>');
@@ -211,7 +271,7 @@ const md = (text) => {
   return h;
 };
 
-if (!convs.length) newChat();
+if (!convs.length || !activeId || !convs.find(c => c.id === activeId)) newChat();
 setModel(model);
 renderConvs();
 renderChat();
