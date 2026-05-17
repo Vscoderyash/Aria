@@ -2,181 +2,506 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ARIA</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ARIA — AI Assistant</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 *{margin:0;padding:0;box-sizing:border-box;}
+
 :root{
---bg:#f5f0e8;--surface:#fff;--sidebar:#eeebe3;--hover:#e8e3d8;
---text:#1a1915;--muted:#6b6760;--border:rgba(0,0,0,0.08);
---brand:#c96b3c;
+  --c1:#6c47ff;--c2:#a855f7;--c3:#06b6d4;
+  --bg:#08080f;--glass:rgba(255,255,255,0.04);--glass2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+  --text:#f0eeff;--muted:#888aaa;--dim:#3a3a55;
+  --user:#1e1535;--ai:#0e0e1a;
+  --r:16px;
 }
-[data-theme=dark]{
---bg:#1a1813;--surface:#222018;--sidebar:#1a1813;--hover:#2a2720;
---text:#ede8de;--muted:#a09880;--border:rgba(255,255,255,0.06);
---brand:#d97840;
+
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;}
+
+/* ── Animated background ── */
+.bg-glow{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 10% 0%, rgba(108,71,255,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 90% 100%, rgba(168,85,247,.14) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(6,182,212,.06) 0%, transparent 70%);
 }
-body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;}
-.app{display:flex;height:100vh;}
-.sidebar{width:260px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;}
-.sb-head{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.logo{font-size:18px;font-weight:700;}
-.theme-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);cursor:pointer;padding:4px 8px;font-size:12px;}
-.new-btn{width:100%;margin:8px 0;padding:10px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;}
-.new-btn:hover{background:var(--hover);}
-.convs{flex:1;overflow-y:auto;padding:8px;}
-.conv{padding:10px;border-radius:8px;cursor:pointer;margin-bottom:2px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.conv:hover,.conv.active{background:var(--hover);color:var(--text);}
+
+.app{position:relative;z-index:1;display:flex;height:100vh;}
+
+/* ── Sidebar ── */
+.sidebar{
+  width:260px;flex-shrink:0;
+  background:rgba(10,10,20,0.7);
+  backdrop-filter:blur(20px);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transition:width .25s;
+}
+
+.sb-top{
+  padding:20px 16px 12px;
+  border-bottom:1px solid var(--border);
+}
+
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-size:20px;font-weight:700;letter-spacing:-.5px;
+  margin-bottom:14px;
+}
+.logo-icon{
+  width:32px;height:32px;border-radius:10px;
+  background:linear-gradient(135deg,var(--c1),var(--c2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;
+}
+.logo-text{background:linear-gradient(90deg,#fff,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+.new-btn{
+  width:100%;padding:10px 14px;
+  background:var(--glass2);border:1px solid var(--border2);
+  border-radius:12px;color:var(--muted);
+  cursor:pointer;font-size:13px;font-family:inherit;
+  display:flex;align-items:center;gap:8px;
+  transition:all .15s;
+}
+.new-btn:hover{background:rgba(108,71,255,.2);border-color:rgba(108,71,255,.4);color:#fff;}
+.new-btn svg{opacity:.6;}
+
+.convs-label{
+  font-size:10px;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--dim);padding:14px 16px 6px;
+}
+.convs{flex:1;overflow-y:auto;padding:4px 8px;}
+.convs::-webkit-scrollbar{width:3px;}
+.convs::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px;}
+
+.conv{
+  padding:10px 12px;border-radius:10px;
+  cursor:pointer;font-size:13px;color:var(--muted);
+  margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  transition:all .12s;
+}
+.conv:hover{background:var(--glass2);color:var(--text);}
+.conv.active{
+  background:rgba(108,71,255,.18);
+  color:#c4b5fd;
+  border:1px solid rgba(108,71,255,.25);
+}
+
+.sb-footer{padding:12px 16px;border-top:1px solid var(--border);}
+.theme-row{display:flex;gap:6px;}
+.theme-btn{
+  flex:1;padding:7px;border-radius:8px;
+  background:var(--glass);border:1px solid var(--border);
+  color:var(--muted);cursor:pointer;font-size:11px;
+  transition:all .15s;
+}
+.theme-btn:hover{background:var(--glass2);color:var(--text);}
+
+/* ── Main ── */
 .main{flex:1;display:flex;flex-direction:column;min-width:0;}
-.topbar{height:52px;padding:0 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
-.models{display:flex;gap:4px;background:var(--hover);border-radius:20px;padding:3px;}
-.model{padding:6px 14px;border-radius:20px;background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;}
-.model.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
-.badge{font-size:10px;background:#4caf50;color:#fff;padding:1px 5px;border-radius:6px;margin-left:4px;}
-.chat{flex:1;overflow-y:auto;padding:32px 20px;}
-.empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--muted);font-size:18px;}
-.empty p{font-size:13px;}
-.suggestions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px;}
-.sug{padding:8px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;background:var(--surface);transition:.15s;}
-.sug:hover{border-color:var(--brand);color:var(--brand);}
-.msg{margin-bottom:24px;}
-.msg-user{text-align:right;}
-.msg-user-bubble{display:inline-block;max-width:80%;background:var(--surface);border:1px solid var(--border);border-radius:18px 18px 4px 18px;padding:12px 16px;text-align:left;white-space:pre-wrap;word-break:break-word;}
-.msg-ai-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.avatar{width:26px;height:26px;border-radius:8px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
-.msg-ai-content{font-size:15px;line-height:1.7;word-break:break-word;}
-.msg-ai-content p{margin-bottom:8px;}
-.msg-ai-content p:last-child{margin-bottom:0;}
-.msg-ai-content pre{background:var(--hover);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0;font-size:13px;}
-.msg-ai-content code{background:var(--hover);padding:2px 5px;border-radius:4px;font-size:13px;}
-.msg-ai-content pre code{background:none;padding:0;}
-.msg-ai-content h1,.msg-ai-content h2,.msg-ai-content h3{margin:12px 0 6px;}
-.msg-ai-content ul,.msg-ai-content ol{padding-left:20px;margin:6px 0;}
-.msg-ai-content li{margin:3px 0;}
-.msg-ai-content strong{font-weight:600;}
-.msg-ai-content blockquote{border-left:3px solid var(--brand);padding-left:10px;margin:8px 0;color:var(--muted);}
-.error-text{color:#d32f2f;}
-.input-area{padding:16px 20px;border-top:1px solid var(--border);}
-.input-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:12px 16px;display:flex;gap:10px;align-items:flex-end;}
-.input{flex:1;background:none;border:none;outline:none;font-size:15px;color:var(--text);resize:none;max-height:120px;font-family:inherit;line-height:1.5;}
-.send{width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;flex-shrink:0;}
-.send:disabled{opacity:0.4;cursor:not-allowed;}
-.typing{display:flex;gap:4px;padding:8px 0;align-items:center;}
-.td{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite;}
-.td:nth-child(2){animation-delay:0.2s;}
-.td:nth-child(3){animation-delay:0.4s;}
-@keyframes blink{0%,60%,100%{opacity:0.2;}30%{opacity:1;}}
-.cursor{display:inline-block;width:2px;height:1em;background:var(--text);vertical-align:text-bottom;animation:cur .7s infinite;}
-@keyframes cur{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* ── Top bar ── */
+.topbar{
+  height:58px;padding:0 20px;
+  border-bottom:1px solid var(--border);
+  background:rgba(8,8,15,.6);backdrop-filter:blur(16px);
+  display:flex;align-items:center;justify-content:space-between;
+}
+
+.model-tabs{display:flex;gap:4px;background:rgba(255,255,255,.05);border-radius:14px;padding:4px;}
+.mtab{
+  padding:7px 18px;border-radius:10px;
+  background:none;border:none;font-size:12px;font-weight:500;
+  color:var(--muted);cursor:pointer;transition:all .15s;
+  font-family:inherit;
+}
+.mtab.active{
+  background:linear-gradient(135deg,var(--c1),var(--c2));
+  color:#fff;box-shadow:0 2px 12px rgba(108,71,255,.4);
+}
+.free-pill{
+  font-size:9px;background:rgba(16,185,129,.2);color:#34d399;
+  border:1px solid rgba(16,185,129,.3);border-radius:5px;
+  padding:1px 5px;margin-left:4px;font-weight:600;
+}
+
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.status-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#34d399;box-shadow:0 0 6px #34d399;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.status-text{font-size:12px;color:var(--muted);}
+
+/* ── Chat ── */
+.chat-wrap{flex:1;overflow-y:auto;padding:32px 0;}
+.chat-wrap::-webkit-scrollbar{width:4px;}
+.chat-wrap::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px;}
+
+.chat-inner{max-width:760px;margin:0 auto;padding:0 24px;}
+
+/* Empty state */
+.empty{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  min-height:60vh;text-align:center;gap:14px;
+}
+.empty-icon{
+  width:64px;height:64px;border-radius:20px;
+  background:linear-gradient(135deg,var(--c1),var(--c2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;margin-bottom:4px;
+  box-shadow:0 8px 32px rgba(108,71,255,.3);
+}
+.empty h2{font-size:22px;font-weight:600;}
+.empty p{font-size:14px;color:var(--muted);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px;max-width:540px;}
+.chip{
+  padding:10px 16px;border-radius:12px;
+  background:var(--glass2);border:1px solid var(--border2);
+  cursor:pointer;font-size:13px;color:var(--muted);
+  transition:all .15s;
+}
+.chip:hover{background:rgba(108,71,255,.18);border-color:rgba(108,71,255,.35);color:#c4b5fd;}
+
+/* Messages */
+.msg{display:flex;gap:12px;margin-bottom:28px;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.msg.user{flex-direction:row-reverse;}
+
+.msg-avatar{
+  width:32px;height:32px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;margin-top:2px;
+}
+.msg.user .msg-avatar{background:linear-gradient(135deg,#4f3a9e,var(--c1));}
+.msg.assistant .msg-avatar{background:linear-gradient(135deg,var(--c1),var(--c2));}
+
+.msg-body{max-width:640px;min-width:0;}
+.msg-name{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;}
+.msg.user .msg-name{text-align:right;}
+
+.bubble{
+  padding:14px 18px;border-radius:16px;
+  font-size:15px;line-height:1.7;word-break:break-word;
+}
+.msg.user .bubble{
+  background:linear-gradient(135deg,rgba(108,71,255,.2),rgba(168,85,247,.15));
+  border:1px solid rgba(108,71,255,.25);
+  border-radius:16px 4px 16px 16px;
+  white-space:pre-wrap;
+}
+.msg.assistant .bubble{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:4px 16px 16px 16px;
+}
+
+.bubble p{margin-bottom:10px;}
+.bubble p:last-child{margin-bottom:0;}
+.bubble pre{
+  background:rgba(0,0,0,.4);border:1px solid var(--border2);
+  border-radius:10px;padding:14px;overflow-x:auto;
+  margin:12px 0;font-size:13px;line-height:1.6;
+}
+.bubble code{
+  background:rgba(108,71,255,.15);color:#c4b5fd;
+  padding:2px 7px;border-radius:5px;font-size:13px;
+}
+.bubble pre code{background:none;color:#e2e8f0;padding:0;}
+.bubble h1,.bubble h2,.bubble h3{margin:14px 0 8px;font-weight:600;}
+.bubble h1{font-size:18px;}
+.bubble h2{font-size:16px;}
+.bubble h3{font-size:15px;}
+.bubble ul,.bubble ol{padding-left:22px;margin:8px 0;}
+.bubble li{margin:4px 0;}
+.bubble strong{color:#c4b5fd;font-weight:600;}
+.bubble em{color:#a5b4fc;}
+.bubble blockquote{
+  border-left:3px solid var(--c1);padding-left:14px;
+  margin:10px 0;color:var(--muted);
+}
+.bubble a{color:#818cf8;text-decoration:underline;}
+
+.cursor{
+  display:inline-block;width:2px;height:1em;
+  background:var(--c2);vertical-align:text-bottom;
+  animation:blink .65s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+.typing-bubble{
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:4px 16px 16px 16px;
+  padding:16px 20px;display:inline-flex;gap:6px;align-items:center;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--dim);animation:bounce 1.3s infinite;}
+.dot:nth-child(2){animation-delay:.15s;}
+.dot:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+
+.error-bubble{
+  background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);
+  border-radius:4px 16px 16px 16px;
+  padding:14px 18px;color:#f87171;font-size:15px;
+}
+
+/* ── Input ── */
+.input-area{
+  padding:16px 24px 20px;
+  background:rgba(8,8,15,.7);backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+}
+.input-inner{max-width:760px;margin:0 auto;}
+
+.input-box{
+  display:flex;align-items:flex-end;gap:12px;
+  background:var(--glass2);border:1px solid var(--border2);
+  border-radius:18px;padding:12px 14px;
+  transition:border-color .2s;
+}
+.input-box:focus-within{border-color:rgba(108,71,255,.5);box-shadow:0 0 0 3px rgba(108,71,255,.08);}
+
+#input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--text);font-size:15px;resize:none;
+  max-height:140px;font-family:inherit;line-height:1.6;
+  min-height:24px;
+}
+#input::placeholder{color:var(--dim);}
+
+.send-btn{
+  width:38px;height:38px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--c1),var(--c2));
+  color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;
+  box-shadow:0 2px 12px rgba(108,71,255,.3);
+}
+.send-btn:hover{transform:scale(1.05);box-shadow:0 4px 20px rgba(108,71,255,.5);}
+.send-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;}
+
+.input-hint{
+  font-size:11px;color:var(--dim);text-align:center;margin-top:8px;
+}
 </style>
 </head>
-<body data-theme="light">
+<body>
+<div class="bg-glow"></div>
 <div class="app">
-<div class="sidebar">
-<div class="sb-head">
-<div class="logo">ARIA</div>
-<button class="theme-btn" onclick="toggleTheme()">&#9790;</button>
-</div>
-<button class="new-btn" onclick="newChat()">+ New chat</button>
-<div class="convs" id="convs"></div>
-</div>
-<div class="main">
-<div class="topbar">
-<div class="models">
-<button class="model" data-m="fast" onclick="setModel('fast')">Fast<span class="badge">FREE</span></button>
-<button class="model active" data-m="balanced" onclick="setModel('balanced')">Balanced<span class="badge">FREE</span></button>
-<button class="model" data-m="smart" onclick="setModel('smart')">Smart<span class="badge">FREE</span></button>
-</div>
-</div>
-<div class="chat" id="chat"></div>
-<div class="input-area">
-<div class="input-box">
-<textarea class="input" id="input" placeholder="Message ARIA…" rows="1"
-  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send();}"
-  oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
-<button class="send" id="send" onclick="send()" disabled>
-<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-</button>
-</div>
-</div>
-</div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-top">
+      <div class="logo">
+        <div class="logo-icon">A</div>
+        <span class="logo-text">ARIA</span>
+      </div>
+      <button class="new-btn" onclick="newChat()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New conversation
+      </button>
+    </div>
+    <div class="convs-label">Recent</div>
+    <div class="convs" id="convs"></div>
+    <div class="sb-footer">
+      <div class="theme-row">
+        <button class="theme-btn" onclick="setTheme('dark')">&#9790; Dark</button>
+        <button class="theme-btn" onclick="setTheme('light')">&#9728; Light</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="model-tabs">
+        <button class="mtab" data-m="fast" onclick="setModel('fast')">Fast<span class="free-pill">FREE</span></button>
+        <button class="mtab active" data-m="balanced" onclick="setModel('balanced')">Balanced<span class="free-pill">FREE</span></button>
+        <button class="mtab" data-m="smart" onclick="setModel('smart')">Smart<span class="free-pill">FREE</span></button>
+      </div>
+      <div class="topbar-right">
+        <div class="status-dot"></div>
+        <span class="status-text">Pollinations AI</span>
+      </div>
+    </div>
+
+    <div class="chat-wrap" id="chatWrap">
+      <div class="chat-inner" id="chat"></div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-inner">
+        <div class="input-box">
+          <textarea id="input" placeholder="Message ARIA…" rows="1"
+            oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px';updateSend()"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send();}"></textarea>
+          <button class="send-btn" id="sendBtn" onclick="send()" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+        <div class="input-hint">Enter to send &nbsp;&middot;&nbsp; Shift+Enter for new line &nbsp;&middot;&nbsp; 100% free, no account needed</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-// Pollinations.ai — completely free, no API key needed
 const API = 'https://text.pollinations.ai/openai';
-const MODELS = {
-  fast:     'mistral',        // fast & free
-  balanced: 'openai',         // GPT-4o quality, free
-  smart:    'openai-large',   // most capable, free
-};
+const MODELS = { fast:'mistral', balanced:'openai', smart:'openai-large' };
+const SYS = 'You are ARIA, a brilliant and friendly AI assistant. Give clear, helpful responses and use markdown formatting (code blocks, bold, lists) when it enhances clarity.';
 
-let convs = JSON.parse(localStorage.getItem('aria_convs') || '[]');
+let convs = JSON.parse(localStorage.getItem('aria_convs')||'[]');
 let activeId = localStorage.getItem('aria_active');
-let model = localStorage.getItem('aria_model') || 'balanced';
+let model = localStorage.getItem('aria_model')||'balanced';
 let busy = false;
 
 const save = () => {
-  localStorage.setItem('aria_convs', JSON.stringify(convs));
+  localStorage.setItem('aria_convs', JSON.stringify(convs.slice(0,40)));
   localStorage.setItem('aria_active', activeId);
   localStorage.setItem('aria_model', model);
 };
 
-const toggleTheme = () => {
-  const t = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
-  document.body.dataset.theme = t;
+const updateSend = () => {
+  document.getElementById('sendBtn').disabled = busy || !document.getElementById('input').value.trim();
+};
+
+const setTheme = t => {
+  // Toggle between pure dark and a softer light-ish dark
+  const r = document.documentElement;
+  if(t === 'light'){
+    r.style.setProperty('--bg','#f8f7ff');
+    r.style.setProperty('--glass','rgba(0,0,0,0.03)');
+    r.style.setProperty('--glass2','rgba(0,0,0,0.05)');
+    r.style.setProperty('--border','rgba(0,0,0,0.08)');
+    r.style.setProperty('--border2','rgba(0,0,0,0.12)');
+    r.style.setProperty('--text','#1a1730');
+    r.style.setProperty('--muted','#6b6b8a');
+    r.style.setProperty('--dim','#b0afc8');
+    r.style.setProperty('--ai','#f3f2ff');
+    r.style.setProperty('--user','#ede9ff');
+    document.querySelector('.main').style.background='rgba(248,247,255,.9)';
+  } else {
+    r.removeAttribute('style');
+    document.querySelector('.main').style.background='';
+  }
   localStorage.setItem('aria_theme', t);
 };
 
 const renderConvs = () => {
-  document.getElementById('convs').innerHTML = convs.map(c => {
-    const title = c.msgs.find(m => m.role === 'user')?.content.slice(0, 32) || 'New chat';
+  document.getElementById('convs').innerHTML = convs.map(c=>{
+    const title = c.msgs.find(m=>m.role==='user')?.content.slice(0,36) || 'New chat';
     return `<div class="conv${c.id===activeId?' active':''}" onclick="loadConv('${c.id}')">${esc(title)}</div>`;
   }).join('');
 };
 
-const renderChat = () => {
-  const conv = convs.find(c => c.id === activeId);
-  const el = document.getElementById('chat');
-  if (!conv?.msgs.length) {
-    el.innerHTML = `<div class="empty">
-      <div style="font-size:2.5rem">✦</div>
-      <strong>What can I help you with?</strong>
-      <p>Powered by Pollinations AI &mdash; completely free</p>
-      <div class="suggestions">
-        <div class="sug" onclick="sendText('Explain machine learning in simple terms')">Explain ML</div>
-        <div class="sug" onclick="sendText('Write a Python web scraper')">Python script</div>
-        <div class="sug" onclick="sendText('Give me 5 startup ideas for 2025')">Startup ideas</div>
-        <div class="sug" onclick="sendText('What are REST API best practices?')">API best practices</div>
-      </div>
-    </div>`;
-    return;
+const showEmpty = () => {
+  document.getElementById('chat').innerHTML = `
+  <div class="empty">
+    <div class="empty-icon">✨</div>
+    <h2>How can I help you today?</h2>
+    <p>Powered by Pollinations AI &mdash; free forever, no account needed</p>
+    <div class="chips">
+      <div class="chip" onclick="quick('Explain how transformers work in AI')">How do AI transformers work?</div>
+      <div class="chip" onclick="quick('Write a Python async web scraper')">Python web scraper</div>
+      <div class="chip" onclick="quick('Give me 5 unique SaaS ideas for 2025')">SaaS ideas for 2025</div>
+      <div class="chip" onclick="quick('What are the SOLID principles in programming?')">SOLID principles</div>
+      <div class="chip" onclick="quick('Write a professional cold email template')">Cold email template</div>
+      <div class="chip" onclick="quick('Explain quantum computing simply')">Quantum computing</div>
+    </div>
+  </div>`;
+};
+
+const quick = text => { document.getElementById('input').value = text; updateSend(); send(); };
+
+const appendMsg = (role, content='', typing=false, error=false) => {
+  const chat = document.getElementById('chat');
+  const isUser = role === 'user';
+  const id = 'msg' + Date.now() + Math.random().toString(36).slice(2);
+
+  let inner;
+  if (typing) {
+    inner = `<div class="typing-bubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  } else if (error) {
+    inner = `<div class="error-bubble">⚠️ ${esc(content)}</div>`;
+  } else if (isUser) {
+    inner = `<div class="bubble">${esc(content)}</div>`;
+  } else {
+    inner = `<div class="bubble">${md(content)}<span class="cursor"></span></div>`;
   }
-  el.innerHTML = conv.msgs.map(m => {
-    if (m.role === 'user') return `<div class="msg msg-user"><div class="msg-user-bubble">${esc(m.content)}</div></div>`;
-    return `<div class="msg"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div>
-      <div class="msg-ai-content${m.error?' error-text':''}">${m.error ? esc(m.content) : md(m.content)}</div></div>`;
-  }).join('');
-  el.scrollTop = el.scrollHeight;
+
+  chat.innerHTML += `
+  <div class="msg ${role}" id="${id}">
+    <div class="msg-avatar">${isUser?'U':'A'}</div>
+    <div class="msg-body">
+      <div class="msg-name">${isUser?'You':'ARIA'}</div>
+      ${inner}
+    </div>
+  </div>`;
+
+  document.getElementById('chatWrap').scrollTop = 99999;
+  return id;
+};
+
+const updateMsg = (id, text, done=false) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const bubble = el.querySelector('.bubble');
+  if (bubble) {
+    bubble.innerHTML = md(text) + (done ? '' : '<span class="cursor"></span>');
+    document.getElementById('chatWrap').scrollTop = 99999;
+  }
 };
 
 const newChat = () => {
   const id = Date.now().toString(36);
   convs.unshift({ id, msgs: [] });
   activeId = id;
-  save(); renderConvs(); renderChat();
+  save(); renderConvs(); showEmpty();
+  document.getElementById('input').focus();
 };
 
-const loadConv = id => { activeId = id; save(); renderConvs(); renderChat(); };
+const loadConv = id => {
+  activeId = id; save(); renderConvs();
+  const conv = convs.find(c=>c.id===id);
+  if (!conv?.msgs.length) { showEmpty(); return; }
+  const chat = document.getElementById('chat');
+  chat.innerHTML = '';
+  for (const m of conv.msgs) {
+    if (m.role==='user') appendMsgStatic('user', m.content);
+    else appendMsgStatic('assistant', m.content, m.error);
+  }
+};
+
+const appendMsgStatic = (role, content, error=false) => {
+  const chat = document.getElementById('chat');
+  const isUser = role==='user';
+  chat.innerHTML += `
+  <div class="msg ${role}">
+    <div class="msg-avatar">${isUser?'U':'A'}</div>
+    <div class="msg-body">
+      <div class="msg-name">${isUser?'You':'ARIA'}</div>
+      ${error
+        ? `<div class="error-bubble">⚠️ ${esc(content)}</div>`
+        : isUser
+          ? `<div class="bubble">${esc(content)}</div>`
+          : `<div class="bubble">${md(content)}</div>`
+      }
+    </div>
+  </div>`;
+  document.getElementById('chatWrap').scrollTop = 99999;
+};
 
 const setModel = m => {
   model = m; save();
-  document.querySelectorAll('.model').forEach(b => b.classList.toggle('active', b.dataset.m === m));
-};
-
-const sendText = text => {
-  document.getElementById('input').value = text;
-  send();
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.toggle('active',b.dataset.m===m));
 };
 
 const send = async () => {
@@ -185,80 +510,70 @@ const send = async () => {
   const text = inp.value.trim();
   if (!text) return;
 
-  let conv = convs.find(c => c.id === activeId);
-  if (!conv) { newChat(); conv = convs.find(c => c.id === activeId); }
+  let conv = convs.find(c=>c.id===activeId);
+  if (!conv) { newChat(); conv = convs.find(c=>c.id===activeId); }
 
-  conv.msgs.push({ role: 'user', content: text });
-  inp.value = ''; inp.style.height = 'auto';
-  document.getElementById('send').disabled = true;
-  busy = true; save(); renderChat();
+  // Clear empty state if first message
+  if (!conv.msgs.length) document.getElementById('chat').innerHTML = '';
 
-  // Typing indicator
-  const chat = document.getElementById('chat');
-  const tid = 'ty' + Date.now();
-  chat.innerHTML += `<div class="msg" id="${tid}"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
-  chat.scrollTop = chat.scrollHeight;
+  conv.msgs.push({ role:'user', content:text });
+  inp.value=''; inp.style.height='auto';
+  busy = true; updateSend(); save();
+
+  appendMsg('user', text);
+  const tid = appendMsg('assistant', '', true);
 
   try {
     const resp = await fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         model: MODELS[model],
         messages: [
-          { role: 'system', content: 'You are ARIA, a helpful and knowledgeable AI assistant. Be concise, clear, and use markdown formatting when helpful.' },
-          ...conv.msgs.map(m => ({ role: m.role, content: m.content }))
+          {role:'system', content:SYS},
+          ...conv.msgs.map(m=>({role:m.role, content:m.content}))
         ],
         stream: true,
       })
     });
 
-    if (!resp.ok) {
-      const err = await resp.text();
-      throw new Error(`${resp.status}: ${err.slice(0,200)}`);
-    }
+    if (!resp.ok) { throw new Error(`Server error ${resp.status}`); }
 
-    document.getElementById(tid)?.remove();
-    const bid = 'b' + Date.now();
-    chat.innerHTML += `<div class="msg" id="${bid}"><div class="msg-ai-header"><div class="avatar">A</div><span>ARIA</span></div><div class="msg-ai-content" id="c${bid}"><span class="cursor"></span></div></div>`;
-    chat.scrollTop = chat.scrollHeight;
+    // Replace typing with streaming bubble
+    const typingEl = document.getElementById(tid);
+    if (typingEl) typingEl.querySelector('.msg-body').innerHTML =
+      '<div class="msg-name">ARIA</div><div class="bubble"><span class="cursor"></span></div>';
 
     const reader = resp.body.getReader();
     const dec = new TextDecoder();
     let full = '';
 
     while (true) {
-      const { done, value } = await reader.read();
+      const {done, value} = await reader.read();
       if (done) break;
       for (const line of dec.decode(value).split('\n')) {
         if (!line.startsWith('data: ')) continue;
         const raw = line.slice(6).trim();
-        if (raw === '[DONE]') break;
+        if (raw==='[DONE]') break;
         try {
-          const delta = JSON.parse(raw)?.choices?.[0]?.delta?.content || '';
-          if (delta) {
-            full += delta;
-            const el = document.getElementById('c' + bid);
-            if (el) { el.innerHTML = md(full) + '<span class="cursor"></span>'; chat.scrollTop = chat.scrollHeight; }
-          }
-        } catch {}
+          const delta = JSON.parse(raw)?.choices?.[0]?.delta?.content||'';
+          if (delta) { full+=delta; updateMsg(tid, full); }
+        } catch{}
       }
     }
 
-    const el = document.getElementById('c' + bid);
-    if (el) el.innerHTML = md(full);
-    conv.msgs.push({ role: 'assistant', content: full });
+    updateMsg(tid, full, true);
+    conv.msgs.push({role:'assistant', content:full});
 
   } catch(e) {
-    document.getElementById(tid)?.remove();
-    const msg = e.message || 'Network error';
-    conv.msgs.push({ role: 'assistant', content: '⚠️ ' + msg, error: true });
-    renderChat();
+    const typingEl = document.getElementById(tid);
+    if (typingEl) typingEl.querySelector('.msg-body').innerHTML =
+      `<div class="msg-name">ARIA</div><div class="error-bubble">⚠️ ${esc(e.message||'Something went wrong')}</div>`;
+    conv.msgs.push({role:'assistant', content:e.message||'Error', error:true});
   }
 
   save(); renderConvs();
-  busy = false;
-  document.getElementById('send').disabled = false;
+  busy = false; updateSend();
   document.getElementById('input').focus();
 };
 
@@ -266,30 +581,29 @@ const esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'
 
 const md = text => {
   let h = esc(text);
-  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_,l,c) => `<pre><code>${esc(c.trim())}</code></pre>`);
-  h = h.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  h = h.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-  h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-  h = h.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-  h = h.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-  h = h.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
-  h = h.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>');
-  h = h.replace(/(<li>[\s\S]+?<\/li>)/g, '<ul>$1</ul>');
-  h = h.replace(/\n\n+/g, '</p><p>');
-  h = '<p>' + h + '</p>';
-  h = h.replace(/\n/g, '<br>');
-  h = h.replace(/<p>(<br>|\s)*<\/p>/g, '');
+  h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_,l,c)=>`<pre><code>${esc(c.trim())}</code></pre>`);
+  h = h.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  h = h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  h = h.replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
+  h = h.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  h = h.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  h = h.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  h = h.replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
+  h = h.replace(/^[*-] (.+)$/gm,'<li>$1</li>');
+  h = h.replace(/(<li>[\s\S]+?<\/li>)/g,'<ul>$1</ul>');
+  h = h.replace(/\n\n+/g,'</p><p>');
+  h = '<p>'+h+'</p>';
+  h = h.replace(/\n/g,'<br>');
+  h = h.replace(/<p>(<br>|\s)*<\/p>/g,'');
   return h;
 };
 
 // Init
-document.body.dataset.theme = localStorage.getItem('aria_theme') || 'light';
-if (!convs.length || !convs.find(c => c.id === activeId)) newChat();
+if (localStorage.getItem('aria_theme')==='light') setTheme('light');
+if (!convs.length || !convs.find(c=>c.id===activeId)) newChat();
+else { renderConvs(); loadConv(activeId); }
 setModel(model);
-renderConvs();
-renderChat();
-document.getElementById('input').oninput = e => document.getElementById('send').disabled = !e.target.value.trim();
+document.getElementById('input').focus();
 </script>
 </body>
 </html>
