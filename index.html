@@ -477,6 +477,10 @@ const extractMem = (userMsg) => {
     { re: /i work (?:at|for) ([A-Z][A-Za-z0-9\s]{1,40}?)[\.\,\?!]/i, key: 'user employer' },
     { re: /my (?:company|startup|business) (?:is |called )?([A-Z][A-Za-z0-9\s]{1,40}?)[\.\,\?!]/i, key: 'user company' },
     { re: /(?:i use|i prefer|my preferred)(?: language| stack)? (?:is )?([A-Za-z+#\s]{2,20}?)[\.\,\?!]/i, key: 'preferred tech' },
+    { re: /i(?:'m| am) (?:based |living |working )?in ([A-Z][A-Za-z\s,]{2,30}?)[\.,\?!]/i, key: 'user location' },
+    { re: /i work (?:at|for) ([A-Z][A-Za-z0-9\s]{1,40}?)[\.,\?!]/i, key: 'user employer' },
+    { re: /my (?:company|startup|business) (?:is |called )?([A-Z][A-Za-z0-9\s]{1,40}?)[\.,\?!]/i, key: 'user company' },
+    { re: /(?:i use|i prefer|my preferred)(?: language| stack)? (?:is )?([A-Za-z+#\s]{2,20}?)[\.,\?!]/i, key: 'preferred tech' },
   ];
   const m = getMem(); let changed = false;
   for (const { re, key } of patterns) {
