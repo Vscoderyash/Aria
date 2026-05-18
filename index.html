@@ -473,6 +473,10 @@ const extractMem = (userMsg) => {
   const patterns = [
     { re: /(?:my name is|i'm called|call me)\s+([A-Z][a-z]+(?: [A-Z][a-z]+)?)/i, key: 'user name' },
     { re: /i(?:'m| am) (?:a |an )?([a-z]+(?: [a-z]+)? (?:developer|engineer|designer|manager|founder|student|teacher|doctor|lawyer|analyst|researcher|writer|architect))/i, key: 'user role' },
+    { re: /i(?:'m| am) (?:based |living |working )?in ([A-Z][A-Za-z\s,]{2,30}?)[\.\,\?!]/i, key: 'user location' },
+    { re: /i work (?:at|for) ([A-Z][A-Za-z0-9\s]{1,40}?)[\.\,\?!]/i, key: 'user employer' },
+    { re: /my (?:company|startup|business) (?:is |called )?([A-Z][A-Za-z0-9\s]{1,40}?)[\.\,\?!]/i, key: 'user company' },
+    { re: /(?:i use|i prefer|my preferred)(?: language| stack)? (?:is )?([A-Za-z+#\s]{2,20}?)[\.\,\?!]/i, key: 'preferred tech' },
     { re: /i(?:'m| am) (?:based |living |working )?in ([A-Z][A-Za-z\s,]{2,30}?)[\.,\?!]/i, key: 'user location' },
     { re: /i work (?:at|for) ([A-Z][A-Za-z0-9\s]{1,40}?)[\.,\?!]/i, key: 'user employer' },
     { re: /my (?:company|startup|business) (?:is |called )?([A-Z][A-Za-z0-9\s]{1,40}?)[\.,\?!]/i, key: 'user company' },
@@ -777,7 +781,7 @@ const renderMD = raw => {
         return `<table><thead><tr>${heads}</tr></thead><tbody>${body}</tbody></table>`;
       });
       h = h.replace(/^[\*\-] (.+)$/gm, '<li>$1</li>');
-      h = h.replace(/^\d+[\.\ )] (.+)$/gm, '<li>$1</li>');
+      h = h.replace(/^\d+[\.\)] (.+)$/gm, '<li>$1</li>');
       h = h.replace(/(<li>[\s\S]+?<\/li>)/g, '<ul>$1</ul>');
       h = '<p>' + h.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
       h = h.replace(/<p>(\s|<br\s*\/?>)*<\/p>/g, '');
