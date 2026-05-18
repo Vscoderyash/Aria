@@ -823,7 +823,7 @@ button { cursor: pointer; }
           <label class="tool-btn" title="Attach file">+
             <input id="fileInput" type="file" accept=".txt,.md,.csv,.json,.js,.ts,.html,.css,.py" hidden>
           </label>
-          <textarea id="input" rows="1" placeholder="Ask ARIA to write code, design a screen, plan a feature, debug, or explain anything..."></textarea>
+          <textarea id="input" rows="1" placeholder="Message ARIA... ask anything, write code, design, debug, explain, or plan"></textarea>
           <button class="send-btn" id="sendBtn" disabled>➜</button>
         </div>
       </div>
@@ -1189,6 +1189,43 @@ Use this style: ${style}
 - Add a sample in Teach Example.
 - ARIA will mirror that house style locally.${shape.rules}`;
 }
+function chatTemplate(text, matches) {
+  const clean = text.trim();
+  const lo = clean.toLowerCase();
+  if (/^(hi|hello|hey|yo|hii|hlo)\b/.test(lo)) {
+    return `Hey, I am here.
+
+Ask me anything: I can help you write code, design a page, plan an app, improve UI, explain an idea, or draft something.`;
+  }
+  if (/(can you|will you|could you|help me)/i.test(clean)) {
+    return `Yes. Tell me what you want to make or ask, and I will help step by step.
+
+For code, send the feature or bug.
+For design, tell me the screen or style.
+For writing, tell me the tone and audience.
+
+I will reply directly in this chat and keep the training/settings quiet in the side panel.`;
+  }
+  if (matches.length) {
+    return `I found relevant local context and I will use it.
+
+${matches.map(m => `**${m.title}**\n${topSnippets(clean, m.content, 2)}`).join('\n\n')}
+
+Based on that, here is my reply: tell me the exact result you want and I will shape it into code, design, or a plan.`;
+  }
+  return `I understand.
+
+You said: **${clean}**
+
+Here is how I can help:
+- turn it into code
+- design the UI
+- make a step-by-step plan
+- explain it simply
+- improve the wording or structure
+
+Ask it like: "write code for...", "design...", "fix this...", or "explain...".`;
+}
 function generalTemplate(text, matches) {
   const shape = answerShape(text, 'general', matches);
   if (matches.length) {
@@ -1200,19 +1237,7 @@ Based on local memory and knowledge, here is the strongest useful answer I can g
 
 Use the matched context above as the source of truth. For a sharper answer, add one example of the exact style or outcome you want.${shape.memory}${shape.rules}`;
   }
-  return `## Direct answer
-
-I can help with this, but I do not have enough local training data yet to answer it at full strength.
-
-## What I can infer
-You asked: **${text}**
-
-## Best next move
-- Add a knowledge note if this depends on facts.
-- Attach a file if this depends on project context.
-- Teach one ideal answer if this depends on style.
-
-Once you do that, ARIA will reuse it silently in future answers.${shape.memory}${shape.rules}`;
+  return chatTemplate(text, matches);
 }
 function generateReply(text) {
   learnFromUser(text);
@@ -1261,8 +1286,8 @@ function renderMessages() {
     root.innerHTML = `
       <div class="empty">
         <div class="eyebrow">Claude calm · ChatGPT speed · local memory</div>
-        <h1>What should<br>we build?</h1>
-        <p>Ask ARIA to write code, design interfaces, debug errors, plan features, or explain ideas. It keeps training quietly in the background when enabled, without adding training noise to chat.</p>
+        <h1>How can I<br>help?</h1>
+        <p>Chat normally. Ask ARIA to write code, design interfaces, debug errors, plan features, explain ideas, or improve anything. It replies in the conversation and keeps learning quietly when enabled.</p>
         <div class="hero-composer">
           <div class="hero-prompt-row">
             <input class="hero-input" id="heroInput" placeholder="Message ARIA about code, design, bugs, ideas, or a full app...">
