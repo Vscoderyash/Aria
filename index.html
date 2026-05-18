@@ -317,7 +317,7 @@ button { cursor: pointer; }
   padding: 26px 28px 20px;
 }
 .inner {
-  max-width: 860px;
+  max-width: 900px;
   margin: 0 auto;
 }
 .empty {
@@ -368,8 +368,39 @@ button { cursor: pointer; }
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr);
   gap: 12px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--border-soft);
+  padding: 18px 0;
+}
+.msg.user {
+  grid-template-columns: minmax(0, 1fr) 36px;
+}
+.msg.user .avatar {
+  grid-column: 2;
+  grid-row: 1;
+}
+.msg.user .msg-card {
+  grid-column: 1;
+  justify-self: end;
+  max-width: min(720px, 92%);
+  background: color-mix(in oklab, var(--accent-soft) 45%, var(--bg-surface));
+  border-color: color-mix(in oklab, var(--accent) 38%, var(--border));
+}
+.msg.assistant .msg-card {
+  background: color-mix(in oklab, var(--bg-surface) 88%, transparent);
+}
+.msg-card {
+  position: relative;
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: 0 16px 50px rgba(0,0,0,.10);
+}
+.msg-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.035), transparent 45%);
 }
 .avatar {
   width: 34px;
@@ -400,12 +431,38 @@ button { cursor: pointer; }
   font-size: 10px;
   text-transform: uppercase;
 }
+.msg-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 12px;
+  opacity: 0;
+  transition: opacity .16s var(--ease);
+}
+.msg-card:hover .msg-actions { opacity: 1; }
+.action-btn {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-base);
+  color: var(--text-dim);
+  padding: 5px 9px;
+  font-size: 11px;
+}
+.action-btn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
 .prose {
   color: var(--text);
   line-height: 1.72;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.prose ul {
+  margin: 8px 0 8px 20px;
+  padding: 0;
+}
+.prose li { margin: 4px 0; }
+.prose strong { color: color-mix(in oklab, var(--text) 88%, var(--accent)); }
 .prose h1,
 .prose h2,
 .prose h3 { margin: 18px 0 8px; line-height: 1.2; }
@@ -961,8 +1018,27 @@ function exampleMatch(text) {
     .filter(ex => ex.score > 0)
     .sort((a, b) => b.score - a.score)[0] || null;
 }
+function memorySummary() {
+  const entries = Object.entries(train.memories).slice(0, 6);
+  return entries.length ? entries.map(([k, v]) => `- ${k}: ${v.value}`).join('\n') : '- No saved memories yet.';
+}
+function ruleSummary() {
+  return train.rules.length ? train.rules.slice(0, 5).map(r => `- ${r}`).join('\n') : '- No custom rules yet.';
+}
+function contextBlock(text, matches) {
+  if (!matches.length) return '';
+  return `\n\n## Local context\n${matches.map(m => `**${m.type}: ${m.title}**\n${topSnippets(text, m.content, depth === 'deep' ? 4 : 2)}`).join('\n\n')}`;
+}
+function answerShape(text, intent, matches) {
+  const ctx = contextBlock(text, matches);
+  const memory = depth === 'deep' ? `\n\n## Memory considered\n${memorySummary()}` : '';
+  const rules = depth !== 'fast' ? `\n\n## Style rules followed\n${ruleSummary()}` : '';
+  return { ctx, memory, rules, intent };
+}
 function identityAnswer() {
-  return 'I am ARIA, a local learning AI workspace created by Yash Raj.\n\nI am not using an external AI API. I learn from the rules, memories, examples, knowledge documents, files, and corrections you save in this browser.';
+  return `I am ARIA, a local learning AI workspace created by Yash Raj.
+
+I am not using an external AI API. I learn from rules, memories, examples, knowledge documents, files, corrections, and chat training when the user allows it in Settings.`;
 }
 function trainingStatus() {
   return `## ARIA learning status
@@ -981,69 +1057,81 @@ ${train.rules.map(r => `- ${r}`).join('\n')}
 The brain is local. Each saved rule, memory, document, and example changes how ARIA answers next time.`;
 }
 function codeTemplate(text, matches) {
-  const context = matches.length ? `\n\n## Local context used\n${matches.map(m => `**${m.type}: ${m.title}**\n${topSnippets(text, m.content)}`).join('\n\n')}` : '';
-  return `## Local code reasoning
+  const shape = answerShape(text, 'code', matches);
+  return `## Implementation mode
 
-I can build this from the repo/training context without calling an AI API.${context}
+I will treat this like a senior coding task: define the behavior, produce complete code, and keep the patch testable. No cloud model or API is used.${shape.ctx}
 
-\`\`\`text
-Goal: ${text}
-Input: tell ARIA the target file or exact behavior
-Output: complete implementation or patch
-Checks: syntax, local scan, and browser verification when possible
-\`\`\`
+## Working plan
+- Clarify the target file, component, or error.
+- Use saved project knowledge, examples, and attached files first.
+- Return a complete implementation, not a vague outline.
+- Include checks that can run locally.
 
-Send the file or exact feature and I will produce the implementation from local context.`;
+## Ready next
+Send the target file or exact feature and I will turn this into code.${shape.memory}${shape.rules}`;
 }
 function researchTemplate(text, matches) {
+  const shape = answerShape(text, 'research', matches);
   if (!matches.length) {
-    return `## Offline analysis
+    return `## Local analysis
 
-I do not have enough local knowledge saved for a high-confidence answer yet.
+I do not have enough saved local knowledge for a high-confidence answer yet. I will not invent live facts.
 
-Add facts in the Knowledge panel or attach a file, then ask again. I will rank and synthesize that local material instead of using a web/API model.`;
+## How to make this strong
+- Add source notes in Knowledge.
+- Attach files or project docs.
+- Teach one ideal answer as an example.
+- Ask again and ARIA will rank, compare, and synthesize that local material.${shape.memory}${shape.rules}`;
   }
-  return `## Offline analysis
+  return `## Local analysis
 
-${matches.map(m => `**${m.type}: ${m.title}**\n${topSnippets(text, m.content)}`).join('\n\n')}
+${matches.map(m => `**${m.type}: ${m.title}**\n${topSnippets(text, m.content, depth === 'deep' ? 4 : 2)}`).join('\n\n')}
 
-## Takeaway
+## Synthesis
 
-Based on local training, the strongest answer is grounded in the saved material above. Add more documents to make this domain stronger.`;
+The strongest answer is grounded in the saved material above. If you want a more detailed report, add more notes or files and switch depth to Deep.${shape.rules}`;
 }
 function creativeTemplate(text, matches) {
+  const shape = answerShape(text, 'creative', matches);
   const style = matches[0] ? topSnippets(text, matches[0].content, 2) : train.personality;
-  return `## Draft
+  return `## Draft direction
 
 ${text}
 
-## Direction
+## Voice
 
 Use this style: ${style}
 
-Give me the audience, length, and tone and I will refine the output using the saved local examples.`;
+## Upgrade path
+- Give audience, tone, and target length.
+- Add a sample in Teach Example.
+- ARIA will mirror that house style locally.${shape.rules}`;
 }
 function generalTemplate(text, matches) {
+  const shape = answerShape(text, 'general', matches);
   if (matches.length) {
-    return `## Answer from ARIA memory
+    return `## Best answer
 
-${matches.map(m => `**${m.type}: ${m.title}**\n${topSnippets(text, m.content)}`).join('\n\n')}
+Based on local memory and knowledge, here is the strongest useful answer I can give right now.${shape.ctx}
 
-## Response
+## Recommendation
 
-That is the most relevant local context I found. I will keep improving as you add more memories, documents, and taught examples.`;
+Use the matched context above as the source of truth. For a sharper answer, add one example of the exact style or outcome you want.${shape.memory}${shape.rules}`;
   }
-  return `I understand: **${text}**
+  return `## Direct answer
 
-I am running offline, so I answer from local learning only. I do not yet have enough saved knowledge for a deep answer on this topic.
+I can help with this, but I do not have enough local training data yet to answer it at full strength.
 
-Teach me by adding:
-- a memory
-- a knowledge document
-- an example answer
-- an attached file
+## What I can infer
+You asked: **${text}**
 
-Then ask again and I will use that training immediately.`;
+## Best next move
+- Add a knowledge note if this depends on facts.
+- Attach a file if this depends on project context.
+- Teach one ideal answer if this depends on style.
+
+Once you do that, ARIA will reuse it silently in future answers.${shape.memory}${shape.rules}`;
 }
 function generateReply(text) {
   learnFromUser(text);
@@ -1090,28 +1178,48 @@ function renderMessages() {
   if (!chat.messages.length) {
     root.innerHTML = `
       <div class="empty">
-        <div class="eyebrow">Offline local intelligence</div>
-        <h1>Teach ARIA.<br>Then ask.</h1>
-        <p>ARIA now uses a local learning brain: memory, rules, knowledge documents, taught examples, attached files, and deterministic reasoning. Chat training is ${train.settings.trainFromChats ? 'on' : 'off'} in Settings. No API calls. No cloud model.</p>
+        <div class="eyebrow">Private local intelligence</div>
+        <h1>Ask anything.<br>Train quietly.</h1>
+        <p>ARIA blends a clean Claude-style writing surface with ChatGPT-like controls. Learning happens in the background when enabled, without adding training messages to the conversation.</p>
         <div class="starter-grid">
-          <button class="starter" data-prompt="Show my current ARIA training status"><strong>Training status</strong><span>See what ARIA has learned locally</span></button>
-          <button class="starter" data-prompt="Who created you and are you using any API?"><strong>Identity check</strong><span>Verify no external AI API is used</span></button>
-          <button class="starter" data-prompt="Remember that my project is Aria local AI"><strong>Teach memory</strong><span>Save a fact automatically</span></button>
-          <button class="starter" data-prompt="Analyze this project from your local knowledge"><strong>Local analysis</strong><span>Use saved docs and memories</span></button>
+          <button class="starter" data-prompt="Help me design a better AI workspace experience"><strong>Design with me</strong><span>Product thinking and UX structure</span></button>
+          <button class="starter" data-prompt="Write a complete HTML CSS JS feature from my description"><strong>Build a feature</strong><span>Implementation mode with local context</span></button>
+          <button class="starter" data-prompt="Analyze my idea and give me a practical action plan"><strong>Think it through</strong><span>Research-style local reasoning</span></button>
+          <button class="starter" data-prompt="Draft a polished message with a confident tone"><strong>Write sharply</strong><span>Creative mode shaped by examples</span></button>
         </div>
       </div>`;
     $$('.starter').forEach(btn => btn.addEventListener('click', () => quick(btn.dataset.prompt)));
     return;
   }
-  root.innerHTML = chat.messages.map(m => `
+  root.innerHTML = chat.messages.map((m, i) => `
     <div class="msg ${m.role}">
       <div class="avatar">${m.role === 'user' ? 'U' : 'A'}</div>
-      <div>
+      <div class="msg-card">
         <div class="msg-head"><span class="msg-name">${m.role === 'user' ? 'You' : 'ARIA'}</span><span class="msg-mode">${m.role === 'assistant' ? m.mode || mode : ''}</span></div>
         <div class="prose">${renderMarkdown(m.content)}</div>
+        <div class="msg-actions">
+          <button class="action-btn" data-copy-msg="${i}">Copy</button>
+          ${m.role === 'assistant' ? `<button class="action-btn" data-teach-msg="${i}">Teach preference</button>` : ''}
+        </div>
       </div>
     </div>`).join('');
+  $$('[data-copy-msg]').forEach(btn => btn.addEventListener('click', () => navigator.clipboard.writeText(chat.messages[Number(btn.dataset.copyMsg)].content)));
+  $$('[data-teach-msg]').forEach(btn => btn.addEventListener('click', () => teachMessagePreference(Number(btn.dataset.teachMsg))));
   $('#messages').scrollTop = $('#messages').scrollHeight;
+}
+function teachMessagePreference(index) {
+  const chat = activeChat();
+  const assistant = chat.messages[index];
+  if (!assistant || assistant.role !== 'assistant') return;
+  const user = [...chat.messages.slice(0, index)].reverse().find(m => m.role === 'user');
+  if (!user) return;
+  train.examples.unshift({
+    prompt: user.content,
+    answer: assistant.content,
+    ts: Date.now(),
+    manual: true
+  });
+  persistTrain();
 }
 function renderRail() {
   const tab = $('.rail-tab.on').dataset.tab;
