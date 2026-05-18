@@ -321,7 +321,11 @@ button { cursor: pointer; }
   margin: 0 auto;
 }
 .empty {
-  padding: 48px 0;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 46px 0 30px;
 }
 .eyebrow {
   font-family: var(--font-mono);
@@ -334,20 +338,69 @@ button { cursor: pointer; }
   margin: 10px 0 10px;
   font-family: var(--font-display);
   font-style: italic;
-  font-size: clamp(42px, 7vw, 86px);
+  font-size: clamp(46px, 7vw, 92px);
   line-height: .95;
   letter-spacing: -.04em;
 }
 .empty p {
-  max-width: 640px;
+  max-width: 700px;
   color: var(--text-muted);
   font-size: 16px;
+}
+.hero-composer {
+  max-width: 780px;
+  margin-top: 24px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: color-mix(in oklab, var(--bg-surface) 92%, transparent);
+  padding: 14px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.18);
+}
+.hero-prompt-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.hero-input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  color: var(--text);
+  background: transparent;
+  font-size: 15px;
+  min-height: 32px;
+}
+.hero-send {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--accent);
+  color: var(--bg-base);
+  background: var(--accent);
+}
+.prompt-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.prompt-pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-base);
+  color: var(--text-muted);
+  padding: 7px 10px;
+  font-size: 12px;
+}
+.prompt-pill:hover {
+  color: var(--text);
+  border-color: var(--accent);
 }
 .starter-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 26px;
+  margin-top: 20px;
 }
 .starter {
   min-height: 92px;
@@ -720,7 +773,7 @@ button { cursor: pointer; }
       <div class="brand-mark">A</div>
       <div>
         <div class="brand-name">ARIA</div>
-        <div class="brand-meta">local learning intelligence</div>
+        <div class="brand-meta">chat · code · design</div>
       </div>
     </div>
     <div class="header-center">
@@ -770,17 +823,17 @@ button { cursor: pointer; }
           <label class="tool-btn" title="Attach file">+
             <input id="fileInput" type="file" accept=".txt,.md,.csv,.json,.js,.ts,.html,.css,.py" hidden>
           </label>
-          <textarea id="input" rows="1" placeholder="Ask ARIA. It learns from memory, rules, examples, knowledge, and attached files."></textarea>
+          <textarea id="input" rows="1" placeholder="Ask ARIA to write code, design a screen, plan a feature, debug, or explain anything..."></textarea>
           <button class="send-btn" id="sendBtn" disabled>➜</button>
         </div>
       </div>
-      <div class="input-foot">No API. No cloud model. Everything here runs from local browser training and saved knowledge.</div>
+      <div class="input-foot">Claude-like planning, ChatGPT-style chat, local memory. No API or cloud model.</div>
     </div>
   </main>
 
   <aside class="panel">
     <div class="panel-head">
-      <div class="panel-title">Training Console</div>
+      <div class="panel-title">Memory & Settings</div>
       <button class="mini-btn" id="teachLastBtn">Teach last answer</button>
     </div>
     <div class="panel-body">
@@ -985,6 +1038,7 @@ function learnFromInteraction(userText, assistantText) {
 function detectMode(text) {
   if (mode !== 'auto') return mode;
   const lo = text.toLowerCase();
+  if (/\b(design|ui|ux|layout|screen|page|interface|component|theme|style|visual|wireframe|prototype)\b/.test(lo)) return 'design';
   if (/\b(code|function|html|css|javascript|python|bug|error|debug|api|component|repo|git)\b/.test(lo)) return 'code';
   if (/\b(research|analyze|compare|report|market|data|study|evaluate|summary)\b/.test(lo)) return 'research';
   if (/\b(write|email|story|caption|script|blog|poem|creative|copy)\b/.test(lo)) return 'creative';
@@ -1058,18 +1112,45 @@ The brain is local. Each saved rule, memory, document, and example changes how A
 }
 function codeTemplate(text, matches) {
   const shape = answerShape(text, 'code', matches);
-  return `## Implementation mode
+  return `## How I will code it
 
-I will treat this like a senior coding task: define the behavior, produce complete code, and keep the patch testable. No cloud model or API is used.${shape.ctx}
+I will work like a Claude-style coding partner: understand the goal, identify the files or components, then produce complete code with a clean explanation. No cloud model or API is used.${shape.ctx}
 
-## Working plan
-- Clarify the target file, component, or error.
-- Use saved project knowledge, examples, and attached files first.
-- Return a complete implementation, not a vague outline.
-- Include checks that can run locally.
+## Build plan
+1. Understand the feature, bug, or page you want.
+2. Break it into UI, state, data, and behavior.
+3. Write the exact HTML/CSS/JS or patch needed.
+4. Keep the design polished and responsive.
+5. Give you verification steps or tests.
 
-## Ready next
-Send the target file or exact feature and I will turn this into code.${shape.memory}${shape.rules}`;
+## Ask me like this
+- "Build a login page like Claude."
+- "Write the JS for this chat sidebar."
+- "Debug this error and explain the fix."
+- "Make this UI responsive and modern."
+
+Send the target feature, screenshot, file, or error and I will turn it into implementation-ready code.${shape.memory}${shape.rules}`;
+}
+function designTemplate(text, matches) {
+  const shape = answerShape(text, 'design', matches);
+  return `## How I will design it
+
+I will design it like a polished AI product surface: calm layout, strong hierarchy, fast scanning, clear actions, and responsive behavior.${shape.ctx}
+
+## Design process
+1. Define the user's main job on the screen.
+2. Choose the layout: chat, dashboard, editor, panel, or flow.
+3. Set visual hierarchy: primary action, secondary controls, quiet metadata.
+4. Build interaction states: empty, loading, active, error, saved.
+5. Convert the design into real HTML/CSS/JS or component code.
+
+## Design direction
+- Claude-like calm writing space.
+- ChatGPT-like practical controls and fast prompts.
+- Premium dark/light theme with local memory and settings nearby.
+- No decorative clutter that blocks the user's work.
+
+Tell me the app, page, or component you want and I will draft the structure plus code.${shape.memory}${shape.rules}`;
 }
 function researchTemplate(text, matches) {
   const shape = answerShape(text, 'research', matches);
@@ -1147,6 +1228,7 @@ function generateReply(text) {
     return `## Learned example match\n\n${ex.answer}\n\n_Source: taught example "${ex.prompt}"_`;
   }
   if (intent === 'code') return codeTemplate(text, matches);
+  if (intent === 'design') return designTemplate(text, matches);
   if (intent === 'research') return researchTemplate(text, matches);
   if (intent === 'creative') return creativeTemplate(text, matches);
   return generalTemplate(text, matches);
@@ -1178,17 +1260,33 @@ function renderMessages() {
   if (!chat.messages.length) {
     root.innerHTML = `
       <div class="empty">
-        <div class="eyebrow">Private local intelligence</div>
-        <h1>Ask anything.<br>Train quietly.</h1>
-        <p>ARIA blends a clean Claude-style writing surface with ChatGPT-like controls. Learning happens in the background when enabled, without adding training messages to the conversation.</p>
+        <div class="eyebrow">Claude calm · ChatGPT speed · local memory</div>
+        <h1>What should<br>we build?</h1>
+        <p>Ask ARIA to write code, design interfaces, debug errors, plan features, or explain ideas. It keeps training quietly in the background when enabled, without adding training noise to chat.</p>
+        <div class="hero-composer">
+          <div class="hero-prompt-row">
+            <input class="hero-input" id="heroInput" placeholder="Message ARIA about code, design, bugs, ideas, or a full app...">
+            <button class="hero-send" id="heroSend">➜</button>
+          </div>
+          <div class="prompt-pills">
+            <button class="prompt-pill" data-prompt="How will you design a Claude-like AI chat app for me?">How will you design it?</button>
+            <button class="prompt-pill" data-prompt="Write code for a modern responsive landing page with a chat interface">Write code</button>
+            <button class="prompt-pill" data-prompt="Plan the files and UI for a complete AI workspace">Plan an app</button>
+            <button class="prompt-pill" data-prompt="Improve this interface like ChatGPT and Claude mixed together">Improve UI</button>
+          </div>
+        </div>
         <div class="starter-grid">
-          <button class="starter" data-prompt="Help me design a better AI workspace experience"><strong>Design with me</strong><span>Product thinking and UX structure</span></button>
-          <button class="starter" data-prompt="Write a complete HTML CSS JS feature from my description"><strong>Build a feature</strong><span>Implementation mode with local context</span></button>
-          <button class="starter" data-prompt="Analyze my idea and give me a practical action plan"><strong>Think it through</strong><span>Research-style local reasoning</span></button>
-          <button class="starter" data-prompt="Draft a polished message with a confident tone"><strong>Write sharply</strong><span>Creative mode shaped by examples</span></button>
+          <button class="starter" data-prompt="Design a beautiful SaaS dashboard and explain the layout before coding"><strong>Design like Claude</strong><span>Calm layouts, hierarchy, interaction states</span></button>
+          <button class="starter" data-prompt="Write complete HTML CSS and JavaScript for my feature"><strong>Code like an engineer</strong><span>Complete implementation, not just advice</span></button>
+          <button class="starter" data-prompt="Help me turn my idea into screens, components, and user flow"><strong>Plan product flow</strong><span>Features, screens, states, and structure</span></button>
+          <button class="starter" data-prompt="Review my UI and make it 10x cleaner and more professional"><strong>Upgrade my UI</strong><span>Sharper interface decisions and polish</span></button>
         </div>
       </div>`;
-    $$('.starter').forEach(btn => btn.addEventListener('click', () => quick(btn.dataset.prompt)));
+    $$('.starter, .prompt-pill').forEach(btn => btn.addEventListener('click', () => quick(btn.dataset.prompt)));
+    $('#heroSend').addEventListener('click', () => quick($('#heroInput').value));
+    $('#heroInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') quick(e.target.value);
+    });
     return;
   }
   root.innerHTML = chat.messages.map((m, i) => `
