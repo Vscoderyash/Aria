@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ARIA - Local Learning AI</title>
+<title>ARIA - Local AI</title>
 <style>
 :root {
   --hue: 65;
@@ -676,6 +676,7 @@ button { cursor: pointer; }
   width: 0;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--accent), var(--success));
+  transition: width .3s var(--ease);
 }
 .status-line {
   display: flex;
@@ -691,9 +692,7 @@ button { cursor: pointer; }
   justify-content: space-between;
   gap: 12px;
 }
-.setting-copy {
-  min-width: 0;
-}
+.setting-copy { min-width: 0; }
 .setting-title {
   color: var(--text);
   font-size: 13px;
@@ -743,6 +742,53 @@ button { cursor: pointer; }
   transform: translateX(20px);
   background: var(--accent);
 }
+/* Model load button states */
+.load-model-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  color: var(--bg-base);
+  background: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity .18s;
+}
+.load-model-btn:hover { opacity: .88; }
+.load-model-btn:disabled { opacity: .4; cursor: default; }
+.model-select {
+  width: 100%;
+  padding: 8px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-base);
+  color: var(--text);
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.model-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  background: var(--bg-base);
+}
+.model-badge.ready { border-color: var(--success); color: var(--success); }
+.model-badge.loading { border-color: var(--accent); color: var(--accent); }
+.model-badge.error { border-color: var(--danger); color: var(--danger); }
+/* Typing cursor */
+@keyframes blink { 50% { opacity: 0; } }
+.cursor { display: inline-block; animation: blink 1s step-end infinite; }
+/* Streaming message */
+.msg.streaming .msg-card {
+  border-color: color-mix(in oklab, var(--accent) 30%, var(--border-soft));
+}
 @media (max-width: 980px) {
   .app {
     grid-template-columns: 1fr;
@@ -790,6 +836,7 @@ button { cursor: pointer; }
       </div>
     </div>
     <div class="header-right">
+      <span id="headerModelBadge" class="model-badge">no model</span>
       <button class="icon-btn" id="themeBtn" title="Theme">◐</button>
       <button class="icon-btn" id="exportBtn" title="Export">⇩</button>
       <button class="icon-btn" id="clearBtn" title="Clear">×</button>
@@ -823,20 +870,46 @@ button { cursor: pointer; }
           <label class="tool-btn" title="Attach file">+
             <input id="fileInput" type="file" accept=".txt,.md,.csv,.json,.js,.ts,.html,.css,.py" hidden>
           </label>
-          <textarea id="input" rows="1" placeholder="Message ARIA... ask anything, write code, design, debug, explain, or plan"></textarea>
+          <textarea id="input" rows="1" placeholder="Message ARIA… ask anything, write code, debug, plan, design"></textarea>
           <button class="send-btn" id="sendBtn" disabled>➜</button>
         </div>
       </div>
-      <div class="input-foot">Claude-like planning, ChatGPT-style chat, local memory. No API or cloud model.</div>
+      <div class="input-foot" id="inputFoot">Load a model in the panel → to enable full AI responses.</div>
     </div>
   </main>
 
   <aside class="panel">
     <div class="panel-head">
-      <div class="panel-title">Memory & Settings</div>
+      <div class="panel-title">AI + Memory</div>
       <button class="mini-btn" id="teachLastBtn">Teach last answer</button>
     </div>
     <div class="panel-body">
+
+      <!-- ── AI Model loader ── -->
+      <section class="panel-section" id="llmSection">
+        <h3>AI Model <span id="llmBadge" class="model-badge" style="margin-left:6px">offline</span></h3>
+        <div class="setting-desc" style="margin-bottom:8px">
+          Runs a real language model entirely inside your browser — no API, no cloud, no data leaves your device.
+          First load downloads the weights (~1–2.5 GB) and caches them permanently.
+        </div>
+        <select id="modelSelect" class="model-select">
+          <option value="Phi-3.5-mini-instruct-q4f16_1-MLC">Phi-3.5 Mini · 2.4 GB · Best quality</option>
+          <option value="Llama-3.2-3B-Instruct-q4f16_1-MLC">Llama 3.2 3B · 1.9 GB · Balanced</option>
+          <option value="SmolLM2-1.7B-Instruct-q4f16_1-MLC">SmolLM2 1.7B · 1.1 GB · Fast load</option>
+          <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Qwen 2.5 1.5B · 1.0 GB · Lightweight</option>
+        </select>
+        <div class="meter"><span id="llmMeter"></span></div>
+        <div class="status-line">
+          <span id="llmStatusText">Click Load to start</span>
+          <span id="llmPct"></span>
+        </div>
+        <button class="load-model-btn" id="loadModelBtn">Load AI model</button>
+        <div class="setting-desc" style="margin-top:8px;color:var(--text-dim)" id="llmReq">
+          Requires WebGPU (Chrome 113+ or Edge 113+). GPU with 4 GB VRAM recommended for Phi/Llama.
+        </div>
+      </section>
+
+      <!-- ── Learning strength ── -->
       <section class="panel-section">
         <h3>Learning Strength</h3>
         <div class="meter"><span id="learnMeter"></span></div>
@@ -848,9 +921,9 @@ button { cursor: pointer; }
         <div class="setting-row">
           <div class="setting-copy">
             <div class="setting-title">Train from chats</div>
-            <div class="setting-desc">When on, ARIA learns memories and answer patterns from conversations. Turn off to stop using chats for training.</div>
+            <div class="setting-desc">ARIA adds interaction pairs as examples automatically when enabled.</div>
           </div>
-          <label class="switch" title="Allow ARIA to train from this browser's chats">
+          <label class="switch">
             <input id="chatTrainingToggle" type="checkbox">
             <span></span>
           </label>
@@ -889,13 +962,98 @@ button { cursor: pointer; }
         <textarea class="text-field" id="memVal" placeholder="Value"></textarea>
         <button class="add-btn" id="addMemBtn">Save memory</button>
       </section>
+
     </div>
   </aside>
 </div>
 
-<script>
+<script type="module">
 'use strict';
 
+// ════════════════════════════════════════
+//  WebLLM state
+// ════════════════════════════════════════
+let llmEngine   = null;
+let llmReady    = false;
+let llmLoading  = false;
+
+const WEBLLM_CDN = 'https://esm.run/@mlc-ai/web-llm';
+
+async function initEngine(modelId) {
+  if (llmLoading || llmReady) return;
+  if (!navigator.gpu) {
+    setLLMUI('error', 0, 'WebGPU not supported in this browser.');
+    return;
+  }
+  llmLoading = true;
+  setLLMUI('loading', 0, 'Importing WebLLM…');
+  try {
+    const webllm = await import(WEBLLM_CDN);
+    setLLMUI('loading', 2, 'Starting engine…');
+    llmEngine = await webllm.CreateMLCEngine(modelId, {
+      initProgressCallback(p) {
+        const pct = Math.round((p.progress || 0) * 100);
+        setLLMUI('loading', pct, p.text || 'Loading…');
+      }
+    });
+    llmReady  = true;
+    llmLoading = false;
+    setLLMUI('ready', 100, 'Model ready — ARIA is fully online.');
+    updateInputFoot();
+  } catch (err) {
+    llmLoading = false;
+    setLLMUI('error', 0, 'Failed: ' + (err.message || err));
+  }
+}
+
+function setLLMUI(state, pct, text) {
+  const badge      = document.getElementById('llmBadge');
+  const headerBadge = document.getElementById('headerModelBadge');
+  const meter      = document.getElementById('llmMeter');
+  const statusText = document.getElementById('llmStatusText');
+  const pctEl      = document.getElementById('llmPct');
+  const btn        = document.getElementById('loadModelBtn');
+
+  statusText.textContent = text;
+  pctEl.textContent      = pct > 0 && pct < 100 ? pct + '%' : '';
+  meter.style.width      = pct + '%';
+
+  badge.className      = 'model-badge ' + state;
+  headerBadge.className = 'model-badge ' + state;
+
+  const label = document.getElementById('modelSelect').selectedOptions[0]?.text.split('·')[0].trim() || 'AI';
+
+  if (state === 'ready') {
+    badge.textContent      = '● ' + label;
+    headerBadge.textContent = '● ' + label;
+    btn.textContent  = 'Model loaded ✓';
+    btn.disabled     = true;
+    document.getElementById('modelSelect').disabled = true;
+  } else if (state === 'loading') {
+    badge.textContent      = '◌ loading';
+    headerBadge.textContent = '◌ loading';
+    btn.textContent  = 'Loading…';
+    btn.disabled     = true;
+  } else if (state === 'error') {
+    badge.textContent      = '✕ error';
+    headerBadge.textContent = '✕ error';
+    btn.textContent  = 'Retry';
+    btn.disabled     = false;
+  }
+}
+
+function updateInputFoot() {
+  const el = document.getElementById('inputFoot');
+  if (llmReady) {
+    el.textContent = 'ARIA is running a local AI model — no API, no cloud.';
+  } else {
+    el.textContent = 'Load a model in the panel → to enable full AI responses.';
+  }
+}
+
+// ════════════════════════════════════════
+//  Persistent store
+// ════════════════════════════════════════
 const STORE = {
   chats: 'aria.local.chats',
   active: 'aria.local.active',
@@ -906,72 +1064,48 @@ const STORE = {
 };
 
 const DEFAULT_TRAIN = {
-  personality: 'Precise, direct, high-agency, and practical. ARIA learns from saved examples and gives complete usable answers.',
+  personality: 'Precise, direct, high-agency, and practical. You are a real AI assistant. Give complete, accurate, useful answers. Never make things up.',
   rules: [
     'Use the local knowledge base and memories before generic reasoning.',
     'When coding, give complete working code and explain only the important decisions.',
-    'Be honest when local training does not contain enough information.'
+    'Be honest when you do not know something.'
   ],
   memories: {},
   knowledge: [],
   examples: [],
-  settings: {
-    trainFromChats: true
-  }
+  settings: { trainFromChats: true }
 };
 
-const $ = sel => document.querySelector(sel);
+const $  = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
-const load = (key, fallback) => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-};
-const save = (key, value) => localStorage.setItem(key, JSON.stringify(value));
-const esc = text => String(text || '').replace(/[&<>"']/g, c => ({
-  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-}[c]));
+const load = (key, fb) => { try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : fb; } catch { return fb; } };
+const save = (key, v) => localStorage.setItem(key, JSON.stringify(v));
+const esc  = t => String(t || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-let train = normalizeTrain(load(STORE.train, DEFAULT_TRAIN));
-let chats = load(STORE.chats, []);
+let train    = normalizeTrain(load(STORE.train, DEFAULT_TRAIN));
+let chats    = load(STORE.chats, []);
 let activeId = load(STORE.active, null);
-let mode = load(STORE.mode, 'auto');
-let depth = load(STORE.depth, 'balanced');
+let mode     = load(STORE.mode, 'auto');
+let depth    = load(STORE.depth, 'balanced');
 let attachments = [];
 let busy = false;
 
-function normalizeTrain(value) {
+function normalizeTrain(v) {
   return {
     ...DEFAULT_TRAIN,
-    ...(value || {}),
-    memories: { ...(value && value.memories ? value.memories : {}) },
-    rules: Array.isArray(value && value.rules) ? value.rules : DEFAULT_TRAIN.rules.slice(),
-    knowledge: Array.isArray(value && value.knowledge) ? value.knowledge : [],
-    examples: Array.isArray(value && value.examples) ? value.examples : [],
-    settings: {
-      ...DEFAULT_TRAIN.settings,
-      ...(value && value.settings ? value.settings : {})
-    }
+    ...(v || {}),
+    memories:  { ...(v?.memories || {}) },
+    rules:     Array.isArray(v?.rules)     ? v.rules     : DEFAULT_TRAIN.rules.slice(),
+    knowledge: Array.isArray(v?.knowledge) ? v.knowledge : [],
+    examples:  Array.isArray(v?.examples)  ? v.examples  : [],
+    settings:  { ...DEFAULT_TRAIN.settings, ...(v?.settings || {}) }
   };
 }
 
-function persistTrain() {
-  save(STORE.train, train);
-  renderTraining();
-  renderRail();
-}
-function persistChats() {
-  save(STORE.chats, chats.slice(0, 100));
-  save(STORE.active, activeId);
-}
-function activeChat() {
-  let chat = chats.find(c => c.id === activeId);
-  if (!chat) chat = createChat();
-  return chat;
-}
+function persistTrain() { save(STORE.train, train); renderTraining(); renderRail(); }
+function persistChats() { save(STORE.chats, chats.slice(0, 100)); save(STORE.active, activeId); }
+function activeChat()   { let c = chats.find(c => c.id === activeId); if (!c) c = createChat(); return c; }
+
 function createChat() {
   const chat = { id: Date.now().toString(36), title: 'New conversation', created: Date.now(), messages: [] };
   chats.unshift(chat);
@@ -982,30 +1116,26 @@ function createChat() {
   return chat;
 }
 
+// ════════════════════════════════════════
+//  NLP helpers (used as context builders)
+// ════════════════════════════════════════
+const STOP = new Set('the a an and or but if then this that with from into onto about what when where who why how for you your our are was were been have has had not can will shall should would could may might there their they them his her its'.split(' '));
+
 function words(text) {
-  const stop = new Set('the a an and or but if then this that with from into onto about what when where who why how for you your our are was were been have has had not can will shall should would could may might there their they them his her its'.split(' '));
-  return String(text || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9+#.\s-]/g, ' ')
-    .split(/\s+/)
-    .filter(w => w.length > 2 && !stop.has(w));
+  return String(text || '').toLowerCase().replace(/[^a-z0-9+#.\s-]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !STOP.has(w));
 }
 function score(query, text) {
-  const q = words(query);
-  const hay = String(text || '').toLowerCase();
-  return q.reduce((sum, w) => sum + (hay.includes(w) ? 1 : 0), 0);
+  const q = words(query), hay = String(text || '').toLowerCase();
+  return q.reduce((s, w) => s + (hay.includes(w) ? 1 : 0), 0);
 }
-function splitSentences(text) {
-  return String(text || '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+function splitSentences(t) {
+  return String(t || '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
 }
 function topSnippets(query, text, max = 3) {
-  const ranked = splitSentences(text)
-    .map(sentence => ({ sentence, score: score(query, sentence) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, max)
-    .map(x => x.sentence);
-  return ranked.length ? ranked.join(' ') : String(text || '').slice(0, 650);
+  const ranked = splitSentences(text).map(s => ({ s, sc: score(query, s) })).sort((a,b) => b.sc - a.sc).slice(0, max).map(x => x.s);
+  return ranked.length ? ranked.join(' ') : String(text || '').slice(0, 600);
 }
+
 function learnFromUser(text) {
   if (!train.settings.trainFromChats) return;
   const patterns = [
@@ -1018,247 +1148,144 @@ function learnFromUser(text) {
   ];
   for (const [re, key] of patterns) {
     const hit = text.match(re);
-    if (hit && hit[1]) train.memories[key] = { value: hit[1].trim(), ts: Date.now(), auto: true };
+    if (hit?.[1]) train.memories[key] = { value: hit[1].trim(), ts: Date.now(), auto: true };
   }
   persistTrain();
 }
+
 function learnFromInteraction(userText, assistantText) {
   if (!train.settings.trainFromChats) return;
   const prompt = String(userText || '').trim();
   const answer = String(assistantText || '').trim();
   if (prompt.length < 6 || answer.length < 20) return;
-  const exists = train.examples.some(ex => ex.auto && ex.prompt === prompt);
-  if (exists) return;
+  if (train.examples.some(ex => ex.auto && ex.prompt === prompt)) return;
   train.examples.unshift({ prompt, answer, ts: Date.now(), auto: true });
   const manual = train.examples.filter(ex => !ex.auto);
-  const automatic = train.examples.filter(ex => ex.auto).slice(0, 80);
-  train.examples = [...manual, ...automatic].sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  const auto   = train.examples.filter(ex => ex.auto).slice(0, 80);
+  train.examples = [...manual, ...auto].sort((a,b) => (b.ts||0) - (a.ts||0));
   persistTrain();
 }
+
 function detectMode(text) {
   if (mode !== 'auto') return mode;
   const lo = text.toLowerCase();
-  if (/\b(design|ui|ux|layout|screen|page|interface|component|theme|style|visual|wireframe|prototype)\b/.test(lo)) return 'design';
-  if (/\b(code|function|html|css|javascript|python|bug|error|debug|api|component|repo|git)\b/.test(lo)) return 'code';
+  if (/\b(design|ui|ux|layout|screen|page|interface|component|theme|style|visual|wireframe)\b/.test(lo)) return 'design';
+  if (/\b(code|function|html|css|javascript|python|bug|error|debug|api|repo|git)\b/.test(lo)) return 'code';
   if (/\b(research|analyze|compare|report|market|data|study|evaluate|summary)\b/.test(lo)) return 'research';
   if (/\b(write|email|story|caption|script|blog|poem|creative|copy)\b/.test(lo)) return 'creative';
   return 'general';
 }
-function calc(text) {
-  const math = text.replace(/[^0-9+\-*/().%\s]/g, '').trim();
-  if (!math || !/\d/.test(math) || !/[+\-*/%]/.test(math)) return null;
-  try {
-    const result = Function('"use strict";return(' + math + ')')();
-    return Number.isFinite(result) ? `${math} = ${result}` : null;
-  } catch {
-    return null;
-  }
-}
+
 function knowledgeMatches(text) {
   const docs = [
     ...train.knowledge.map(k => ({ type: 'Knowledge', title: k.title, content: k.content })),
     ...Object.entries(train.memories).map(([k, v]) => ({ type: 'Memory', title: k, content: v.value })),
     ...attachments.map(a => ({ type: 'File', title: a.name, content: a.content }))
   ];
-  return docs
-    .map(doc => ({ ...doc, score: score(text, `${doc.title} ${doc.content}`) }))
-    .filter(doc => doc.score > 0)
-    .sort((a, b) => b.score - a.score)
+  return docs.map(d => ({ ...d, score: score(text, d.title + ' ' + d.content) }))
+    .filter(d => d.score > 0).sort((a,b) => b.score - a.score)
     .slice(0, depth === 'deep' ? 6 : depth === 'fast' ? 2 : 4);
 }
+
 function exampleMatch(text) {
-  return train.examples
-    .map(ex => ({ ...ex, score: score(text, `${ex.prompt} ${ex.answer}`) }))
-    .filter(ex => ex.score > 0)
-    .sort((a, b) => b.score - a.score)[0] || null;
+  return train.examples.map(ex => ({ ...ex, score: score(text, ex.prompt + ' ' + ex.answer) }))
+    .filter(ex => ex.score > 0).sort((a,b) => b.score - a.score)[0] || null;
 }
-function memorySummary() {
-  const entries = Object.entries(train.memories).slice(0, 6);
-  return entries.length ? entries.map(([k, v]) => `- ${k}: ${v.value}`).join('\n') : '- No saved memories yet.';
-}
-function ruleSummary() {
-  return train.rules.length ? train.rules.slice(0, 5).map(r => `- ${r}`).join('\n') : '- No custom rules yet.';
-}
-function contextBlock(text, matches) {
-  if (!matches.length) return '';
-  return `\n\n## Local context\n${matches.map(m => `**${m.type}: ${m.title}**\n${topSnippets(text, m.content, depth === 'deep' ? 4 : 2)}`).join('\n\n')}`;
-}
-function answerShape(text, intent, matches) {
-  const ctx = contextBlock(text, matches);
-  const memory = depth === 'deep' ? `\n\n## Memory considered\n${memorySummary()}` : '';
-  const rules = depth !== 'fast' ? `\n\n## Style rules followed\n${ruleSummary()}` : '';
-  return { ctx, memory, rules, intent };
-}
-function identityAnswer() {
-  return `I am ARIA, a local learning AI workspace created by Yash Raj.
 
-I am not using an external AI API. I learn from rules, memories, examples, knowledge documents, files, corrections, and chat training when the user allows it in Settings.`;
-}
-function trainingStatus() {
-  return `## ARIA learning status
+// ════════════════════════════════════════
+//  System prompt builder
+// ════════════════════════════════════════
+function buildSystemPrompt(query) {
+  const matches = knowledgeMatches(query);
+  const ex      = exampleMatch(query);
 
-**Personality**
+  const memLines   = Object.entries(train.memories).slice(0, 10).map(([k,v]) => `- ${k}: ${v.value}`).join('\n') || '(none)';
+  const ruleLines  = train.rules.slice(0, 8).map(r => `- ${r}`).join('\n') || '(none)';
+  const ctxBlocks  = matches.length
+    ? '\n\n## Relevant local knowledge\n' + matches.map(m => `### ${m.title}\n${topSnippets(query, m.content, depth === 'deep' ? 4 : 2)}`).join('\n\n')
+    : '';
+  const exBlock    = ex && ex.score >= 2
+    ? `\n\n## Example of preferred answer style\nQ: ${ex.prompt}\nA: ${ex.answer}`
+    : '';
+
+  return `You are ARIA, an AI assistant running fully inside the user's browser via WebLLM. You do not use any external API or cloud service. You are knowledgeable, honest, precise, and helpful. You never pretend to know things you don't.
+
+## Personality
 ${train.personality}
 
-**Rules**
-${train.rules.map(r => `- ${r}`).join('\n')}
+## Behavior rules
+${ruleLines}
 
-**Memory count:** ${Object.keys(train.memories).length}
-**Knowledge documents:** ${train.knowledge.length}
-**Taught examples:** ${train.examples.length}
-**Train from chats:** ${train.settings.trainFromChats ? 'On' : 'Off'}
+## User memories
+${memLines}${exBlock}${ctxBlocks}
 
-The brain is local. Each saved rule, memory, document, and example changes how ARIA answers next time.`;
+Answer the user's next message directly. Be thorough when needed and concise when possible.`;
 }
-function codeTemplate(text, matches) {
-  const shape = answerShape(text, 'code', matches);
-  return `## How I will code it
 
-I will work like a Claude-style coding partner: understand the goal, identify the files or components, then produce complete code with a clean explanation. No cloud model or API is used.${shape.ctx}
-
-## Build plan
-1. Understand the feature, bug, or page you want.
-2. Break it into UI, state, data, and behavior.
-3. Write the exact HTML/CSS/JS or patch needed.
-4. Keep the design polished and responsive.
-5. Give you verification steps or tests.
-
-## Ask me like this
-- "Build a login page like Claude."
-- "Write the JS for this chat sidebar."
-- "Debug this error and explain the fix."
-- "Make this UI responsive and modern."
-
-Send the target feature, screenshot, file, or error and I will turn it into implementation-ready code.${shape.memory}${shape.rules}`;
-}
-function designTemplate(text, matches) {
-  const shape = answerShape(text, 'design', matches);
-  return `## How I will design it
-
-I will design it like a polished AI product surface: calm layout, strong hierarchy, fast scanning, clear actions, and responsive behavior.${shape.ctx}
-
-## Design process
-1. Define the user's main job on the screen.
-2. Choose the layout: chat, dashboard, editor, panel, or flow.
-3. Set visual hierarchy: primary action, secondary controls, quiet metadata.
-4. Build interaction states: empty, loading, active, error, saved.
-5. Convert the design into real HTML/CSS/JS or component code.
-
-## Design direction
-- Claude-like calm writing space.
-- ChatGPT-like practical controls and fast prompts.
-- Premium dark/light theme with local memory and settings nearby.
-- No decorative clutter that blocks the user's work.
-
-Tell me the app, page, or component you want and I will draft the structure plus code.${shape.memory}${shape.rules}`;
-}
-function researchTemplate(text, matches) {
-  const shape = answerShape(text, 'research', matches);
-  if (!matches.length) {
-    return `## Local analysis
-
-I do not have enough saved local knowledge for a high-confidence answer yet. I will not invent live facts.
-
-## How to make this strong
-- Add source notes in Knowledge.
-- Attach files or project docs.
-- Teach one ideal answer as an example.
-- Ask again and ARIA will rank, compare, and synthesize that local material.${shape.memory}${shape.rules}`;
+// ════════════════════════════════════════
+//  LLM reply (streaming)
+// ════════════════════════════════════════
+async function generateLLMReply(query, onToken, onDone) {
+  if (!llmReady || !llmEngine) {
+    onDone(fallbackReply(query));
+    return;
   }
-  return `## Local analysis
 
-${matches.map(m => `**${m.type}: ${m.title}**\n${topSnippets(text, m.content, depth === 'deep' ? 4 : 2)}`).join('\n\n')}
+  const systemPrompt = buildSystemPrompt(query);
+  const chat = activeChat();
 
-## Synthesis
+  // Build message history (last 20 turns)
+  const history = chat.messages.slice(-20).filter(m => m.role === 'user' || m.role === 'assistant');
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history.map(m => ({ role: m.role, content: m.content }))
+  ];
 
-The strongest answer is grounded in the saved material above. If you want a more detailed report, add more notes or files and switch depth to Deep.${shape.rules}`;
-}
-function creativeTemplate(text, matches) {
-  const shape = answerShape(text, 'creative', matches);
-  const style = matches[0] ? topSnippets(text, matches[0].content, 2) : train.personality;
-  return `## Draft direction
+  // The latest user message is already in history from addMessage, so we're good
+  const maxTokens = depth === 'deep' ? 2000 : depth === 'fast' ? 600 : 1200;
 
-${text}
+  try {
+    const stream = await llmEngine.chat.completions.create({
+      messages,
+      stream: true,
+      temperature: 0.7,
+      max_tokens: maxTokens,
+    });
 
-## Voice
-
-Use this style: ${style}
-
-## Upgrade path
-- Give audience, tone, and target length.
-- Add a sample in Teach Example.
-- ARIA will mirror that house style locally.${shape.rules}`;
-}
-function chatTemplate(text, matches) {
-  const clean = text.trim();
-  const lo = clean.toLowerCase();
-  if (/^(hi|hello|hey|yo|hii|hlo)\b/.test(lo)) {
-    return `Hey, I am here.
-
-Ask me anything: I can help you write code, design a page, plan an app, improve UI, explain an idea, or draft something.`;
+    let full = '';
+    for await (const chunk of stream) {
+      const token = chunk.choices[0]?.delta?.content || '';
+      if (token) {
+        full += token;
+        onToken(full);
+      }
+    }
+    onDone(full || '(no response)');
+  } catch (err) {
+    onDone('Error: ' + (err.message || err));
   }
-  if (/(can you|will you|could you|help me)/i.test(clean)) {
-    return `Yes. Tell me what you want to make or ask, and I will help step by step.
-
-For code, send the feature or bug.
-For design, tell me the screen or style.
-For writing, tell me the tone and audience.
-
-I will reply directly in this chat and keep the training/settings quiet in the side panel.`;
-  }
-  if (matches.length) {
-    return `I found relevant local context and I will use it.
-
-${matches.map(m => `**${m.title}**\n${topSnippets(clean, m.content, 2)}`).join('\n\n')}
-
-Based on that, here is my reply: tell me the exact result you want and I will shape it into code, design, or a plan.`;
-  }
-  return `I understand.
-
-You said: **${clean}**
-
-Here is how I can help:
-- turn it into code
-- design the UI
-- make a step-by-step plan
-- explain it simply
-- improve the wording or structure
-
-Ask it like: "write code for...", "design...", "fix this...", or "explain...".`;
 }
-function generalTemplate(text, matches) {
-  const shape = answerShape(text, 'general', matches);
-  if (matches.length) {
-    return `## Best answer
 
-Based on local memory and knowledge, here is the strongest useful answer I can give right now.${shape.ctx}
-
-## Recommendation
-
-Use the matched context above as the source of truth. For a sharper answer, add one example of the exact style or outcome you want.${shape.memory}${shape.rules}`;
+// ════════════════════════════════════════
+//  Fallback (when model not loaded)
+// ════════════════════════════════════════
+function fallbackReply(text) {
+  const lo = text.toLowerCase();
+  if (/(who are you|what are you|who made you)/i.test(text)) {
+    return `I am ARIA, a local AI assistant built by Yash Raj.\n\nI run a real language model entirely inside your browser — no API key, no cloud, no data sent anywhere. Load a model in the panel on the right to activate full AI responses.`;
   }
-  return chatTemplate(text, matches);
-}
-function generateReply(text) {
-  learnFromUser(text);
-  const lower = text.toLowerCase();
-  if (/(who made you|who created you|what are you|what model|using.*api|api)/i.test(text)) return identityAnswer();
-  if (/(training status|learning status|what do you know|show.*training|train)/i.test(text)) return trainingStatus();
-  const math = calc(text);
-  if (math) return `## Calculator\n\n${math}\n\nComputed locally.`;
-  const intent = detectMode(text);
-  const matches = knowledgeMatches(text);
   const ex = exampleMatch(text);
-  if (ex && ex.score >= 2) {
-    return `## Learned example match\n\n${ex.answer}\n\n_Source: taught example "${ex.prompt}"_`;
+  if (ex && ex.score >= 2) return ex.answer;
+  const matches = knowledgeMatches(text);
+  if (matches.length) {
+    return `## From your knowledge base\n\n${matches.map(m => `**${m.title}**\n${topSnippets(text, m.content, 2)}`).join('\n\n')}\n\n_Load the AI model in the panel for a full intelligent answer._`;
   }
-  if (intent === 'code') return codeTemplate(text, matches);
-  if (intent === 'design') return designTemplate(text, matches);
-  if (intent === 'research') return researchTemplate(text, matches);
-  if (intent === 'creative') return creativeTemplate(text, matches);
-  return generalTemplate(text, matches);
+  return `No AI model is loaded yet.\n\nTo get real answers, open the right panel, choose a model, and click **Load AI model**. The model downloads once (~1–2.5 GB) and runs locally in your browser forever after.\n\nYour message: "${text.slice(0, 120)}"`;
 }
 
+// ════════════════════════════════════════
+//  Render helpers
+// ════════════════════════════════════════
 function renderMarkdown(text) {
   let html = esc(text);
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${esc(code.trimEnd())}</code></pre>`);
@@ -1271,6 +1298,7 @@ function renderMarkdown(text) {
   html = html.replace(/(<li>[\s\S]+?<\/li>)/g, '<ul>$1</ul>');
   return html;
 }
+
 function addMessage(role, content) {
   const chat = activeChat();
   chat.messages.push({ role, content, ts: Date.now(), mode: detectMode(content) });
@@ -1279,46 +1307,45 @@ function addMessage(role, content) {
   renderMessages();
   renderRail();
 }
+
 function renderMessages() {
   const chat = activeChat();
   const root = $('#messageInner');
   if (!chat.messages.length) {
     root.innerHTML = `
       <div class="empty">
-        <div class="eyebrow">Claude calm · ChatGPT speed · local memory</div>
+        <div class="eyebrow">Real local AI · no API · no cloud</div>
         <h1>How can I<br>help?</h1>
-        <p>Chat normally. Ask ARIA to write code, design interfaces, debug errors, plan features, explain ideas, or improve anything. It replies in the conversation and keeps learning quietly when enabled.</p>
+        <p>ARIA runs a real language model in your browser. Load the model from the right panel, then ask anything: code, design, writing, research, or just chat.</p>
         <div class="hero-composer">
           <div class="hero-prompt-row">
-            <input class="hero-input" id="heroInput" placeholder="Message ARIA about code, design, bugs, ideas, or a full app...">
+            <input class="hero-input" id="heroInput" placeholder="Message ARIA about code, design, bugs, ideas, or a full app…">
             <button class="hero-send" id="heroSend">➜</button>
           </div>
           <div class="prompt-pills">
-            <button class="prompt-pill" data-prompt="How will you design a Claude-like AI chat app for me?">How will you design it?</button>
-            <button class="prompt-pill" data-prompt="Write code for a modern responsive landing page with a chat interface">Write code</button>
-            <button class="prompt-pill" data-prompt="Plan the files and UI for a complete AI workspace">Plan an app</button>
-            <button class="prompt-pill" data-prompt="Improve this interface like ChatGPT and Claude mixed together">Improve UI</button>
+            <button class="prompt-pill" data-prompt="Explain how you work and what makes you different from ChatGPT">How do you work?</button>
+            <button class="prompt-pill" data-prompt="Write a modern responsive landing page in HTML CSS and JavaScript">Write code</button>
+            <button class="prompt-pill" data-prompt="Plan the architecture for a full-stack AI chat application">Plan an app</button>
+            <button class="prompt-pill" data-prompt="Explain the difference between supervised and unsupervised learning">Explain AI</button>
           </div>
         </div>
         <div class="starter-grid">
-          <button class="starter" data-prompt="Design a beautiful SaaS dashboard and explain the layout before coding"><strong>Design like Claude</strong><span>Calm layouts, hierarchy, interaction states</span></button>
-          <button class="starter" data-prompt="Write complete HTML CSS and JavaScript for my feature"><strong>Code like an engineer</strong><span>Complete implementation, not just advice</span></button>
-          <button class="starter" data-prompt="Help me turn my idea into screens, components, and user flow"><strong>Plan product flow</strong><span>Features, screens, states, and structure</span></button>
-          <button class="starter" data-prompt="Review my UI and make it 10x cleaner and more professional"><strong>Upgrade my UI</strong><span>Sharper interface decisions and polish</span></button>
+          <button class="starter" data-prompt="Design a beautiful SaaS dashboard with dark mode and sidebar navigation"><strong>Design a UI</strong><span>Layouts, hierarchy, interaction states</span></button>
+          <button class="starter" data-prompt="Write complete HTML CSS and JavaScript for a chat interface like ChatGPT"><strong>Code from scratch</strong><span>Complete implementation, not just advice</span></button>
+          <button class="starter" data-prompt="Help me turn my SaaS idea into a product roadmap and feature list"><strong>Plan a product</strong><span>Features, screens, states, and structure</span></button>
+          <button class="starter" data-prompt="Debug this JavaScript error and explain how to fix it properly"><strong>Debug my code</strong><span>Root cause, fix, and explanation</span></button>
         </div>
       </div>`;
     $$('.starter, .prompt-pill').forEach(btn => btn.addEventListener('click', () => quick(btn.dataset.prompt)));
     $('#heroSend').addEventListener('click', () => quick($('#heroInput').value));
-    $('#heroInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') quick(e.target.value);
-    });
+    $('#heroInput').addEventListener('keydown', e => { if (e.key === 'Enter') quick(e.target.value); });
     return;
   }
   root.innerHTML = chat.messages.map((m, i) => `
     <div class="msg ${m.role}">
       <div class="avatar">${m.role === 'user' ? 'U' : 'A'}</div>
       <div class="msg-card">
-        <div class="msg-head"><span class="msg-name">${m.role === 'user' ? 'You' : 'ARIA'}</span><span class="msg-mode">${m.role === 'assistant' ? m.mode || mode : ''}</span></div>
+        <div class="msg-head"><span class="msg-name">${m.role === 'user' ? 'You' : 'ARIA'}</span><span class="msg-mode">${m.role === 'assistant' ? (m.mode || mode) : ''}</span></div>
         <div class="prose">${renderMarkdown(m.content)}</div>
         <div class="msg-actions">
           <button class="action-btn" data-copy-msg="${i}">Copy</button>
@@ -1326,119 +1353,170 @@ function renderMessages() {
         </div>
       </div>
     </div>`).join('');
-  $$('[data-copy-msg]').forEach(btn => btn.addEventListener('click', () => navigator.clipboard.writeText(chat.messages[Number(btn.dataset.copyMsg)].content)));
-  $$('[data-teach-msg]').forEach(btn => btn.addEventListener('click', () => teachMessagePreference(Number(btn.dataset.teachMsg))));
+  $$('[data-copy-msg]').forEach(btn => btn.addEventListener('click', () => navigator.clipboard.writeText(chat.messages[+btn.dataset.copyMsg].content)));
+  $$('[data-teach-msg]').forEach(btn => btn.addEventListener('click', () => teachPreference(+btn.dataset.teachMsg)));
   $('#messages').scrollTop = $('#messages').scrollHeight;
 }
-function teachMessagePreference(index) {
+
+function teachPreference(index) {
   const chat = activeChat();
   const assistant = chat.messages[index];
   if (!assistant || assistant.role !== 'assistant') return;
   const user = [...chat.messages.slice(0, index)].reverse().find(m => m.role === 'user');
   if (!user) return;
-  train.examples.unshift({
-    prompt: user.content,
-    answer: assistant.content,
-    ts: Date.now(),
-    manual: true
-  });
+  train.examples.unshift({ prompt: user.content, answer: assistant.content, ts: Date.now(), manual: true });
   persistTrain();
 }
+
+// ── Streaming message DOM helpers ───────
+let streamProseEl = null;
+
+function appendStreamingCard(modeLabel) {
+  const root = $('#messageInner');
+  const div  = document.createElement('div');
+  div.className = 'msg assistant streaming';
+  div.id = 'aria-stream';
+  div.innerHTML = `
+    <div class="avatar">A</div>
+    <div class="msg-card">
+      <div class="msg-head"><span class="msg-name">ARIA</span><span class="msg-mode">${esc(modeLabel)}</span></div>
+      <div class="prose" id="aria-stream-prose"><span class="cursor">▊</span></div>
+    </div>`;
+  root.appendChild(div);
+  streamProseEl = div.querySelector('#aria-stream-prose');
+  $('#messages').scrollTop = $('#messages').scrollHeight;
+}
+
+function updateStreamingCard(partial) {
+  if (!streamProseEl) return;
+  streamProseEl.innerHTML = renderMarkdown(partial) + '<span class="cursor">▊</span>';
+  $('#messages').scrollTop = $('#messages').scrollHeight;
+}
+
+function removeStreamingCard() {
+  document.getElementById('aria-stream')?.remove();
+  streamProseEl = null;
+}
+
+// ════════════════════════════════════════
+//  Rail
+// ════════════════════════════════════════
 function renderRail() {
-  const tab = $('.rail-tab.on').dataset.tab;
+  const tab  = $('.rail-tab.on').dataset.tab;
   const root = $('#railContent');
   if (tab === 'memory') {
     const entries = Object.entries(train.memories);
-    root.innerHTML = entries.length ? entries.map(([k, v]) => `
-      <div class="memory-item"><button class="delete-btn" data-delmem="${esc(k)}">x</button><div class="item-title">${esc(k)}</div><div class="item-text">${esc(v.value)}</div></div>
-    `).join('') : '<div class="chat-meta">No memories yet.</div>';
+    root.innerHTML = entries.length
+      ? entries.map(([k,v]) => `<div class="memory-item"><button class="delete-btn" data-delmem="${esc(k)}">x</button><div class="item-title">${esc(k)}</div><div class="item-text">${esc(v.value)}</div></div>`).join('')
+      : '<div class="chat-meta">No memories yet.</div>';
     $$('[data-delmem]').forEach(btn => btn.addEventListener('click', () => { delete train.memories[btn.dataset.delmem]; persistTrain(); }));
     return;
   }
   if (tab === 'knowledge') {
-    root.innerHTML = train.knowledge.length ? train.knowledge.map((k, i) => `
-      <div class="kb-item"><button class="delete-btn" data-delkb="${i}">x</button><div class="item-title">${esc(k.title)}</div><div class="item-text">${esc(k.content).slice(0, 220)}</div></div>
-    `).join('') : '<div class="chat-meta">No knowledge documents yet.</div>';
-    $$('[data-delkb]').forEach(btn => btn.addEventListener('click', () => { train.knowledge.splice(Number(btn.dataset.delkb), 1); persistTrain(); }));
+    root.innerHTML = train.knowledge.length
+      ? train.knowledge.map((k,i) => `<div class="kb-item"><button class="delete-btn" data-delkb="${i}">x</button><div class="item-title">${esc(k.title)}</div><div class="item-text">${esc(k.content).slice(0,220)}</div></div>`).join('')
+      : '<div class="chat-meta">No knowledge docs yet.</div>';
+    $$('[data-delkb]').forEach(btn => btn.addEventListener('click', () => { train.knowledge.splice(+btn.dataset.delkb, 1); persistTrain(); }));
     return;
   }
   const q = $('#searchChats').value.toLowerCase();
   const visible = chats.filter(c => !q || c.title.toLowerCase().includes(q) || c.messages.some(m => m.content.toLowerCase().includes(q)));
-  root.innerHTML = visible.length ? visible.map(c => `
-    <div class="chat-item ${c.id === activeId ? 'active' : ''}" data-chat="${c.id}">
-      <button class="delete-btn" data-delchat="${c.id}">x</button>
-      <div class="chat-title">${esc(c.title)}</div>
-      <div class="chat-meta">${c.messages.length} messages</div>
-    </div>
-  `).join('') : '<div class="chat-meta">No conversations yet.</div>';
+  root.innerHTML = visible.length
+    ? visible.map(c => `
+      <div class="chat-item ${c.id === activeId ? 'active' : ''}" data-chat="${c.id}">
+        <button class="delete-btn" data-delchat="${c.id}">x</button>
+        <div class="chat-title">${esc(c.title)}</div>
+        <div class="chat-meta">${c.messages.length} messages</div>
+      </div>`).join('')
+    : '<div class="chat-meta">No conversations yet.</div>';
   $$('[data-chat]').forEach(el => el.addEventListener('click', e => {
     if (e.target.matches('[data-delchat]')) return;
-    activeId = el.dataset.chat;
-    persistChats();
-    renderRail();
-    renderMessages();
+    activeId = el.dataset.chat; persistChats(); renderRail(); renderMessages();
   }));
   $$('[data-delchat]').forEach(btn => btn.addEventListener('click', e => {
     e.stopPropagation();
     chats = chats.filter(c => c.id !== btn.dataset.delchat);
-    activeId = chats[0] ? chats[0].id : null;
-    persistChats();
-    renderRail();
-    renderMessages();
+    activeId = chats[0]?.id || null;
+    persistChats(); renderRail(); renderMessages();
   }));
 }
+
 function renderTraining() {
   $('#personality').value = train.personality;
   $('#rulesList').innerHTML = train.rules.map((r, i) => `
     <div class="rule-item"><button class="delete-btn" data-delrule="${i}">x</button><div class="item-text">${esc(r)}</div></div>
   `).join('');
-  $$('[data-delrule]').forEach(btn => btn.addEventListener('click', () => { train.rules.splice(Number(btn.dataset.delrule), 1); persistTrain(); }));
+  $$('[data-delrule]').forEach(btn => btn.addEventListener('click', () => { train.rules.splice(+btn.dataset.delrule, 1); persistTrain(); }));
   const count = Object.keys(train.memories).length + train.knowledge.length + train.examples.length;
   $('#learnMeter').style.width = Math.min(100, count * 9 + train.rules.length * 4) + '%';
   $('#learnStats').textContent = `${Object.keys(train.memories).length} memories · ${train.knowledge.length} docs · ${train.examples.length} examples`;
   $('#brainState').textContent = train.settings.trainFromChats ? 'auto-train on' : 'auto-train off';
   $('#chatTrainingToggle').checked = !!train.settings.trainFromChats;
 }
+
 function renderAttachBar() {
   $('#attachBar').innerHTML = attachments.map((a, i) => `<span class="chip">${esc(a.name)} <button class="delete-btn" style="position:static;opacity:1" data-delatt="${i}">x</button></span>`).join('');
-  $$('[data-delatt]').forEach(btn => btn.addEventListener('click', () => { attachments.splice(Number(btn.dataset.delatt), 1); renderAttachBar(); }));
+  $$('[data-delatt]').forEach(btn => btn.addEventListener('click', () => { attachments.splice(+btn.dataset.delatt, 1); renderAttachBar(); }));
 }
-function send() {
+
+// ════════════════════════════════════════
+//  Send
+// ════════════════════════════════════════
+async function send() {
   if (busy) return;
   const text = $('#input').value.trim();
   if (!text) return;
+
   busy = true;
   $('#input').value = '';
   $('#input').style.height = 'auto';
   $('#sendBtn').disabled = true;
+
+  learnFromUser(text);
   addMessage('user', text);
-  setTimeout(() => {
-    const answer = generateReply(text);
-    addMessage('assistant', answer);
-    learnFromInteraction(text, answer);
-    attachments = [];
-    renderAttachBar();
-    busy = false;
-  }, 120);
+
+  const modeLabel = detectMode(text);
+  appendStreamingCard(modeLabel);
+
+  await generateLLMReply(text,
+    partial => updateStreamingCard(partial),
+    final => {
+      removeStreamingCard();
+      addMessage('assistant', final);
+      learnFromInteraction(text, final);
+      attachments = [];
+      renderAttachBar();
+      busy = false;
+      $('#sendBtn').disabled = !$('#input').value.trim();
+    }
+  );
 }
+
 function quick(text) {
+  if (!text?.trim()) return;
   $('#input').value = text;
   send();
 }
+
 function exportChat() {
   const chat = activeChat();
   const md = chat.messages.map(m => `## ${m.role === 'user' ? 'You' : 'ARIA'}\n\n${m.content}`).join('\n\n---\n\n');
-  const blob = new Blob([md], { type: 'text/markdown' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `aria-${new Date().toISOString().slice(0, 10)}.md`;
+  const a  = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([md], { type: 'text/markdown' })),
+    download: `aria-${new Date().toISOString().slice(0,10)}.md`
+  });
   a.click();
 }
+
+// ════════════════════════════════════════
+//  Wire up all events
+// ════════════════════════════════════════
 function wire() {
   const theme = localStorage.getItem(STORE.theme) || 'dark';
   document.documentElement.setAttribute('data-theme', theme);
   $(`[data-mode="${mode}"]`)?.classList.add('on');
   $(`[data-depth="${depth}"]`)?.classList.add('on');
+
   $('#newChatBtn').addEventListener('click', createChat);
   $('#sendBtn').addEventListener('click', send);
   $('#clearBtn').addEventListener('click', () => { activeChat().messages = []; persistChats(); renderMessages(); });
@@ -1448,17 +1526,16 @@ function wire() {
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem(STORE.theme, next);
   });
+
   $('#input').addEventListener('input', e => {
     e.target.style.height = 'auto';
     e.target.style.height = Math.min(e.target.scrollHeight, 180) + 'px';
     $('#sendBtn').disabled = !e.target.value.trim() || busy;
   });
   $('#input').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   });
+
   $('#searchChats').addEventListener('input', renderRail);
   $$('.rail-tab').forEach(btn => btn.addEventListener('click', () => {
     $$('.rail-tab').forEach(b => b.classList.remove('on'));
@@ -1477,78 +1554,68 @@ function wire() {
     depth = btn.dataset.depth;
     save(STORE.depth, depth);
   }));
+
   $('#personality').addEventListener('input', e => { train.personality = e.target.value; persistTrain(); });
-  $('#chatTrainingToggle').addEventListener('change', e => {
-    train.settings.trainFromChats = e.target.checked;
-    persistTrain();
-    renderMessages();
-  });
+  $('#chatTrainingToggle').addEventListener('change', e => { train.settings.trainFromChats = e.target.checked; persistTrain(); });
   $('#addRuleBtn').addEventListener('click', () => {
-    const value = $('#ruleInput').value.trim();
-    if (!value) return;
-    train.rules.push(value);
-    $('#ruleInput').value = '';
-    persistTrain();
+    const v = $('#ruleInput').value.trim(); if (!v) return;
+    train.rules.push(v); $('#ruleInput').value = ''; persistTrain();
   });
   $('#addKbBtn').addEventListener('click', () => {
-    const title = $('#kbTitle').value.trim();
-    const content = $('#kbText').value.trim();
+    const title = $('#kbTitle').value.trim(), content = $('#kbText').value.trim();
     if (!title || !content) return;
     train.knowledge.push({ title, content, ts: Date.now() });
-    $('#kbTitle').value = '';
-    $('#kbText').value = '';
-    persistTrain();
+    $('#kbTitle').value = ''; $('#kbText').value = ''; persistTrain();
   });
   $('#addExampleBtn').addEventListener('click', () => {
-    const prompt = $('#exPrompt').value.trim();
-    const answer = $('#exAnswer').value.trim();
+    const prompt = $('#exPrompt').value.trim(), answer = $('#exAnswer').value.trim();
     if (!prompt || !answer) return;
     train.examples.push({ prompt, answer, ts: Date.now() });
-    $('#exPrompt').value = '';
-    $('#exAnswer').value = '';
-    persistTrain();
+    $('#exPrompt').value = ''; $('#exAnswer').value = ''; persistTrain();
   });
   $('#addMemBtn').addEventListener('click', () => {
-    const key = $('#memKey').value.trim();
-    const value = $('#memVal').value.trim();
+    const key = $('#memKey').value.trim(), value = $('#memVal').value.trim();
     if (!key || !value) return;
     train.memories[key] = { value, ts: Date.now(), auto: false };
-    $('#memKey').value = '';
-    $('#memVal').value = '';
-    persistTrain();
+    $('#memKey').value = ''; $('#memVal').value = ''; persistTrain();
   });
   $('#teachLastBtn').addEventListener('click', () => {
-    const chat = activeChat();
-    const lastUser = [...chat.messages].reverse().find(m => m.role === 'user');
-    const lastAi = [...chat.messages].reverse().find(m => m.role === 'assistant');
-    if (!lastUser || !lastAi) return;
-    train.examples.push({ prompt: lastUser.content, answer: lastAi.content, ts: Date.now() });
+    const chat   = activeChat();
+    const lastU  = [...chat.messages].reverse().find(m => m.role === 'user');
+    const lastAI = [...chat.messages].reverse().find(m => m.role === 'assistant');
+    if (!lastU || !lastAI) return;
+    train.examples.push({ prompt: lastU.content, answer: lastAI.content, ts: Date.now() });
     persistTrain();
   });
   $('#fileInput').addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const file = e.target.files[0]; if (!file) return;
     const text = await file.text();
     attachments.push({ name: file.name, content: text.slice(0, 18000), size: file.size });
-    renderAttachBar();
-    e.target.value = '';
+    renderAttachBar(); e.target.value = '';
   });
+
+  // Model loader
+  $('#loadModelBtn').addEventListener('click', () => {
+    const modelId = $('#modelSelect').value;
+    initEngine(modelId);
+  });
+
+  // Cursor glow
   const glow = $('#cursorGlow');
   let tx = innerWidth / 2, ty = innerHeight / 2, cx = tx, cy = ty;
   addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; });
-  const tick = () => {
-    cx += (tx - cx) * .08;
-    cy += (ty - cy) * .08;
-    glow.style.transform = `translate(${cx - 310}px, ${cy - 310}px)`;
-    requestAnimationFrame(tick);
-  };
-  tick();
+  (function tick() { cx += (tx-cx)*.08; cy += (ty-cy)*.08; glow.style.transform = `translate(${cx-310}px,${cy-310}px)`; requestAnimationFrame(tick); })();
 }
+
+// ════════════════════════════════════════
+//  Boot
+// ════════════════════════════════════════
 if (!chats.length) createChat();
 wire();
 renderTraining();
 renderRail();
 renderMessages();
+updateInputFoot();
 </script>
 </body>
 </html>
