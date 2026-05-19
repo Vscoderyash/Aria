@@ -2,9 +2,9 @@
 """
 ARIA local runner.
 
-This serves index.html only. The AI logic now runs in the browser through the
-local ARIA brain, so no OpenAI, Anthropic, OpenRouter, Pollinations, or other
-chat API is required.
+Serves index.html with the headers required for SharedArrayBuffer (needed by
+WebLLM so the AI model can run in a background thread inside the browser).
+No OpenAI, Anthropic, OpenRouter, Pollinations, or other cloud API is used.
 """
 
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -22,13 +22,20 @@ class AriaHandler(SimpleHTTPRequestHandler):
 
     def end_headers(self):
         self.send_header("Cache-Control", "no-store")
+        # Required for SharedArrayBuffer (WebLLM multi-thread inference)
+        self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+        self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
         super().end_headers()
+
+    def log_message(self, fmt, *args):
+        pass  # suppress request noise
 
 
 if __name__ == "__main__":
-    print("\n" + "=" * 50)
-    print("  ARIA Local")
-    print("  Mode : Offline local brain, no API")
+    print("\n" + "=" * 54)
+    print("  ARIA  —  Local AI (no API, no cloud)")
     print(f"  Open : http://{HOST}:{PORT}")
-    print("=" * 50 + "\n")
+    print("  Model runs fully inside your browser via WebLLM.")
+    print("  First load downloads the model (~1–2.5 GB).")
+    print("=" * 54 + "\n")
     ThreadingHTTPServer((HOST, PORT), AriaHandler).serve_forever()
