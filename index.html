@@ -204,30 +204,132 @@ button { cursor: pointer; }
 .field { padding: 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-base); margin-bottom: 8px; }
 .mini-btn,.add-btn { padding: 8px 10px; font-size: 12px; }
 .stack { display: grid; gap: 8px; }
-.meter { height: 7px; border-radius: 99px; background: var(--bg-base); overflow: hidden; border: 1px solid var(--border); }
-.meter span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--success)); transition: width .3s var(--ease); }
-.status-line { display: flex; justify-content: space-between; color: var(--text-dim); font-family: var(--font-mono); font-size: 10px; margin-top: 6px; }
-.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.meter {
+  height: 7px;
+  border-radius: 99px;
+  background: var(--bg-base);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.meter span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  transition: width .3s var(--ease);
+}
+.status-line {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin-top: 6px;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
 .setting-copy { min-width: 0; }
-.setting-title { color: var(--text); font-size: 13px; font-weight: 650; }
-.setting-desc { color: var(--text-dim); font-size: 12px; line-height: 1.45; margin-top: 3px; }
-.switch { position: relative; width: 46px; height: 26px; flex: 0 0 auto; }
-.switch input { position: absolute; inset: 0; opacity: 0; }
-.switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--bg-base); border: 1px solid var(--border); transition: .2s var(--ease); }
-.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--text-dim); transition: .2s var(--ease); }
-.switch input:checked + span { background: var(--accent-soft); border-color: var(--accent); }
-.switch input:checked + span::after { transform: translateX(20px); background: var(--accent); }
-.load-model-btn { width: 100%; margin-top: 8px; padding: 10px; border-radius: var(--radius); border: 1px solid var(--accent); color: var(--bg-base); background: var(--accent); font-size: 13px; font-weight: 600; transition: opacity .18s; }
+.setting-title {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+}
+.setting-desc {
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.45;
+  margin-top: 3px;
+}
+.switch {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  flex: 0 0 auto;
+}
+.switch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+.switch span {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  transition: .2s var(--ease);
+}
+.switch span::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: .2s var(--ease);
+}
+.switch input:checked + span {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.switch input:checked + span::after {
+  transform: translateX(20px);
+  background: var(--accent);
+}
+/* Model load button states */
+.load-model-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  color: var(--bg-base);
+  background: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity .18s;
+}
 .load-model-btn:hover { opacity: .88; }
 .load-model-btn:disabled { opacity: .4; cursor: default; }
-.model-select { width: 100%; padding: 8px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-base); color: var(--text); margin-bottom: 8px; font-size: 12px; }
-.model-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-family: var(--font-mono); border: 1px solid var(--border); color: var(--text-dim); background: var(--bg-base); }
-.model-badge.ready  { border-color: var(--success); color: var(--success); }
-.model-badge.loading { border-color: var(--accent);  color: var(--accent); }
-.model-badge.error  { border-color: var(--danger);  color: var(--danger); }
+.model-select {
+  width: 100%;
+  padding: 8px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-base);
+  color: var(--text);
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.model-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  background: var(--bg-base);
+}
+.model-badge.ready { border-color: var(--success); color: var(--success); }
+.model-badge.loading { border-color: var(--accent); color: var(--accent); }
+.model-badge.error { border-color: var(--danger); color: var(--danger); }
+/* Typing cursor */
 @keyframes blink { 50% { opacity: 0; } }
 .cursor { display: inline-block; animation: blink 1s step-end infinite; }
-.msg.streaming .msg-card { border-color: color-mix(in oklab, var(--accent) 30%, var(--border-soft)); }
+/* Streaming message */
+.msg.streaming .msg-card {
+  border-color: color-mix(in oklab, var(--accent) 30%, var(--border-soft));
+}
 @media (max-width: 980px) {
   .app { grid-template-columns: 1fr; grid-template-rows: var(--header-h) 1fr auto; grid-template-areas: "header" "main" "panel"; }
   .header { grid-template-columns: 1fr auto; }
@@ -252,19 +354,7 @@ button { cursor: pointer; }
         <div class="brand-meta">chat · code · design</div>
       </div>
     </div>
-    <div class="header-center">
-      <div class="segmented" id="modeTabs">
-        <button class="seg-btn on" data-mode="auto">Auto</button>
-        <button class="seg-btn" data-mode="code">Code</button>
-        <button class="seg-btn" data-mode="research">Research</button>
-        <button class="seg-btn" data-mode="creative">Creative</button>
-      </div>
-      <div class="segmented" id="depthTabs">
-        <button class="seg-btn" data-depth="fast">Fast</button>
-        <button class="seg-btn on" data-depth="balanced">Balanced</button>
-        <button class="seg-btn" data-depth="deep">Deep</button>
-      </div>
-    </div>
+    <div class="header-center"></div>
     <div class="header-right">
       <span id="headerModelBadge" class="model-badge">no model</span>
       <button class="icon-btn" id="themeBtn" title="Theme">◐</button>
@@ -316,6 +406,14 @@ button { cursor: pointer; }
           <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Qwen 2.5 1.5B · 1.0 GB · Lightweight</option>
         </select>
         <div class="meter"><span id="llmMeter"></span></div>
+        <div class="status-line">
+          <span id="llmStatusText">Click Load to start</span>
+          <span id="llmPct"></span>
+        </div>
+        <button class="load-model-btn" id="loadModelBtn">Load AI model</button>
+        <div class="setting-desc" style="margin-top:8px;color:var(--text-dim)" id="llmReq">
+          Requires WebGPU (Chrome 113+ or Edge 113+). GPU with 4 GB VRAM recommended for Phi/Llama.
+        </div>
         <div class="status-line"><span id="llmStatusText">Click Load to start</span><span id="llmPct"></span></div>
         <button class="load-model-btn" id="loadModelBtn">Load AI model</button>
         <div class="setting-desc" style="margin-top:8px">Requires Chrome 113+ or Edge 113+ (WebGPU). GPU with 4 GB VRAM recommended.</div>
@@ -330,9 +428,12 @@ button { cursor: pointer; }
         <div class="setting-row">
           <div class="setting-copy">
             <div class="setting-title">Train from chats</div>
-            <div class="setting-desc">ARIA learns from conversations automatically.</div>
+            <div class="setting-desc">ARIA adds interaction pairs as examples automatically when enabled.</div>
           </div>
-          <label class="switch"><input id="chatTrainingToggle" type="checkbox"><span></span></label>
+          <label class="switch">
+            <input id="chatTrainingToggle" type="checkbox">
+            <span></span>
+          </label>
         </div>
       </section>
       <section class="panel-section"><h3>Personality</h3><textarea class="text-field" id="personality"></textarea></section>
@@ -360,216 +461,641 @@ button { cursor: pointer; }
         <textarea class="text-field" id="memVal" placeholder="Value"></textarea>
         <button class="add-btn" id="addMemBtn">Save memory</button>
       </section>
+
     </div>
   </aside>
 </div>
+
 <script type="module">
 'use strict';
-let llmEngine=null,llmReady=false,llmLoading=false;
-const WEBLLM_CDN='https://esm.run/@mlc-ai/web-llm';
-async function initEngine(modelId){
-  if(llmLoading||llmReady)return;
-  if(!navigator.gpu){setLLMUI('error',0,'WebGPU not supported. Use Chrome 113+ or Edge 113+.');return;}
-  llmLoading=true;
-  setLLMUI('loading',0,'Importing WebLLM…');
-  try{
-    const webllm=await import(WEBLLM_CDN);
-    setLLMUI('loading',2,'Starting engine…');
-    llmEngine=await webllm.CreateMLCEngine(modelId,{
-      initProgressCallback(p){
-        const pct=Math.round((p.progress||0)*100);
-        setLLMUI('loading',pct,p.text||'Loading…');
-      }
-    });
-    llmReady=true;llmLoading=false;
-    setLLMUI('ready',100,'Model ready — ARIA is fully online.');
-    document.getElementById('inputFoot').textContent='ARIA · local AI · no API · no cloud · 100% free';
-  }catch(err){
-    llmLoading=false;
-    setLLMUI('error',0,'Failed: '+(err.message||err));
-  }
-}
-function setLLMUI(state,pct,text){
-  const badge=document.getElementById('llmBadge');
-  const hbadge=document.getElementById('headerModelBadge');
-  const meter=document.getElementById('llmMeter');
-  document.getElementById('llmStatusText').textContent=text;
-  document.getElementById('llmPct').textContent=pct>0&&pct<100?pct+'%':'';
-  meter.style.width=pct+'%';
-  badge.className=hbadge.className='model-badge '+state;
-  const label=document.getElementById('modelSelect').selectedOptions[0]?.text.split('·')[0].trim()||'AI';
-  const btn=document.getElementById('loadModelBtn');
-  if(state==='ready'){badge.textContent=hbadge.textContent='● '+label;btn.textContent='Model loaded ✓';btn.disabled=true;document.getElementById('modelSelect').disabled=true;}
-  else if(state==='loading'){badge.textContent=hbadge.textContent='◌ loading';btn.textContent='Loading…';btn.disabled=true;}
-  else if(state==='error'){badge.textContent=hbadge.textContent='✕ error';btn.textContent='Retry';btn.disabled=false;}
-}
-const STORE={chats:'aria.local.chats',active:'aria.local.active',train:'aria.local.train',theme:'aria.local.theme',mode:'aria.local.mode',depth:'aria.local.depth'};
-const DEFAULT_TRAIN={personality:'You are ARIA, a precise, helpful, and honest AI assistant. Give complete and accurate answers. Never make things up.',rules:['Use the local knowledge base and memories before generic reasoning.','When coding, give complete working code.','Be honest when you do not know something.'],memories:{},knowledge:[],examples:[],settings:{trainFromChats:true}};
-const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
-const load=(k,fb)=>{try{const r=localStorage.getItem(k);return r?JSON.parse(r):fb;}catch{return fb;}};
-const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const esc=t=>String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let train=norm(load(STORE.train,DEFAULT_TRAIN)),chats=load(STORE.chats,[]),activeId=load(STORE.active,null),mode=load(STORE.mode,'auto'),depth=load(STORE.depth,'balanced'),attachments=[],busy=false;
-function norm(v){return{...DEFAULT_TRAIN,...(v||{}),memories:{...(v?.memories||{})},rules:Array.isArray(v?.rules)?v.rules:DEFAULT_TRAIN.rules.slice(),knowledge:Array.isArray(v?.knowledge)?v.knowledge:[],examples:Array.isArray(v?.examples)?v.examples:[],settings:{...DEFAULT_TRAIN.settings,...(v?.settings||{})}};}
-function persistTrain(){save(STORE.train,train);renderTraining();renderRail();}
-function persistChats(){save(STORE.chats,chats.slice(0,100));save(STORE.active,activeId);}
-function activeChat(){let c=chats.find(c=>c.id===activeId);if(!c)c=createChat();return c;}
-function createChat(){const chat={id:Date.now().toString(36),title:'New conversation',created:Date.now(),messages:[]};chats.unshift(chat);activeId=chat.id;persistChats();renderRail();renderMessages();return chat;}
-const STOP=new Set('the a an and or but if then this that with from into onto about what when where who why how for you your our are was were been have has had not can will shall should would could may might there their they them his her its'.split(' '));
-const words=t=>String(t||'').toLowerCase().replace(/[^a-z0-9+#.\s-]/g,' ').split(/\s+/).filter(w=>w.length>2&&!STOP.has(w));
-const score=(q,t)=>{const qs=words(q),hay=String(t||'').toLowerCase();return qs.reduce((s,w)=>s+(hay.includes(w)?1:0),0);};
-const sentences=t=>String(t||'').replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(Boolean);
-const snippets=(q,t,n=3)=>{const r=sentences(t).map(s=>({s,sc:score(q,s)})).sort((a,b)=>b.sc-a.sc).slice(0,n).map(x=>x.s);return r.length?r.join(' '):String(t||'').slice(0,600);};
-function learnFromUser(text){
-  if(!train.settings.trainFromChats)return;
-  const p=[[/my name is\s+([a-z][a-z\s]{1,40})/i,'user name'],[/call me\s+([a-z][a-z\s]{1,40})/i,'preferred name'],[/i am\s+(?:a|an)?\s*([a-z][a-z\s]{2,60})/i,'user identity'],[/i work (?:at|for|on)\s+([a-z0-9][a-z0-9\s.-]{1,60})/i,'user work'],[/my project is\s+([a-z0-9][a-z0-9\s.-]{1,80})/i,'user project'],[/remember that\s+(.{6,160})/i,'remembered fact']];
-  for(const[re,key]of p){const h=text.match(re);if(h?.[1])train.memories[key]={value:h[1].trim(),ts:Date.now(),auto:true};}
-  persistTrain();
-}
-function learnFromInteraction(u,a){
-  if(!train.settings.trainFromChats)return;
-  const p=String(u||'').trim(),ans=String(a||'').trim();
-  if(p.length<6||ans.length<20)return;
-  if(train.examples.some(ex=>ex.auto&&ex.prompt===p))return;
-  train.examples.unshift({prompt:p,answer:ans,ts:Date.now(),auto:true});
-  const manual=train.examples.filter(ex=>!ex.auto),auto=train.examples.filter(ex=>ex.auto).slice(0,80);
-  train.examples=[...manual,...auto].sort((a,b)=>(b.ts||0)-(a.ts||0));
-  persistTrain();
-}
-function detectMode(text){
-  if(mode!=='auto')return mode;
-  const lo=text.toLowerCase();
-  if(/\b(design|ui|ux|layout|screen|interface|component|wireframe)\b/.test(lo))return 'design';
-  if(/\b(code|function|html|css|javascript|python|bug|error|debug|api|git)\b/.test(lo))return 'code';
-  if(/\b(research|analyze|compare|report|market|data|study|evaluate)\b/.test(lo))return 'research';
-  if(/\b(write|email|story|caption|script|blog|poem|creative|copy)\b/.test(lo))return 'creative';
-  return 'general';
-}
-function knowledgeMatches(text){
-  const docs=[...train.knowledge.map(k=>({type:'Knowledge',title:k.title,content:k.content})),...Object.entries(train.memories).map(([k,v])=>({type:'Memory',title:k,content:v.value})),...attachments.map(a=>({type:'File',title:a.name,content:a.content}))];
-  return docs.map(d=>({...d,score:score(text,d.title+' '+d.content)})).filter(d=>d.score>0).sort((a,b)=>b.score-a.score).slice(0,depth==='deep'?6:depth==='fast'?2:4);
-}
-function exampleMatch(text){return train.examples.map(ex=>({...ex,score:score(text,ex.prompt+' '+ex.answer)})).filter(ex=>ex.score>0).sort((a,b)=>b.score-a.score)[0]||null;}
-function buildSystemPrompt(query){
-  const matches=knowledgeMatches(query),ex=exampleMatch(query);
-  const mem=Object.entries(train.memories).slice(0,10).map(([k,v])=>`- ${k}: ${v.value}`).join('\n')||'(none)';
-  const rules=train.rules.slice(0,8).map(r=>`- ${r}`).join('\n')||'(none)';
-  const ctx=matches.length?'\n\n## Relevant local knowledge\n'+matches.map(m=>`### ${m.title}\n${snippets(query,m.content,depth==='deep'?4:2)}`).join('\n\n'):'';
-  const exB=ex&&ex.score>=2?`\n\n## Preferred answer style\nQ: ${ex.prompt}\nA: ${ex.answer}`:'';
-  return `You are ARIA, an AI assistant running fully inside the user's browser via WebLLM. No external API or cloud is used.\n\n## Personality\n${train.personality}\n\n## Rules\n${rules}\n\n## User memories\n${mem}${exB}${ctx}\n\nAnswer directly. Be thorough when needed, concise when possible.`;
-}
-async function generateReply(query,onToken,onDone){
-  if(!llmReady||!llmEngine){onDone(fallback(query));return;}
-  const sys=buildSystemPrompt(query);
-  const chat=activeChat();
-  const hist=chat.messages.slice(-20).filter(m=>m.role==='user'||m.role==='assistant');
-  const messages=[{role:'system',content:sys},...hist.map(m=>({role:m.role,content:m.content}))];
-  const maxTokens=depth==='deep'?2000:depth==='fast'?600:1200;
-  try{
-    const stream=await llmEngine.chat.completions.create({messages,stream:true,temperature:0.7,max_tokens:maxTokens});
-    let full='';
-    for await(const chunk of stream){
-      const tok=chunk.choices[0]?.delta?.content||'';
-      if(tok){full+=tok;onToken(full);}
-    }
-    onDone(full||'(no response)');
-  }catch(err){onDone('Error: '+(err.message||err));}
-}
-function fallback(text){
-  if(/(who are you|what are you|who made you)/i.test(text))return 'I am ARIA, a local AI assistant built by Yash Raj.\n\nI run a real language model entirely inside your browser — no API, no cloud, no cost. Load a model in the right panel to activate full AI responses.';
-  const ex=exampleMatch(text);if(ex&&ex.score>=2)return ex.answer;
-  const m=knowledgeMatches(text);
-  if(m.length)return '## From your knowledge base\n\n'+m.map(d=>`**${d.title}**\n${snippets(text,d.content,2)}`).join('\n\n')+'\n\n_Load the AI model in the panel for full intelligent answers._';
-  return 'No AI model loaded yet.\n\nOpen the right panel, pick a model, and click **Load AI model**. The model downloads once (~1–2.5 GB) then works offline forever.\n\nYour message: "'+text.slice(0,120)+'"';
-}
-function renderMarkdown(text){
-  let h=esc(text);
-  h=h.replace(/```(\w*)\n([\s\S]*?)```/g,(_,l,c)=>`<pre><code>${esc(c.trimEnd())}</code></pre>`);
-  h=h.replace(/`([^`\n]+)`/g,'<code>$1</code>');
-  h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>');h=h.replace(/^## (.+)$/gm,'<h2>$1</h2>');h=h.replace(/^# (.+)$/gm,'<h1>$1</h1>');
-  h=h.replace(/^- (.+)$/gm,'<li>$1</li>');h=h.replace(/(<li>[\s\S]+?<\/li>)/g,'<ul>$1</ul>');
-  return h;
-}
-function addMessage(role,content){const chat=activeChat();chat.messages.push({role,content,ts:Date.now(),mode:detectMode(content)});if(role==='user'&&chat.title==='New conversation')chat.title=content.slice(0,46);persistChats();renderMessages();renderRail();}
-function renderMessages(){
-  const chat=activeChat(),root=$('#messageInner');
-  if(!chat.messages.length){
-    root.innerHTML=`<div class="empty"><div class="eyebrow">Real local AI · zero API · zero cost · runs in browser</div><h1>How can I<br>help?</h1><p>ARIA runs a real AI model inside your browser — no API key, no cloud, no cost. Load the model once from the right panel, then chat forever.</p><div class="hero-composer"><div class="hero-prompt-row"><input class="hero-input" id="heroInput" placeholder="Ask anything — code, design, writing, ideas…"><button class="hero-send" id="heroSend">➜</button></div><div class="prompt-pills"><button class="prompt-pill" data-prompt="Who are you and how do you work?">Who are you?</button><button class="prompt-pill" data-prompt="Write a modern responsive landing page in HTML CSS JavaScript">Write code</button><button class="prompt-pill" data-prompt="Plan a full-stack SaaS app architecture">Plan an app</button><button class="prompt-pill" data-prompt="Explain how large language models work">Explain AI</button></div></div><div class="starter-grid"><button class="starter" data-prompt="Design a dark-mode SaaS dashboard with sidebar and metrics cards"><strong>Design a UI</strong><span>Layouts, components, hierarchy</span></button><button class="starter" data-prompt="Write complete production-ready HTML CSS JS for a chat interface"><strong>Code from scratch</strong><span>Full working implementation</span></button><button class="starter" data-prompt="Help me build a profitable micro-SaaS from idea to launch"><strong>Build a SaaS</strong><span>Plan, features, go-to-market</span></button><button class="starter" data-prompt="Debug this code and explain what was wrong"><strong>Debug my code</strong><span>Root cause and fix</span></button></div></div>`;
-    $$('.starter,.prompt-pill').forEach(b=>b.addEventListener('click',()=>quick(b.dataset.prompt)));
-    $('#heroSend').addEventListener('click',()=>quick($('#heroInput').value));
-    $('#heroInput').addEventListener('keydown',e=>{if(e.key==='Enter')quick(e.target.value);});
+
+// ════════════════════════════════════════
+//  WebLLM state
+// ════════════════════════════════════════
+let llmEngine   = null;
+let llmReady    = false;
+let llmLoading  = false;
+
+const WEBLLM_CDN = 'https://esm.run/@mlc-ai/web-llm';
+
+async function initEngine(modelId) {
+  if (llmLoading || llmReady) return;
+  if (!navigator.gpu) {
+    setLLMUI('error', 0, 'WebGPU not supported in this browser.');
     return;
   }
-  root.innerHTML=chat.messages.map((m,i)=>`<div class="msg ${m.role}"><div class="avatar">${m.role==='user'?'U':'A'}</div><div class="msg-card"><div class="msg-head"><span class="msg-name">${m.role==='user'?'You':'ARIA'}</span><span class="msg-mode">${m.role==='assistant'?(m.mode||mode):''}</span></div><div class="prose">${renderMarkdown(m.content)}</div><div class="msg-actions"><button class="action-btn" data-copy-msg="${i}">Copy</button>${m.role==='assistant'?`<button class="action-btn" data-teach-msg="${i}">Teach preference</button>`:''}</div></div></div>`).join('');
-  $$('[data-copy-msg]').forEach(b=>b.addEventListener('click',()=>navigator.clipboard.writeText(chat.messages[+b.dataset.copyMsg].content)));
-  $$('[data-teach-msg]').forEach(b=>b.addEventListener('click',()=>teachPref(+b.dataset.teachMsg)));
-  $('#messages').scrollTop=$('#messages').scrollHeight;
+  llmLoading = true;
+  setLLMUI('loading', 0, 'Importing WebLLM…');
+  try {
+    const webllm = await import(WEBLLM_CDN);
+    setLLMUI('loading', 2, 'Starting engine…');
+    llmEngine = await webllm.CreateMLCEngine(modelId, {
+      initProgressCallback(p) {
+        const pct = Math.round((p.progress || 0) * 100);
+        setLLMUI('loading', pct, p.text || 'Loading…');
+      }
+    });
+    llmReady  = true;
+    llmLoading = false;
+    setLLMUI('ready', 100, 'Model ready — ARIA is fully online.');
+    updateInputFoot();
+  } catch (err) {
+    llmLoading = false;
+    setLLMUI('error', 0, 'Failed: ' + (err.message || err));
+  }
 }
-function teachPref(i){const chat=activeChat(),ai=chat.messages[i];if(!ai||ai.role!=='assistant')return;const u=[...chat.messages.slice(0,i)].reverse().find(m=>m.role==='user');if(!u)return;train.examples.unshift({prompt:u.content,answer:ai.content,ts:Date.now(),manual:true});persistTrain();}
-let streamEl=null;
-function appendStreamCard(ml){const root=$('#messageInner'),d=document.createElement('div');d.className='msg assistant streaming';d.id='aria-stream';d.innerHTML=`<div class="avatar">A</div><div class="msg-card"><div class="msg-head"><span class="msg-name">ARIA</span><span class="msg-mode">${esc(ml)}</span></div><div class="prose" id="aria-stream-prose"><span class="cursor">▊</span></div></div>`;root.appendChild(d);streamEl=d.querySelector('#aria-stream-prose');$('#messages').scrollTop=$('#messages').scrollHeight;}
-function updateStreamCard(p){if(!streamEl)return;streamEl.innerHTML=renderMarkdown(p)+'<span class="cursor">▊</span>';$('#messages').scrollTop=$('#messages').scrollHeight;}
-function removeStreamCard(){document.getElementById('aria-stream')?.remove();streamEl=null;}
-function renderRail(){
-  const tab=$('.rail-tab.on').dataset.tab,root=$('#railContent');
-  if(tab==='memory'){const e=Object.entries(train.memories);root.innerHTML=e.length?e.map(([k,v])=>`<div class="memory-item"><button class="delete-btn" data-delmem="${esc(k)}">x</button><div class="item-title">${esc(k)}</div><div class="item-text">${esc(v.value)}</div></div>`).join(''):'<div class="chat-meta">No memories yet.</div>';$$('[data-delmem]').forEach(b=>b.addEventListener('click',()=>{delete train.memories[b.dataset.delmem];persistTrain();}));return;}
-  if(tab==='knowledge'){root.innerHTML=train.knowledge.length?train.knowledge.map((k,i)=>`<div class="kb-item"><button class="delete-btn" data-delkb="${i}">x</button><div class="item-title">${esc(k.title)}</div><div class="item-text">${esc(k.content).slice(0,220)}</div></div>`).join(''):'<div class="chat-meta">No knowledge docs yet.</div>';$$('[data-delkb]').forEach(b=>b.addEventListener('click',()=>{train.knowledge.splice(+b.dataset.delkb,1);persistTrain();}));return;}
-  const q=$('#searchChats').value.toLowerCase();
-  const v=chats.filter(c=>!q||c.title.toLowerCase().includes(q)||c.messages.some(m=>m.content.toLowerCase().includes(q)));
-  root.innerHTML=v.length?v.map(c=>`<div class="chat-item ${c.id===activeId?'active':''}" data-chat="${c.id}"><button class="delete-btn" data-delchat="${c.id}">x</button><div class="chat-title">${esc(c.title)}</div><div class="chat-meta">${c.messages.length} messages</div></div>`).join(''):'<div class="chat-meta">No conversations yet.</div>';
-  $$('[data-chat]').forEach(el=>el.addEventListener('click',e=>{if(e.target.matches('[data-delchat]'))return;activeId=el.dataset.chat;persistChats();renderRail();renderMessages();}));
-  $$('[data-delchat]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();chats=chats.filter(c=>c.id!==b.dataset.delchat);activeId=chats[0]?.id||null;persistChats();renderRail();renderMessages();}));
+
+function setLLMUI(state, pct, text) {
+  const badge      = document.getElementById('llmBadge');
+  const headerBadge = document.getElementById('headerModelBadge');
+  const meter      = document.getElementById('llmMeter');
+  const statusText = document.getElementById('llmStatusText');
+  const pctEl      = document.getElementById('llmPct');
+  const btn        = document.getElementById('loadModelBtn');
+
+  statusText.textContent = text;
+  pctEl.textContent      = pct > 0 && pct < 100 ? pct + '%' : '';
+  meter.style.width      = pct + '%';
+
+  badge.className      = 'model-badge ' + state;
+  headerBadge.className = 'model-badge ' + state;
+
+  const label = document.getElementById('modelSelect').selectedOptions[0]?.text.split('·')[0].trim() || 'AI';
+
+  if (state === 'ready') {
+    badge.textContent      = '● ' + label;
+    headerBadge.textContent = '● ' + label;
+    btn.textContent  = 'Model loaded ✓';
+    btn.disabled     = true;
+    document.getElementById('modelSelect').disabled = true;
+  } else if (state === 'loading') {
+    badge.textContent      = '◌ loading';
+    headerBadge.textContent = '◌ loading';
+    btn.textContent  = 'Loading…';
+    btn.disabled     = true;
+  } else if (state === 'error') {
+    badge.textContent      = '✕ error';
+    headerBadge.textContent = '✕ error';
+    btn.textContent  = 'Retry';
+    btn.disabled     = false;
+  }
 }
-function renderTraining(){
-  $('#personality').value=train.personality;
-  $('#rulesList').innerHTML=train.rules.map((r,i)=>`<div class="rule-item"><button class="delete-btn" data-delrule="${i}">x</button><div class="item-text">${esc(r)}</div></div>`).join('');
-  $$('[data-delrule]').forEach(b=>b.addEventListener('click',()=>{train.rules.splice(+b.dataset.delrule,1);persistTrain();}));
-  const n=Object.keys(train.memories).length+train.knowledge.length+train.examples.length;
-  $('#learnMeter').style.width=Math.min(100,n*9+train.rules.length*4)+'%';
-  $('#learnStats').textContent=`${Object.keys(train.memories).length} memories · ${train.knowledge.length} docs · ${train.examples.length} examples`;
-  $('#brainState').textContent=train.settings.trainFromChats?'auto-train on':'auto-train off';
-  $('#chatTrainingToggle').checked=!!train.settings.trainFromChats;
+
+function updateInputFoot() {
+  const el = document.getElementById('inputFoot');
+  if (llmReady) {
+    el.textContent = 'ARIA is running a local AI model — no API, no cloud.';
+  } else {
+    el.textContent = 'Load a model in the panel → to enable full AI responses.';
+  }
 }
-function renderAttachBar(){$('#attachBar').innerHTML=attachments.map((a,i)=>`<span class="chip">${esc(a.name)} <button class="delete-btn" style="position:static;opacity:1" data-delatt="${i}">x</button></span>`).join('');$$('[data-delatt]').forEach(b=>b.addEventListener('click',()=>{attachments.splice(+b.dataset.delatt,1);renderAttachBar();}));}
-async function send(){
-  if(busy)return;
-  const text=$('#input').value.trim();if(!text)return;
-  busy=true;$('#input').value='';$('#input').style.height='auto';$('#sendBtn').disabled=true;
-  learnFromUser(text);addMessage('user',text);appendStreamCard(detectMode(text));
-  await generateReply(text,p=>updateStreamCard(p),f=>{removeStreamCard();addMessage('assistant',f);learnFromInteraction(text,f);attachments=[];renderAttachBar();busy=false;$('#sendBtn').disabled=!$('#input').value.trim();});
+
+// ════════════════════════════════════════
+//  Persistent store
+// ════════════════════════════════════════
+const STORE = {
+  chats: 'aria.local.chats',
+  active: 'aria.local.active',
+  train: 'aria.local.train',
+  theme: 'aria.local.theme',
+  mode: 'aria.local.mode',
+  depth: 'aria.local.depth'
+};
+
+const DEFAULT_TRAIN = {
+  personality: 'Precise, direct, high-agency, and practical. You are a real AI assistant. Give complete, accurate, useful answers. Never make things up.',
+  rules: [
+    'Use the local knowledge base and memories before generic reasoning.',
+    'When coding, give complete working code and explain only the important decisions.',
+    'Be honest when you do not know something.'
+  ],
+  memories: {},
+  knowledge: [],
+  examples: [],
+  settings: { trainFromChats: true }
+};
+
+const $  = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const load = (key, fb) => { try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : fb; } catch { return fb; } };
+const save = (key, v) => localStorage.setItem(key, JSON.stringify(v));
+const esc  = t => String(t || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let train    = normalizeTrain(load(STORE.train, DEFAULT_TRAIN));
+let chats    = load(STORE.chats, []);
+let activeId = load(STORE.active, null);
+let mode     = load(STORE.mode, 'auto');
+let depth    = load(STORE.depth, 'balanced');
+let attachments = [];
+let busy = false;
+
+function normalizeTrain(v) {
+  return {
+    ...DEFAULT_TRAIN,
+    ...(v || {}),
+    memories:  { ...(v?.memories || {}) },
+    rules:     Array.isArray(v?.rules)     ? v.rules     : DEFAULT_TRAIN.rules.slice(),
+    knowledge: Array.isArray(v?.knowledge) ? v.knowledge : [],
+    examples:  Array.isArray(v?.examples)  ? v.examples  : [],
+    settings:  { ...DEFAULT_TRAIN.settings, ...(v?.settings || {}) }
+  };
 }
-function quick(t){if(!t?.trim())return;$('#input').value=t;send();}
-function exportChat(){const chat=activeChat();const md=chat.messages.map(m=>`## ${m.role==='user'?'You':'ARIA'}\n\n${m.content}`).join('\n\n---\n\n');Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([md],{type:'text/markdown'})),download:`aria-${new Date().toISOString().slice(0,10)}.md`}).click();}
-function wire(){
-  const theme=localStorage.getItem(STORE.theme)||'dark';document.documentElement.setAttribute('data-theme',theme);
-  $(`[data-mode="${mode}"]`)?.classList.add('on');$(`[data-depth="${depth}"]`)?.classList.add('on');
-  $('#newChatBtn').addEventListener('click',createChat);
-  $('#sendBtn').addEventListener('click',send);
-  $('#clearBtn').addEventListener('click',()=>{activeChat().messages=[];persistChats();renderMessages();});
-  $('#exportBtn').addEventListener('click',exportChat);
-  $('#themeBtn').addEventListener('click',()=>{const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem(STORE.theme,n);});
-  $('#input').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,180)+'px';$('#sendBtn').disabled=!e.target.value.trim()||busy;});
-  $('#input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
-  $('#searchChats').addEventListener('input',renderRail);
-  $$('.rail-tab').forEach(b=>b.addEventListener('click',()=>{$$('.rail-tab').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderRail();}));
-  $$('#modeTabs .seg-btn').forEach(b=>b.addEventListener('click',()=>{$$('#modeTabs .seg-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');mode=b.dataset.mode;save(STORE.mode,mode);}));
-  $$('#depthTabs .seg-btn').forEach(b=>b.addEventListener('click',()=>{$$('#depthTabs .seg-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');depth=b.dataset.depth;save(STORE.depth,depth);}));
-  $('#personality').addEventListener('input',e=>{train.personality=e.target.value;persistTrain();});
-  $('#chatTrainingToggle').addEventListener('change',e=>{train.settings.trainFromChats=e.target.checked;persistTrain();});
-  $('#addRuleBtn').addEventListener('click',()=>{const v=$('#ruleInput').value.trim();if(!v)return;train.rules.push(v);$('#ruleInput').value='';persistTrain();});
-  $('#addKbBtn').addEventListener('click',()=>{const t=$('#kbTitle').value.trim(),c=$('#kbText').value.trim();if(!t||!c)return;train.knowledge.push({title:t,content:c,ts:Date.now()});$('#kbTitle').value='';$('#kbText').value='';persistTrain();});
-  $('#addExampleBtn').addEventListener('click',()=>{const p=$('#exPrompt').value.trim(),a=$('#exAnswer').value.trim();if(!p||!a)return;train.examples.push({prompt:p,answer:a,ts:Date.now()});$('#exPrompt').value='';$('#exAnswer').value='';persistTrain();});
-  $('#addMemBtn').addEventListener('click',()=>{const k=$('#memKey').value.trim(),v=$('#memVal').value.trim();if(!k||!v)return;train.memories[k]={value:v,ts:Date.now(),auto:false};$('#memKey').value='';$('#memVal').value='';persistTrain();});
-  $('#teachLastBtn').addEventListener('click',()=>{const chat=activeChat();const lu=[...chat.messages].reverse().find(m=>m.role==='user');const la=[...chat.messages].reverse().find(m=>m.role==='assistant');if(!lu||!la)return;train.examples.push({prompt:lu.content,answer:la.content,ts:Date.now()});persistTrain();});
-  $('#fileInput').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();attachments.push({name:f.name,content:t.slice(0,18000),size:f.size});renderAttachBar();e.target.value='';});
-  $('#loadModelBtn').addEventListener('click',()=>initEngine($('#modelSelect').value));
-  const glow=$('#cursorGlow');let tx=innerWidth/2,ty=innerHeight/2,cx=tx,cy=ty;
-  addEventListener('pointermove',e=>{tx=e.clientX;ty=e.clientY;});
-  (function tick(){cx+=(tx-cx)*.08;cy+=(ty-cy)*.08;glow.style.transform=`translate(${cx-310}px,${cy-310}px)`;requestAnimationFrame(tick);})();
+
+function persistTrain() { save(STORE.train, train); renderTraining(); renderRail(); }
+function persistChats() { save(STORE.chats, chats.slice(0, 100)); save(STORE.active, activeId); }
+function activeChat()   { let c = chats.find(c => c.id === activeId); if (!c) c = createChat(); return c; }
+
+function createChat() {
+  const chat = { id: Date.now().toString(36), title: 'New conversation', created: Date.now(), messages: [] };
+  chats.unshift(chat);
+  activeId = chat.id;
+  persistChats();
+  renderRail();
+  renderMessages();
+  return chat;
 }
-if(!chats.length)createChat();
-wire();renderTraining();renderRail();renderMessages();
+
+// ════════════════════════════════════════
+//  NLP helpers (used as context builders)
+// ════════════════════════════════════════
+const STOP = new Set('the a an and or but if then this that with from into onto about what when where who why how for you your our are was were been have has had not can will shall should would could may might there their they them his her its'.split(' '));
+
+function words(text) {
+  return String(text || '').toLowerCase().replace(/[^a-z0-9+#.\s-]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !STOP.has(w));
+}
+function score(query, text) {
+  const q = words(query), hay = String(text || '').toLowerCase();
+  return q.reduce((s, w) => s + (hay.includes(w) ? 1 : 0), 0);
+}
+function splitSentences(t) {
+  return String(t || '').replace(/\s+/g, ' ').split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+}
+function topSnippets(query, text, max = 3) {
+  const ranked = splitSentences(text).map(s => ({ s, sc: score(query, s) })).sort((a,b) => b.sc - a.sc).slice(0, max).map(x => x.s);
+  return ranked.length ? ranked.join(' ') : String(text || '').slice(0, 600);
+}
+
+function learnFromUser(text) {
+  if (!train.settings.trainFromChats) return;
+  const patterns = [
+    [/my name is\s+([a-z][a-z\s]{1,40})/i, 'user name'],
+    [/call me\s+([a-z][a-z\s]{1,40})/i, 'preferred name'],
+    [/i am\s+(?:a|an)?\s*([a-z][a-z\s]{2,60})/i, 'user identity'],
+    [/i work (?:at|for|on)\s+([a-z0-9][a-z0-9\s.-]{1,60})/i, 'user work'],
+    [/my project is\s+([a-z0-9][a-z0-9\s.-]{1,80})/i, 'user project'],
+    [/remember that\s+(.{6,160})/i, 'remembered fact']
+  ];
+  for (const [re, key] of patterns) {
+    const hit = text.match(re);
+    if (hit?.[1]) train.memories[key] = { value: hit[1].trim(), ts: Date.now(), auto: true };
+  }
+  persistTrain();
+}
+
+function learnFromInteraction(userText, assistantText) {
+  if (!train.settings.trainFromChats) return;
+  const prompt = String(userText || '').trim();
+  const answer = String(assistantText || '').trim();
+  if (prompt.length < 6 || answer.length < 20) return;
+  if (train.examples.some(ex => ex.auto && ex.prompt === prompt)) return;
+  train.examples.unshift({ prompt, answer, ts: Date.now(), auto: true });
+  const manual = train.examples.filter(ex => !ex.auto);
+  const auto   = train.examples.filter(ex => ex.auto).slice(0, 80);
+  train.examples = [...manual, ...auto].sort((a,b) => (b.ts||0) - (a.ts||0));
+  persistTrain();
+}
+
+function detectMode(text) {
+  if (mode !== 'auto') return mode;
+  const lo = text.toLowerCase();
+  if (/\b(design|ui|ux|layout|screen|page|interface|component|theme|style|visual|wireframe)\b/.test(lo)) return 'design';
+  if (/\b(code|function|html|css|javascript|python|bug|error|debug|api|repo|git)\b/.test(lo)) return 'code';
+  if (/\b(research|analyze|compare|report|market|data|study|evaluate|summary)\b/.test(lo)) return 'research';
+  if (/\b(write|email|story|caption|script|blog|poem|creative|copy)\b/.test(lo)) return 'creative';
+  return 'general';
+}
+
+function knowledgeMatches(text) {
+  const docs = [
+    ...train.knowledge.map(k => ({ type: 'Knowledge', title: k.title, content: k.content })),
+    ...Object.entries(train.memories).map(([k, v]) => ({ type: 'Memory', title: k, content: v.value })),
+    ...attachments.map(a => ({ type: 'File', title: a.name, content: a.content }))
+  ];
+  return docs.map(d => ({ ...d, score: score(text, d.title + ' ' + d.content) }))
+    .filter(d => d.score > 0).sort((a,b) => b.score - a.score)
+    .slice(0, depth === 'deep' ? 6 : depth === 'fast' ? 2 : 4);
+}
+
+function exampleMatch(text) {
+  return train.examples.map(ex => ({ ...ex, score: score(text, ex.prompt + ' ' + ex.answer) }))
+    .filter(ex => ex.score > 0).sort((a,b) => b.score - a.score)[0] || null;
+}
+
+// ════════════════════════════════════════
+//  System prompt builder
+// ════════════════════════════════════════
+function buildSystemPrompt(query) {
+  const matches = knowledgeMatches(query);
+  const ex      = exampleMatch(query);
+
+  const memLines   = Object.entries(train.memories).slice(0, 10).map(([k,v]) => `- ${k}: ${v.value}`).join('\n') || '(none)';
+  const ruleLines  = train.rules.slice(0, 8).map(r => `- ${r}`).join('\n') || '(none)';
+  const ctxBlocks  = matches.length
+    ? '\n\n## Relevant local knowledge\n' + matches.map(m => `### ${m.title}\n${topSnippets(query, m.content, depth === 'deep' ? 4 : 2)}`).join('\n\n')
+    : '';
+  const exBlock    = ex && ex.score >= 2
+    ? `\n\n## Example of preferred answer style\nQ: ${ex.prompt}\nA: ${ex.answer}`
+    : '';
+
+  return `You are ARIA, an AI assistant running fully inside the user's browser via WebLLM. You do not use any external API or cloud service. You are knowledgeable, honest, precise, and helpful. You never pretend to know things you don't.
+
+## Personality
+${train.personality}
+
+## Behavior rules
+${ruleLines}
+
+## User memories
+${memLines}${exBlock}${ctxBlocks}
+
+Answer the user's next message directly. Be thorough when needed and concise when possible.`;
+}
+
+// ════════════════════════════════════════
+//  LLM reply (streaming)
+// ════════════════════════════════════════
+async function generateLLMReply(query, onToken, onDone) {
+  if (!llmReady || !llmEngine) {
+    onDone(fallbackReply(query));
+    return;
+  }
+
+  const systemPrompt = buildSystemPrompt(query);
+  const chat = activeChat();
+
+  // Build message history (last 20 turns)
+  const history = chat.messages.slice(-20).filter(m => m.role === 'user' || m.role === 'assistant');
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history.map(m => ({ role: m.role, content: m.content }))
+  ];
+
+  // The latest user message is already in history from addMessage, so we're good
+  const maxTokens = depth === 'deep' ? 2000 : depth === 'fast' ? 600 : 1200;
+
+  try {
+    const stream = await llmEngine.chat.completions.create({
+      messages,
+      stream: true,
+      temperature: 0.7,
+      max_tokens: maxTokens,
+    });
+
+    let full = '';
+    for await (const chunk of stream) {
+      const token = chunk.choices[0]?.delta?.content || '';
+      if (token) {
+        full += token;
+        onToken(full);
+      }
+    }
+    onDone(full || '(no response)');
+  } catch (err) {
+    onDone('Error: ' + (err.message || err));
+  }
+}
+
+// ════════════════════════════════════════
+//  Fallback (when model not loaded)
+// ════════════════════════════════════════
+function fallbackReply(text) {
+  const lo = text.toLowerCase();
+  if (/(who are you|what are you|who made you)/i.test(text)) {
+    return `I am ARIA, a local AI assistant built by Yash Raj.\n\nI run a real language model entirely inside your browser — no API key, no cloud, no data sent anywhere. Load a model in the panel on the right to activate full AI responses.`;
+  }
+  const ex = exampleMatch(text);
+  if (ex && ex.score >= 2) return ex.answer;
+  const matches = knowledgeMatches(text);
+  if (matches.length) {
+    return `## From your knowledge base\n\n${matches.map(m => `**${m.title}**\n${topSnippets(text, m.content, 2)}`).join('\n\n')}\n\n_Load the AI model in the panel for a full intelligent answer._`;
+  }
+  return `No AI model is loaded yet.\n\nTo get real answers, open the right panel, choose a model, and click **Load AI model**. The model downloads once (~1–2.5 GB) and runs locally in your browser forever after.\n\nYour message: "${text.slice(0, 120)}"`;
+}
+
+// ════════════════════════════════════════
+//  Render helpers
+// ════════════════════════════════════════
+function renderMarkdown(text) {
+  let html = esc(text);
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${esc(code.trimEnd())}</code></pre>`);
+  html = html.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>[\s\S]+?<\/li>)/g, '<ul>$1</ul>');
+  return html;
+}
+
+function addMessage(role, content) {
+  const chat = activeChat();
+  chat.messages.push({ role, content, ts: Date.now(), mode: detectMode(content) });
+  if (role === 'user' && chat.title === 'New conversation') chat.title = content.slice(0, 46);
+  persistChats();
+  renderMessages();
+  renderRail();
+}
+
+function renderMessages() {
+  const chat = activeChat();
+  const root = $('#messageInner');
+  if (!chat.messages.length) {
+    root.innerHTML = `
+      <div class="empty">
+        <div class="eyebrow">Real local AI · no API · no cloud</div>
+        <h1>How can I<br>help?</h1>
+        <p>ARIA runs a real language model in your browser. Load the model from the right panel, then ask anything: code, design, writing, research, or just chat.</p>
+        <div class="hero-composer">
+          <div class="hero-prompt-row">
+            <input class="hero-input" id="heroInput" placeholder="Message ARIA about code, design, bugs, ideas, or a full app…">
+            <button class="hero-send" id="heroSend">➜</button>
+          </div>
+          <div class="prompt-pills">
+            <button class="prompt-pill" data-prompt="Explain how you work and what makes you different from ChatGPT">How do you work?</button>
+            <button class="prompt-pill" data-prompt="Write a modern responsive landing page in HTML CSS and JavaScript">Write code</button>
+            <button class="prompt-pill" data-prompt="Plan the architecture for a full-stack AI chat application">Plan an app</button>
+            <button class="prompt-pill" data-prompt="Explain the difference between supervised and unsupervised learning">Explain AI</button>
+          </div>
+        </div>
+        <div class="starter-grid">
+          <button class="starter" data-prompt="Design a beautiful SaaS dashboard with dark mode and sidebar navigation"><strong>Design a UI</strong><span>Layouts, hierarchy, interaction states</span></button>
+          <button class="starter" data-prompt="Write complete HTML CSS and JavaScript for a chat interface like ChatGPT"><strong>Code from scratch</strong><span>Complete implementation, not just advice</span></button>
+          <button class="starter" data-prompt="Help me turn my SaaS idea into a product roadmap and feature list"><strong>Plan a product</strong><span>Features, screens, states, and structure</span></button>
+          <button class="starter" data-prompt="Debug this JavaScript error and explain how to fix it properly"><strong>Debug my code</strong><span>Root cause, fix, and explanation</span></button>
+        </div>
+      </div>`;
+    $$('.starter, .prompt-pill').forEach(btn => btn.addEventListener('click', () => quick(btn.dataset.prompt)));
+    $('#heroSend').addEventListener('click', () => quick($('#heroInput').value));
+    $('#heroInput').addEventListener('keydown', e => { if (e.key === 'Enter') quick(e.target.value); });
+    return;
+  }
+  root.innerHTML = chat.messages.map((m, i) => `
+    <div class="msg ${m.role}">
+      <div class="avatar">${m.role === 'user' ? 'U' : 'A'}</div>
+      <div class="msg-card">
+        <div class="msg-head"><span class="msg-name">${m.role === 'user' ? 'You' : 'ARIA'}</span><span class="msg-mode">${m.role === 'assistant' ? (m.mode || mode) : ''}</span></div>
+        <div class="prose">${renderMarkdown(m.content)}</div>
+        <div class="msg-actions">
+          <button class="action-btn" data-copy-msg="${i}">Copy</button>
+          ${m.role === 'assistant' ? `<button class="action-btn" data-teach-msg="${i}">Teach preference</button>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+  $$('[data-copy-msg]').forEach(btn => btn.addEventListener('click', () => navigator.clipboard.writeText(chat.messages[+btn.dataset.copyMsg].content)));
+  $$('[data-teach-msg]').forEach(btn => btn.addEventListener('click', () => teachPreference(+btn.dataset.teachMsg)));
+  $('#messages').scrollTop = $('#messages').scrollHeight;
+}
+
+function teachPreference(index) {
+  const chat = activeChat();
+  const assistant = chat.messages[index];
+  if (!assistant || assistant.role !== 'assistant') return;
+  const user = [...chat.messages.slice(0, index)].reverse().find(m => m.role === 'user');
+  if (!user) return;
+  train.examples.unshift({ prompt: user.content, answer: assistant.content, ts: Date.now(), manual: true });
+  persistTrain();
+}
+
+// ── Streaming message DOM helpers ───────
+let streamProseEl = null;
+
+function appendStreamingCard(modeLabel) {
+  const root = $('#messageInner');
+  const div  = document.createElement('div');
+  div.className = 'msg assistant streaming';
+  div.id = 'aria-stream';
+  div.innerHTML = `
+    <div class="avatar">A</div>
+    <div class="msg-card">
+      <div class="msg-head"><span class="msg-name">ARIA</span><span class="msg-mode">${esc(modeLabel)}</span></div>
+      <div class="prose" id="aria-stream-prose"><span class="cursor">▊</span></div>
+    </div>`;
+  root.appendChild(div);
+  streamProseEl = div.querySelector('#aria-stream-prose');
+  $('#messages').scrollTop = $('#messages').scrollHeight;
+}
+
+function updateStreamingCard(partial) {
+  if (!streamProseEl) return;
+  streamProseEl.innerHTML = renderMarkdown(partial) + '<span class="cursor">▊</span>';
+  $('#messages').scrollTop = $('#messages').scrollHeight;
+}
+
+function removeStreamingCard() {
+  document.getElementById('aria-stream')?.remove();
+  streamProseEl = null;
+}
+
+// ════════════════════════════════════════
+//  Rail
+// ════════════════════════════════════════
+function renderRail() {
+  const tab  = $('.rail-tab.on').dataset.tab;
+  const root = $('#railContent');
+  if (tab === 'memory') {
+    const entries = Object.entries(train.memories);
+    root.innerHTML = entries.length
+      ? entries.map(([k,v]) => `<div class="memory-item"><button class="delete-btn" data-delmem="${esc(k)}">x</button><div class="item-title">${esc(k)}</div><div class="item-text">${esc(v.value)}</div></div>`).join('')
+      : '<div class="chat-meta">No memories yet.</div>';
+    $$('[data-delmem]').forEach(btn => btn.addEventListener('click', () => { delete train.memories[btn.dataset.delmem]; persistTrain(); }));
+    return;
+  }
+  if (tab === 'knowledge') {
+    root.innerHTML = train.knowledge.length
+      ? train.knowledge.map((k,i) => `<div class="kb-item"><button class="delete-btn" data-delkb="${i}">x</button><div class="item-title">${esc(k.title)}</div><div class="item-text">${esc(k.content).slice(0,220)}</div></div>`).join('')
+      : '<div class="chat-meta">No knowledge docs yet.</div>';
+    $$('[data-delkb]').forEach(btn => btn.addEventListener('click', () => { train.knowledge.splice(+btn.dataset.delkb, 1); persistTrain(); }));
+    return;
+  }
+  const q = $('#searchChats').value.toLowerCase();
+  const visible = chats.filter(c => !q || c.title.toLowerCase().includes(q) || c.messages.some(m => m.content.toLowerCase().includes(q)));
+  root.innerHTML = visible.length
+    ? visible.map(c => `
+      <div class="chat-item ${c.id === activeId ? 'active' : ''}" data-chat="${c.id}">
+        <button class="delete-btn" data-delchat="${c.id}">x</button>
+        <div class="chat-title">${esc(c.title)}</div>
+        <div class="chat-meta">${c.messages.length} messages</div>
+      </div>`).join('')
+    : '<div class="chat-meta">No conversations yet.</div>';
+  $$('[data-chat]').forEach(el => el.addEventListener('click', e => {
+    if (e.target.matches('[data-delchat]')) return;
+    activeId = el.dataset.chat; persistChats(); renderRail(); renderMessages();
+  }));
+  $$('[data-delchat]').forEach(btn => btn.addEventListener('click', e => {
+    e.stopPropagation();
+    chats = chats.filter(c => c.id !== btn.dataset.delchat);
+    activeId = chats[0]?.id || null;
+    persistChats(); renderRail(); renderMessages();
+  }));
+}
+
+function renderTraining() {
+  $('#personality').value = train.personality;
+  $('#rulesList').innerHTML = train.rules.map((r, i) => `
+    <div class="rule-item"><button class="delete-btn" data-delrule="${i}">x</button><div class="item-text">${esc(r)}</div></div>
+  `).join('');
+  $$('[data-delrule]').forEach(btn => btn.addEventListener('click', () => { train.rules.splice(+btn.dataset.delrule, 1); persistTrain(); }));
+  $('#chatTrainingToggle').checked = !!train.settings.trainFromChats;
+}
+
+function renderAttachBar() {
+  $('#attachBar').innerHTML = attachments.map((a, i) => `<span class="chip">${esc(a.name)} <button class="delete-btn" style="position:static;opacity:1" data-delatt="${i}">x</button></span>`).join('');
+  $$('[data-delatt]').forEach(btn => btn.addEventListener('click', () => { attachments.splice(+btn.dataset.delatt, 1); renderAttachBar(); }));
+}
+
+// ════════════════════════════════════════
+//  Send
+// ════════════════════════════════════════
+async function send() {
+  if (busy) return;
+  const text = $('#input').value.trim();
+  if (!text) return;
+
+  busy = true;
+  $('#input').value = '';
+  $('#input').style.height = 'auto';
+  $('#sendBtn').disabled = true;
+
+  learnFromUser(text);
+  addMessage('user', text);
+
+  const modeLabel = detectMode(text);
+  appendStreamingCard(modeLabel);
+
+  await generateLLMReply(text,
+    partial => updateStreamingCard(partial),
+    final => {
+      removeStreamingCard();
+      addMessage('assistant', final);
+      learnFromInteraction(text, final);
+      attachments = [];
+      renderAttachBar();
+      busy = false;
+      $('#sendBtn').disabled = !$('#input').value.trim();
+    }
+  );
+}
+
+function quick(text) {
+  if (!text?.trim()) return;
+  $('#input').value = text;
+  send();
+}
+
+function exportChat() {
+  const chat = activeChat();
+  const md = chat.messages.map(m => `## ${m.role === 'user' ? 'You' : 'ARIA'}\n\n${m.content}`).join('\n\n---\n\n');
+  const a  = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([md], { type: 'text/markdown' })),
+    download: `aria-${new Date().toISOString().slice(0,10)}.md`
+  });
+  a.click();
+}
+
+// ════════════════════════════════════════
+//  Wire up all events
+// ════════════════════════════════════════
+function wire() {
+  const theme = localStorage.getItem(STORE.theme) || 'dark';
+  document.documentElement.setAttribute('data-theme', theme);
+
+  $('#newChatBtn').addEventListener('click', createChat);
+  $('#sendBtn').addEventListener('click', send);
+  $('#clearBtn').addEventListener('click', () => { activeChat().messages = []; persistChats(); renderMessages(); });
+  $('#exportBtn').addEventListener('click', exportChat);
+  $('#themeBtn').addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem(STORE.theme, next);
+  });
+
+  $('#input').addEventListener('input', e => {
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 180) + 'px';
+    $('#sendBtn').disabled = !e.target.value.trim() || busy;
+  });
+  $('#input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+
+  $('#searchChats').addEventListener('input', renderRail);
+  $$('.rail-tab').forEach(btn => btn.addEventListener('click', () => {
+    $$('.rail-tab').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    renderRail();
+  }));
+  $('#personality').addEventListener('input', e => { train.personality = e.target.value; persistTrain(); });
+  $('#chatTrainingToggle').addEventListener('change', e => { train.settings.trainFromChats = e.target.checked; persistTrain(); });
+  $('#addRuleBtn').addEventListener('click', () => {
+    const v = $('#ruleInput').value.trim(); if (!v) return;
+    train.rules.push(v); $('#ruleInput').value = ''; persistTrain();
+  });
+  $('#addKbBtn').addEventListener('click', () => {
+    const title = $('#kbTitle').value.trim(), content = $('#kbText').value.trim();
+    if (!title || !content) return;
+    train.knowledge.push({ title, content, ts: Date.now() });
+    $('#kbTitle').value = ''; $('#kbText').value = ''; persistTrain();
+  });
+  $('#addExampleBtn').addEventListener('click', () => {
+    const prompt = $('#exPrompt').value.trim(), answer = $('#exAnswer').value.trim();
+    if (!prompt || !answer) return;
+    train.examples.push({ prompt, answer, ts: Date.now() });
+    $('#exPrompt').value = ''; $('#exAnswer').value = ''; persistTrain();
+  });
+  $('#addMemBtn').addEventListener('click', () => {
+    const key = $('#memKey').value.trim(), value = $('#memVal').value.trim();
+    if (!key || !value) return;
+    train.memories[key] = { value, ts: Date.now(), auto: false };
+    $('#memKey').value = ''; $('#memVal').value = ''; persistTrain();
+  });
+  $('#teachLastBtn').addEventListener('click', () => {
+    const chat   = activeChat();
+    const lastU  = [...chat.messages].reverse().find(m => m.role === 'user');
+    const lastAI = [...chat.messages].reverse().find(m => m.role === 'assistant');
+    if (!lastU || !lastAI) return;
+    train.examples.push({ prompt: lastU.content, answer: lastAI.content, ts: Date.now() });
+    persistTrain();
+  });
+  $('#fileInput').addEventListener('change', async e => {
+    const file = e.target.files[0]; if (!file) return;
+    const text = await file.text();
+    attachments.push({ name: file.name, content: text.slice(0, 18000), size: file.size });
+    renderAttachBar(); e.target.value = '';
+  });
+
+  // Model loader
+  $('#loadModelBtn').addEventListener('click', () => {
+    const modelId = $('#modelSelect').value;
+    initEngine(modelId);
+  });
+
+  // Cursor glow
+  const glow = $('#cursorGlow');
+  let tx = innerWidth / 2, ty = innerHeight / 2, cx = tx, cy = ty;
+  addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; });
+  (function tick() { cx += (tx-cx)*.08; cy += (ty-cy)*.08; glow.style.transform = `translate(${cx-310}px,${cy-310}px)`; requestAnimationFrame(tick); })();
+}
+
+// ════════════════════════════════════════
+//  Boot
+// ════════════════════════════════════════
+if (!chats.length) createChat();
+wire();
+renderTraining();
+renderRail();
+renderMessages();
+updateInputFoot();
 </script>
 </body>
 </html>
