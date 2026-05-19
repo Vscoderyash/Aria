@@ -822,19 +822,7 @@ button { cursor: pointer; }
         <div class="brand-meta">chat · code · design</div>
       </div>
     </div>
-    <div class="header-center">
-      <div class="segmented" id="modeTabs">
-        <button class="seg-btn on" data-mode="auto">Auto</button>
-        <button class="seg-btn" data-mode="code">Code</button>
-        <button class="seg-btn" data-mode="research">Research</button>
-        <button class="seg-btn" data-mode="creative">Creative</button>
-      </div>
-      <div class="segmented" id="depthTabs">
-        <button class="seg-btn" data-depth="fast">Fast</button>
-        <button class="seg-btn on" data-depth="balanced">Balanced</button>
-        <button class="seg-btn" data-depth="deep">Deep</button>
-      </div>
-    </div>
+    <div class="header-center"></div>
     <div class="header-right">
       <span id="headerModelBadge" class="model-badge">no model</span>
       <button class="icon-btn" id="themeBtn" title="Theme">◐</button>
@@ -907,13 +895,6 @@ button { cursor: pointer; }
         <div class="setting-desc" style="margin-top:8px;color:var(--text-dim)" id="llmReq">
           Requires WebGPU (Chrome 113+ or Edge 113+). GPU with 4 GB VRAM recommended for Phi/Llama.
         </div>
-      </section>
-
-      <!-- ── Learning strength ── -->
-      <section class="panel-section">
-        <h3>Learning Strength</h3>
-        <div class="meter"><span id="learnMeter"></span></div>
-        <div class="status-line"><span id="learnStats">0 memories · 0 docs · 0 examples</span><span id="brainState">offline</span></div>
       </section>
 
       <section class="panel-section">
@@ -1447,10 +1428,6 @@ function renderTraining() {
     <div class="rule-item"><button class="delete-btn" data-delrule="${i}">x</button><div class="item-text">${esc(r)}</div></div>
   `).join('');
   $$('[data-delrule]').forEach(btn => btn.addEventListener('click', () => { train.rules.splice(+btn.dataset.delrule, 1); persistTrain(); }));
-  const count = Object.keys(train.memories).length + train.knowledge.length + train.examples.length;
-  $('#learnMeter').style.width = Math.min(100, count * 9 + train.rules.length * 4) + '%';
-  $('#learnStats').textContent = `${Object.keys(train.memories).length} memories · ${train.knowledge.length} docs · ${train.examples.length} examples`;
-  $('#brainState').textContent = train.settings.trainFromChats ? 'auto-train on' : 'auto-train off';
   $('#chatTrainingToggle').checked = !!train.settings.trainFromChats;
 }
 
@@ -1514,8 +1491,6 @@ function exportChat() {
 function wire() {
   const theme = localStorage.getItem(STORE.theme) || 'dark';
   document.documentElement.setAttribute('data-theme', theme);
-  $(`[data-mode="${mode}"]`)?.classList.add('on');
-  $(`[data-depth="${depth}"]`)?.classList.add('on');
 
   $('#newChatBtn').addEventListener('click', createChat);
   $('#sendBtn').addEventListener('click', send);
@@ -1542,19 +1517,6 @@ function wire() {
     btn.classList.add('on');
     renderRail();
   }));
-  $$('#modeTabs .seg-btn').forEach(btn => btn.addEventListener('click', () => {
-    $$('#modeTabs .seg-btn').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
-    mode = btn.dataset.mode;
-    save(STORE.mode, mode);
-  }));
-  $$('#depthTabs .seg-btn').forEach(btn => btn.addEventListener('click', () => {
-    $$('#depthTabs .seg-btn').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
-    depth = btn.dataset.depth;
-    save(STORE.depth, depth);
-  }));
-
   $('#personality').addEventListener('input', e => { train.personality = e.target.value; persistTrain(); });
   $('#chatTrainingToggle').addEventListener('change', e => { train.settings.trainFromChats = e.target.checked; persistTrain(); });
   $('#addRuleBtn').addEventListener('click', () => {
