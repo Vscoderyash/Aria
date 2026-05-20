@@ -597,8 +597,6 @@ button,input,textarea,select{font:inherit;color:inherit;background:none;border:n
    AI — Pollinations (free, no API key, online)
    Automatically connects on load. No user setup needed.
 ═══════════════════════════════════════════ */
-const API = 'https://text.pollinations.ai/';
-
 // Model name map for display
 const MODEL_LABELS = {
   'openai-large': 'GPT-4o',
@@ -614,55 +612,73 @@ let online = false;
 let busy = false;
 let atts = [];
 
-// Set model selector to saved value
 document.getElementById('modelSel').value = currentModel;
+
+// ── Cross-browser timeout fetch ──
+function fetchWithTimeout(url, opts, ms) {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('timeout')), ms);
+    fetch(url, opts).then(r => { clearTimeout(t); resolve(r); }).catch(e => { clearTimeout(t); reject(e); });
+  });
+}
 
 // ── Status helpers ──
 function setStatus(state, label) {
-  const area = Q('#statusArea'), dot = Q('#sDot'), lbl = Q('#sLabel');
-  area.className = 'status-area ' + state;
-  lbl.textContent = label;
+  Q('#statusArea').className = 'status-area ' + state;
+  Q('#sLabel').textContent = label;
 }
 
-// ── Ping to check connectivity ──
+// ── Ping: use simple GET to text.pollinations.ai ──
 async function checkOnline() {
   setStatus('', 'Connecting…');
   try {
-    // Lightweight test: send a minimal request
-    const r = await fetch(API, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ messages:[{role:'user',content:'hi'}], model:currentModel, seed:1 }),
-      signal: AbortSignal.timeout(12000)
-    });
-    if (r.ok) {
+    // GET is simpler than POST and proves CORS is working
+    const r = await fetchWithTimeout(
+      'https://text.pollinations.ai/hello?seed=1&model=openai',
+      {}, 14000
+    );
+    if (r.status >= 200 && r.status < 500) {
       online = true;
       setStatus('online', MODEL_LABELS[currentModel] || currentModel);
       updateHint(true);
-      renderChat(); // refresh welcome status
-    } else { throw new Error('not ok'); }
-  } catch {
+      renderChat();
+    } else { throw new Error('status ' + r.status); }
+  } catch(e) {
+    console.warn('ARIA offline:', e.message);
     online = false;
-    setStatus('error', 'Offline');
+    setStatus('error', 'Offline – check connection');
     updateHint(false);
   }
 }
 
-// ── Generate reply via Pollinations ──
+// ── Generate reply — POST with GET fallback ──
 async function callAI(messages) {
-  const r = await fetch(API, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({
-      messages,
-      model: currentModel,
-      seed: Math.floor(Math.random() * 9999),
-      jsonMode: false
-    }),
-    signal: AbortSignal.timeout(60000)
-  });
-  if (!r.ok) throw new Error('API error ' + r.status);
-  return await r.text();
+  // Try POST first (supports full conversation history)
+  try {
+    const r = await fetchWithTimeout(
+      'https://text.pollinations.ai/',
+      {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ messages, model: currentModel, seed: Math.random()*9999|0 })
+      },
+      50000
+    );
+    if (r.ok) return (await r.text()).trim();
+    throw new Error('POST ' + r.status);
+  } catch(postErr) {
+    // GET fallback — works even when POST is blocked
+    const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content || 'hi';
+    const sys = messages.find(m => m.role === 'system')?.content || '';
+    const url = 'https://text.pollinations.ai/' +
+      encodeURIComponent(lastUser) +
+      '?model=' + currentModel +
+      '&seed=' + (Math.random()*9999|0) +
+      '&system=' + encodeURIComponent(sys.slice(0, 600));
+    const r2 = await fetchWithTimeout(url, {}, 50000);
+    if (!r2.ok) throw new Error('GET ' + r2.status);
+    return (await r2.text()).trim();
+  }
 }
 
 /* ═══════════════════════════════════════════
