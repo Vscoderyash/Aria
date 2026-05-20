@@ -478,10 +478,9 @@ button,input,textarea,select{font:inherit;color:inherit;background:none;border:n
         <span class="s-label" id="sLabel">Connecting…</span>
         <div class="sep"></div>
         <select class="model-sel" id="modelSel" title="Switch AI model">
+          <option value="openai">GPT-4o Mini ⚡</option>
           <option value="openai-large">GPT-4o</option>
-          <option value="claude">Claude</option>
           <option value="mistral">Mistral</option>
-          <option value="openai">GPT-4o Mini</option>
           <option value="llama">Llama 3.3</option>
           <option value="gemini">Gemini</option>
         </select>
@@ -593,92 +592,107 @@ button,input,textarea,select{font:inherit;color:inherit;background:none;border:n
 <script>
 'use strict';
 
-/* ═══════════════════════════════════════════
-   AI — Pollinations (free, no API key, online)
-   Automatically connects on load. No user setup needed.
-═══════════════════════════════════════════ */
-// Model name map for display
 const MODEL_LABELS = {
-  'openai-large': 'GPT-4o',
-  'claude':       'Claude',
-  'mistral':      'Mistral',
   'openai':       'GPT-4o Mini',
+  'openai-large': 'GPT-4o',
+  'mistral':      'Mistral',
   'llama':        'Llama 3.3',
   'gemini':       'Gemini',
 };
 
-let currentModel = localStorage.getItem('aria4.model') || 'openai-large';
+let currentModel = localStorage.getItem('aria4.model') || 'openai';
 let online = false;
 let busy = false;
 let atts = [];
 
 document.getElementById('modelSel').value = currentModel;
 
-// ── Cross-browser timeout fetch ──
-function fetchWithTimeout(url, opts, ms) {
-  return new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error('timeout')), ms);
-    fetch(url, opts).then(r => { clearTimeout(t); resolve(r); }).catch(e => { clearTimeout(t); reject(e); });
-  });
-}
-
-// ── Status helpers ──
+// ── Status ──
 function setStatus(state, label) {
   Q('#statusArea').className = 'status-area ' + state;
   Q('#sLabel').textContent = label;
 }
 
-// ── Ping: use simple GET to text.pollinations.ai ──
+// ── Cross-browser timeout ──
+function tFetch(url, opts, ms) {
+  return new Promise((res, rej) => {
+    const t = setTimeout(() => rej(new Error('timeout')), ms);
+    fetch(url, opts).then(r=>{clearTimeout(t);res(r);}).catch(e=>{clearTimeout(t);rej(e);});
+  });
+}
+
+// ── Quick ping ──
 async function checkOnline() {
   setStatus('', 'Connecting…');
   try {
-    // GET is simpler than POST and proves CORS is working
-    const r = await fetchWithTimeout(
-      'https://text.pollinations.ai/hello?seed=1&model=openai',
-      {}, 14000
-    );
-    if (r.status >= 200 && r.status < 500) {
+    const r = await tFetch('https://text.pollinations.ai/hi?seed=1&model=openai', {}, 10000);
+    if (r.status < 500) {
       online = true;
       setStatus('online', MODEL_LABELS[currentModel] || currentModel);
-      updateHint(true);
-      renderChat();
-    } else { throw new Error('status ' + r.status); }
+      updateHint(true); renderChat();
+    } else throw new Error(r.status);
   } catch(e) {
-    console.warn('ARIA offline:', e.message);
     online = false;
-    setStatus('error', 'Offline – check connection');
+    setStatus('error', 'Offline');
     updateHint(false);
   }
 }
 
-// ── Generate reply — POST with GET fallback ──
-async function callAI(messages) {
-  // Try POST first (supports full conversation history)
+// ── Stream AI — GET first (no CORS preflight), POST stream if available ──
+async function streamAI(messages, onToken, onDone) {
+  const lastUser = [...messages].reverse().find(m=>m.role==='user')?.content || 'hi';
+  const sys = messages.find(m=>m.role==='system')?.content || '';
+
+  // ① Try streaming POST (fastest when it works)
+  let streamOk = false;
   try {
-    const r = await fetchWithTimeout(
-      'https://text.pollinations.ai/',
-      {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ messages, model: currentModel, seed: Math.random()*9999|0 })
-      },
-      50000
-    );
-    if (r.ok) return (await r.text()).trim();
-    throw new Error('POST ' + r.status);
-  } catch(postErr) {
-    // GET fallback — works even when POST is blocked
-    const lastUser = [...messages].reverse().find(m => m.role === 'user')?.content || 'hi';
-    const sys = messages.find(m => m.role === 'system')?.content || '';
-    const url = 'https://text.pollinations.ai/' +
-      encodeURIComponent(lastUser) +
-      '?model=' + currentModel +
-      '&seed=' + (Math.random()*9999|0) +
-      '&system=' + encodeURIComponent(sys.slice(0, 600));
-    const r2 = await fetchWithTimeout(url, {}, 50000);
-    if (!r2.ok) throw new Error('GET ' + r2.status);
-    return (await r2.text()).trim();
-  }
+    const ctrl = new AbortController();
+    const ct = setTimeout(()=>ctrl.abort(), 10000);
+    const r = await fetch('https://text.pollinations.ai/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({messages, model:currentModel, stream:true, seed:Math.random()*99999|0}),
+      signal: ctrl.signal
+    });
+    clearTimeout(ct);
+    if (r.ok && r.body) {
+      streamOk = true;
+      const reader = r.body.getReader();
+      const dec = new TextDecoder();
+      let buf='', full='';
+      const kt = setTimeout(()=>{reader.cancel(); onDone(full);}, 55000);
+      try {
+        outer: while(true) {
+          const {done,value} = await reader.read();
+          if(done) break;
+          buf += dec.decode(value,{stream:true});
+          const lines = buf.split('\n'); buf = lines.pop()??'';
+          for(const line of lines) {
+            if(!line.startsWith('data: ')) continue;
+            const raw = line.slice(6).trim();
+            if(raw==='[DONE]') break outer;
+            try { const tok=JSON.parse(raw)?.choices?.[0]?.delta?.content; if(tok){full+=tok;onToken(full);} } catch{}
+          }
+        }
+      } finally { clearTimeout(kt); }
+      onDone(full||'(no response)');
+      return;
+    }
+  } catch {}
+
+  if (streamOk) return;
+
+  // ② GET fallback — simple, no CORS preflight, always works
+  const url = 'https://text.pollinations.ai/'
+    + encodeURIComponent(lastUser.slice(0,500))
+    + '?model=' + currentModel
+    + '&seed=' + (Math.random()*9999|0)
+    + '&system=' + encodeURIComponent(sys.slice(0,500));
+  const r2 = await tFetch(url, {}, 45000);
+  if (!r2.ok) throw new Error('HTTP ' + r2.status);
+  const text = (await r2.text()).trim();
+  onToken(text);
+  onDone(text);
 }
 
 /* ═══════════════════════════════════════════
@@ -838,33 +852,37 @@ window.cpCode = btn => {
   navigator.clipboard.writeText(btn.nextElementSibling?.textContent||'').then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',2e3);});
 };
 
-/* ═══════════════════════════════════════════
-   Typing animation (simulates streaming)
-═══════════════════════════════════════════ */
-function typeOut(el, text) {
-  return new Promise(resolve => {
-    const words = text.split(/(\s+)/); // split but keep whitespace
-    let i = 0, built = '';
-    const tick = () => {
-      // Type 2-4 words at a time for natural speed
-      const chunk = Math.floor(Math.random()*3)+2;
-      for (let j=0;j<chunk && i<words.length;j++,i++) built += words[i];
-      el.innerHTML = md(built) + '<span class="cur">▊</span>';
-      scrollBottom();
-      if (i < words.length) requestAnimationFrame(tick);
-      else { el.innerHTML = md(text); resolve(); }
-    };
-    requestAnimationFrame(tick);
-  });
-}
-
 function scrollBottom() {
   const a = Q('#chatArea'); if(a) a.scrollTop = a.scrollHeight;
 }
 
+// Escape text for display during streaming (no markdown overhead)
+function escRaw(t) {
+  return String(t||'')
+    .replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+    .replace(/\n/g,'<br>');
+}
+
 /* ═══════════════════════════════════════════
-   Send
+   Send — real streaming, tokens show instantly
 ═══════════════════════════════════════════ */
+let streamProseEl = null;
+
+function openStreamCard() {
+  let inner = Q('#msgsInner');
+  if (!inner) {
+    Q('#chatArea').innerHTML = '<div class="msgs-inner" id="msgsInner"></div>';
+    inner = Q('#msgsInner');
+  }
+  const div = document.createElement('div');
+  div.className = 'msg assistant'; div.id = 'streamCard';
+  div.innerHTML = `<div class="av">A</div><div class="mb"><div class="mname">ARIA</div><div class="prose" id="streamProse"><span class="cur">▊</span></div></div>`;
+  inner.appendChild(div);
+  streamProseEl = Q('#streamProse');
+  scrollBottom();
+}
+function closeStreamCard() { Q('#streamCard')?.remove(); streamProseEl = null; }
+
 async function go(text) {
   text = (text || Q('#msgin').value).trim();
   if (!text || busy) return;
@@ -873,83 +891,60 @@ async function go(text) {
   Q('#sendBtn').classList.remove('on');
 
   learnUser(text);
-
-  // Add user message
   const chat = activeChat();
   chat.msgs.push({role:'user', content:text, ts:Date.now()});
   if (chat.title==='New chat') { chat.title=text.slice(0,52); Q('#tbTitle').textContent=chat.title; }
   saveChats(); renderChat(); renderSidebar();
 
-  // Show thinking
-  showThinking();
+  openStreamCard();
+  setStatus('thinking', 'Thinking…');
 
-  let reply = '';
+  const history = chat.msgs.slice(-20).filter(m=>m.role==='user'||m.role==='assistant');
+  const msgs = [
+    {role:'system', content:buildSys(text)},
+    ...history.map(m=>({role:m.role, content:m.content}))
+  ];
+
+  let final = '';
   try {
-    setStatus('thinking', 'Thinking…');
-    const history = chat.msgs.slice(-26).filter(m=>m.role==='user'||m.role==='assistant');
-    const msgs = [
-      {role:'system', content:buildSys(text)},
-      ...history.map(m=>({role:m.role, content:m.content}))
-    ];
-    reply = await callAI(msgs);
-    reply = reply.trim();
+    await streamAI(
+      msgs,
+      // onToken — fires for each chunk, renders instantly
+      (partial) => {
+        if (streamProseEl) {
+          streamProseEl.innerHTML = escRaw(partial) + '<span class="cur">▊</span>';
+          scrollBottom();
+        }
+      },
+      // onDone — full text, render markdown
+      (full) => { final = full; }
+    );
     online = true;
-    setStatus('online', MODEL_LABELS[currentModel]||currentModel);
+    setStatus('online', MODEL_LABELS[currentModel] || currentModel);
   } catch(e) {
     online = false;
-    setStatus('error','Offline');
-    reply = offlineMsg(text);
+    setStatus('error', 'Offline');
+    final = offlineMsg(text);
+    if (streamProseEl) streamProseEl.innerHTML = md(final);
   }
 
-  // Animate the reply
-  await animateReply(reply);
-
-  // Save assistant message
-  chat.msgs.push({role:'assistant', content:reply, ts:Date.now()});
+  closeStreamCard();
+  chat.msgs.push({role:'assistant', content:final, ts:Date.now()});
   saveChats();
-  learnPair(text, reply);
+  learnPair(text, final);
   atts=[]; renderAtts();
   busy=false;
   Q('#sendBtn').classList.toggle('on', !!Q('#msgin').value.trim());
   Q('#msgin').focus();
-
-  // Final render to attach action buttons
   renderChat();
+  renderSidebar();
 }
 
 function offlineMsg(q) {
-  const ex = bestEx(q);
-  if (ex && ex.sc>=2) return ex.answer;
-  const docs = relDocs(q);
-  if (docs.length) return `**From your knowledge base:**\n\n${docs.map(d=>`**${d.title}**\n${snip(q,d.content,2)}`).join('\n\n')}\n\n*Reconnect to the internet for AI responses.*`;
-  return `**ARIA is offline.**\n\nCheck your internet connection and try again. ARIA uses free online AI — no API key needed, just an internet connection.`;
-}
-
-// Streaming card helpers
-let thinkEl = null, replyEl = null;
-
-function showThinking() {
-  let inner = Q('#msgsInner');
-  if (!inner) {
-    Q('#chatArea').innerHTML = '<div class="msgs-inner" id="msgsInner"></div>';
-    inner = Q('#msgsInner');
-  }
-  const div = document.createElement('div');
-  div.className = 'msg assistant'; div.id = 'aiMsg';
-  div.innerHTML = `<div class="av">A</div><div class="mb"><div class="mname">ARIA</div><div class="prose thinking-dots" id="thinkEl"><span></span><span></span><span></span></div></div>`;
-  inner.appendChild(div);
-  thinkEl = Q('#thinkEl');
-  scrollBottom();
-}
-
-async function animateReply(text) {
-  if (!thinkEl) return;
-  const prose = thinkEl;
-  prose.className = 'prose';
-  prose.id = 'replyEl';
-  replyEl = prose;
-  await typeOut(prose, text);
-  replyEl = null;
+  const ex=bestEx(q); if(ex&&ex.sc>=2) return ex.answer;
+  const docs=relDocs(q);
+  if(docs.length) return `**From your knowledge base:**\n\n${docs.map(d=>`**${d.title}**\n${snip(q,d.content,2)}`).join('\n\n')}\n\n*Check internet connection for AI responses.*`;
+  return `**Could not reach AI.**\n\nARIA uses free online AI (no API key). Please check your internet connection and try again.`;
 }
 
 /* ═══════════════════════════════════════════
