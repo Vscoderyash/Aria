@@ -642,66 +642,70 @@ async function checkOnline() {
   }
 }
 
-// ── Stream AI — 3-level fallback, always gets a response ──
+// ── Fire POST stream + GET simultaneously — fastest wins ──
 async function streamAI(messages, onToken, onDone) {
   const lastUser = [...messages].reverse().find(m=>m.role==='user')?.content || 'hi';
   const seed = Math.random()*99999|0;
+  let claimed = false, postReader = null;
 
-  // ① POST streaming — real-time tokens, best experience
-  try {
-    const ctrl = new AbortController();
-    const ct = setTimeout(()=>ctrl.abort(), 10000);
-    const r = await fetch('https://text.pollinations.ai/', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({messages, model:currentModel, stream:true, seed}),
-      signal: ctrl.signal
-    });
-    clearTimeout(ct);
-    if (r.ok && r.body) {
-      const reader = r.body.getReader();
+  // POST: real-time streaming tokens
+  async function tryStream() {
+    try {
+      const r = await fetch('https://text.pollinations.ai/', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({messages, model:currentModel, stream:true, seed})
+      });
+      if (!r.ok || !r.body) return;
+      postReader = r.body.getReader();
       const dec = new TextDecoder();
-      let buf='', full='';
-      const kt = setTimeout(()=>{reader.cancel(); onDone(full);}, 55000);
-      try {
-        outer: while(true) {
-          const {done,value} = await reader.read();
-          if(done) break;
-          buf += dec.decode(value,{stream:true});
-          const lines = buf.split('\n'); buf = lines.pop()??'';
-          for(const line of lines) {
-            if(!line.startsWith('data: ')) continue;
-            const raw = line.slice(6).trim();
-            if(raw==='[DONE]') break outer;
-            try { const tok=JSON.parse(raw)?.choices?.[0]?.delta?.content; if(tok){full+=tok;onToken(full);} } catch{}
-          }
+      let buf='', full='', mine=false;
+      outer: while (true) {
+        const {done,value} = await postReader.read();
+        if (done) break;
+        buf += dec.decode(value, {stream:true});
+        const lines = buf.split('\n'); buf = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const raw = line.slice(6).trim();
+          if (raw === '[DONE]') break outer;
+          try {
+            const tok = JSON.parse(raw)?.choices?.[0]?.delta?.content;
+            if (tok) {
+              if (!mine && !claimed) { claimed = true; mine = true; } // first token wins
+              if (mine) { full += tok; onToken(full); }
+            }
+          } catch {}
         }
-      } finally { clearTimeout(kt); }
-      if(full) { onDone(full); return; }
-    }
-  } catch(e) { /* fall through */ }
+      }
+      if (mine) onDone(full);
+    } catch {}
+  }
 
-  // ② GET with selected model — no CORS preflight, no system param (keeps URL short)
-  try {
-    const url = 'https://text.pollinations.ai/'
-      + encodeURIComponent(lastUser.slice(0,600))
-      + '?model=' + currentModel + '&seed=' + seed;
-    const r2 = await tFetch(url, {}, 40000);
-    if (r2.ok) {
-      const t = (await r2.text()).trim();
-      if (t) { onToken(t); onDone(t); return; }
-    }
-  } catch(e) { /* fall through */ }
+  // GET: no CORS preflight, returns full response at once
+  async function tryGet(model) {
+    try {
+      const url = 'https://text.pollinations.ai/'
+        + encodeURIComponent(lastUser.slice(0, 600))
+        + '?model=' + model + '&seed=' + seed;
+      const r = await fetch(url);
+      if (!r.ok) throw 0;
+      const t = (await r.text()).trim();
+      if (!t) throw 0;
+      if (!claimed) { claimed = true; postReader?.cancel(); onToken(t); onDone(t); }
+    } catch {}
+  }
 
-  // ③ GET with openai — most reliable, always available
-  const url3 = 'https://text.pollinations.ai/'
-    + encodeURIComponent(lastUser.slice(0,600))
-    + '?model=openai&seed=' + seed;
-  const r3 = await tFetch(url3, {}, 40000);
-  if (!r3.ok) throw new Error('all methods failed');
-  const t3 = (await r3.text()).trim();
-  if (!t3) throw new Error('empty response');
-  onToken(t3); onDone(t3);
+  // All run at the same time — no waiting, fastest wins
+  const workers = [tryStream()];
+  if (currentModel !== 'openai') workers.push(tryGet(currentModel));
+  workers.push(tryGet('openai')); // always include fastest model as backup
+
+  await Promise.race([
+    Promise.allSettled(workers),
+    new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 30000))
+  ]);
+  if (!claimed) throw new Error('no response');
 }
 
 /* ═══════════════════════════════════════════
