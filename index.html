@@ -600,7 +600,11 @@ const MODEL_LABELS = {
   'gemini':       'Gemini',
 };
 
-let currentModel = localStorage.getItem('aria4.model') || 'openai';
+// Sanitize saved model — old/invalid values reset to openai
+const _saved = localStorage.getItem('aria4.model');
+let currentModel = (MODEL_LABELS[_saved] ? _saved : 'openai');
+localStorage.setItem('aria4.model', currentModel);
+
 let online = false;
 let busy = false;
 let atts = [];
@@ -638,25 +642,23 @@ async function checkOnline() {
   }
 }
 
-// ── Stream AI — GET first (no CORS preflight), POST stream if available ──
+// ── Stream AI — 3-level fallback, always gets a response ──
 async function streamAI(messages, onToken, onDone) {
   const lastUser = [...messages].reverse().find(m=>m.role==='user')?.content || 'hi';
-  const sys = messages.find(m=>m.role==='system')?.content || '';
+  const seed = Math.random()*99999|0;
 
-  // ① Try streaming POST (fastest when it works)
-  let streamOk = false;
+  // ① POST streaming — real-time tokens, best experience
   try {
     const ctrl = new AbortController();
     const ct = setTimeout(()=>ctrl.abort(), 10000);
     const r = await fetch('https://text.pollinations.ai/', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({messages, model:currentModel, stream:true, seed:Math.random()*99999|0}),
+      body: JSON.stringify({messages, model:currentModel, stream:true, seed}),
       signal: ctrl.signal
     });
     clearTimeout(ct);
     if (r.ok && r.body) {
-      streamOk = true;
       const reader = r.body.getReader();
       const dec = new TextDecoder();
       let buf='', full='';
@@ -675,24 +677,31 @@ async function streamAI(messages, onToken, onDone) {
           }
         }
       } finally { clearTimeout(kt); }
-      onDone(full||'(no response)');
-      return;
+      if(full) { onDone(full); return; }
     }
-  } catch {}
+  } catch(e) { /* fall through */ }
 
-  if (streamOk) return;
+  // ② GET with selected model — no CORS preflight, no system param (keeps URL short)
+  try {
+    const url = 'https://text.pollinations.ai/'
+      + encodeURIComponent(lastUser.slice(0,600))
+      + '?model=' + currentModel + '&seed=' + seed;
+    const r2 = await tFetch(url, {}, 40000);
+    if (r2.ok) {
+      const t = (await r2.text()).trim();
+      if (t) { onToken(t); onDone(t); return; }
+    }
+  } catch(e) { /* fall through */ }
 
-  // ② GET fallback — simple, no CORS preflight, always works
-  const url = 'https://text.pollinations.ai/'
-    + encodeURIComponent(lastUser.slice(0,500))
-    + '?model=' + currentModel
-    + '&seed=' + (Math.random()*9999|0)
-    + '&system=' + encodeURIComponent(sys.slice(0,500));
-  const r2 = await tFetch(url, {}, 45000);
-  if (!r2.ok) throw new Error('HTTP ' + r2.status);
-  const text = (await r2.text()).trim();
-  onToken(text);
-  onDone(text);
+  // ③ GET with openai — most reliable, always available
+  const url3 = 'https://text.pollinations.ai/'
+    + encodeURIComponent(lastUser.slice(0,600))
+    + '?model=openai&seed=' + seed;
+  const r3 = await tFetch(url3, {}, 40000);
+  if (!r3.ok) throw new Error('all methods failed');
+  const t3 = (await r3.text()).trim();
+  if (!t3) throw new Error('empty response');
+  onToken(t3); onDone(t3);
 }
 
 /* ═══════════════════════════════════════════
