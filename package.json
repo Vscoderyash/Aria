@@ -1,0 +1,15 @@
+{
+  "name": "aria-local-ai-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ARIA server-backed chat, profiles, subscriptions, knowledge cache, plugins, skills, and automations.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}
