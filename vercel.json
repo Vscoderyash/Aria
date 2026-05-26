@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/aria.js": {
+      "includeFiles": "knowledge/**"
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

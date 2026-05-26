@@ -10,6 +10,7 @@ ARIA is a server-backed AI workspace prototype with:
 - plugin, skill, and automation unlock metadata
 - optional Google Custom Search connector
 - payment provider placeholders for Stripe or Razorpay
+- built-in ARIA knowledge library with 100+ working and knowledge files
 
 ## Run
 
@@ -36,3 +37,5 @@ Copy `.env.example` to `.env` and fill in production secrets:
 ## Notes
 
 The server stores local development data in `data/aria-db.json`. This is ignored by Git. Use a real database before production.
+
+The `knowledge/` directory contains ARIA's built-in working memory library. The server loads those Markdown files at runtime and uses them before Google search when a user asks about matching coding, design, deployment, security, automation, plugin, or product topics.

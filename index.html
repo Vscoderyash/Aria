@@ -365,85 +365,6 @@ button,input,textarea,select{font:inherit;color:inherit;background:none;border:n
 }
 .mc:hover{background:var(--bg3);color:var(--tx)}
 
-/* moved to script: renderServerPanels() {
-  const status = Q('#serverStatus');
-  if (status) {
-    status.className = `server-pill ${serverOnline ? 'on' : 'off'}`;
-    status.textContent = serverOnline ? 'Server connected' : 'Server offline';
-  }
-
-  const account = Q('#accountBox');
-  if (account) {
-    if (currentUser) {
-      const sub = currentUser.subscription || {};
-      const expires = sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString() : 'Never';
-      account.innerHTML = `
-        <div class="account-card">
-          <strong>${esc(currentUser.name || currentUser.email)}</strong>
-          <div class="meta-line">${esc(currentUser.email)} · ${esc(currentUser.plan?.name || 'Free')}</div>
-          <div class="meta-line">Messages: ${currentUser.usage?.messages || 0}/${currentUser.plan?.messageLimit || 0} · Web searches: ${currentUser.usage?.webSearches || 0}/${currentUser.plan?.webSearches || 0}</div>
-          <div class="meta-line">Subscription expires: ${esc(expires)}</div>
-          <div class="auth-actions"><button class="add-btn" id="logoutBtn">Log out</button></div>
-        </div>`;
-      Q('#logoutBtn')?.addEventListener('click', serverLogout);
-    } else {
-      account.innerHTML = `
-        <div class="account-card">
-          <strong>Create your ARIA profile</strong>
-          <div class="meta-line">Profile chats, subscription, training preference, and server memory stay on your account.</div>
-          <div class="auth-row">
-            <input class="f-in" id="authName" placeholder="Name">
-            <input class="f-in" id="authEmail" placeholder="Email">
-          </div>
-          <input class="f-in" id="authPass" placeholder="Password" type="password" style="margin-top:8px">
-          <div class="auth-actions">
-            <button class="add-btn" id="registerBtn">Sign up</button>
-            <button class="add-btn" id="loginBtn">Log in</button>
-          </div>
-        </div>`;
-      Q('#registerBtn')?.addEventListener('click', () => serverAuth('register'));
-      Q('#loginBtn')?.addEventListener('click', () => serverAuth('login'));
-    }
-  }
-
-  const pricing = Q('#pricingBox');
-  if (pricing) {
-    const plans = Object.values(serverPlans || {});
-    pricing.innerHTML = (plans.length ? plans : [
-      { id:'free', name:'Free', price:0, features:['Basic chat'] },
-      { id:'pro', name:'Pro', price:20, features:['Profile chats', 'Plugins', 'Skills'] },
-      { id:'max5', name:'Max 5x', price:100, features:['Coding workspace', 'Automations'] },
-      { id:'max20', name:'Max 20x', price:200, features:['Highest limits', 'Premium connectors'] }
-    ]).map(plan => `
-      <div class="pricing-card">
-        <strong>${esc(plan.name)}</strong>
-        <div class="plan-price">${plan.price ? '$' + plan.price : 'Free'}<span class="meta-line"> / month</span></div>
-        <div class="meta-line">${(plan.features || []).map(esc).join(' · ')}</div>
-        ${plan.id === 'free'
-          ? '<button class="add-btn" disabled>Included</button>'
-          : `<button class="add-btn" data-checkout="${esc(plan.id)}">Unlock</button><button class="add-btn" data-devunlock="${esc(plan.id)}">Dev unlock</button>`}
-      </div>`).join('');
-    QQ('[data-checkout]').forEach(b => b.addEventListener('click', () => requestCheckout(b.dataset.checkout)));
-    QQ('[data-devunlock]').forEach(b => b.addEventListener('click', () => devUnlock(b.dataset.devunlock)));
-  }
-
-  const features = Q('#featuresBox');
-  if (features) {
-    const rows = [
-      ...serverPlugins.map(p => ({ name:p.name, desc:p.description, unlocked:p.unlocked ?? true, plan:p.plan })),
-      ...serverSkills.map(s => ({ name:s.name, desc:'Skill module', unlocked:s.unlocked ?? true, plan:s.plan })),
-      { name:'Automations', desc:`${serverAutomations.length} active automation(s)`, unlocked:!!currentUser?.enabledFeatures?.automations, plan:'max5' }
-    ];
-    features.innerHTML = rows.map(item => `
-      <div class="feature-card ${item.unlocked ? '' : 'locked'}">
-        <strong>${esc(item.name)}</strong>
-        <div class="meta-line">${esc(item.desc || '')}</div>
-        <div class="meta-line">${item.unlocked ? 'Unlocked' : 'Requires ' + esc(item.plan)}</div>
-      </div>`).join('');
-  }
-}
-
-*/
 
 /* Settings */
 .s-sec{margin-bottom:22px}
@@ -661,6 +582,20 @@ button,input,textarea,select{font:inherit;color:inherit;background:none;border:n
     </div>
 
     <div class="s-sec">
+      <h3>Connections</h3>
+      <div class="feature-grid" id="connectionsBox"></div>
+      <div class="add-row" style="margin-top:8px">
+        <input class="f-in" id="connectionIn" placeholder="GitHub, Vercel, Google Drive, Slack...">
+        <button class="add-btn" id="addConnection">Request</button>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <h3>Permission Center</h3>
+      <div class="stack" id="permissionsBox"></div>
+    </div>
+
+    <div class="s-sec">
       <h3>Personality</h3>
       <textarea class="f-ta" id="persFld" rows="3" placeholder="How should ARIA speak and behave?"></textarea>
     </div>
@@ -753,7 +688,21 @@ async function checkOnline() {
 /* ═══════════════════════════════════════════
    Store
 ═══════════════════════════════════════════ */
-const K = { chats:'aria4.chats', active:'aria4.active', train:'aria4.train', theme:'aria4.theme' };
+const K = {
+  chats:'aria4.chats',
+  active:'aria4.active',
+  train:'aria4.train',
+  theme:'aria4.theme',
+  permissions:'aria4.permissions',
+  connections:'aria4.connections'
+};
+
+const DEFAULT_PERMISSIONS = [
+  { id:'perm_web', name:'Use Google knowledge', scope:'Search Google when ARIA memory is not enough', status:'approved' },
+  { id:'perm_code', name:'Coding actions', scope:'Suggest and generate code; ask before editing external systems', status:'needs approval' },
+  { id:'perm_deploy', name:'Deployment actions', scope:'Deploy, change environment variables, or publish releases', status:'needs approval' },
+  { id:'perm_connect', name:'Connect apps', scope:'Connect GitHub, Vercel, Drive, Slack, or other services', status:'needs approval' }
+];
 
 const DEF = {
   personality: "You are ARIA, a smart, precise, and helpful AI assistant. Give complete, accurate, useful answers. Use markdown for code and structured responses. Be honest about uncertainty.",
@@ -791,12 +740,15 @@ let serverPlans = {};
 let serverPlugins = [];
 let serverSkills = [];
 let serverAutomations = [];
+let permissionRequests = ld(K.permissions, DEFAULT_PERMISSIONS);
+let connectionRequests = ld(K.connections, []);
 
 const Q  = s => document.querySelector(s);
 const QQ = s => Array.from(document.querySelectorAll(s));
 
 function saveTrain() { sv(K.train, train); }
 function saveChats() { sv(K.chats, chats.slice(0,120)); sv(K.active, activeId); }
+function saveControls() { sv(K.permissions, permissionRequests); sv(K.connections, connectionRequests); }
 
 async function api(path, body, method) {
   const endpoint = `/api/aria?path=${encodeURIComponent(path)}`;
@@ -902,6 +854,33 @@ async function devUnlock(planId) {
   } catch (error) {
     alert(error.message);
   }
+}
+
+function requestPermission(name, scope) {
+  const item = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name,
+    scope,
+    status: 'needs approval',
+    ts: Date.now()
+  };
+  permissionRequests.unshift(item);
+  saveControls();
+  renderServerPanels();
+}
+
+function updatePermission(id, status) {
+  permissionRequests = permissionRequests.map(item => item.id === id ? { ...item, status } : item);
+  saveControls();
+  renderServerPanels();
+}
+
+function requestConnection(name) {
+  const clean = String(name || '').trim();
+  if (!clean) return;
+  connectionRequests.unshift({ id: Date.now().toString(36), name: clean, status: 'permission needed', ts: Date.now() });
+  requestPermission(`Connect ${clean}`, `Allow ARIA to prepare a ${clean} connector setup. Credentials are still required before real access.`);
+  Q('#connectionIn').value = '';
 }
 
 function activeChat() {
@@ -1328,6 +1307,41 @@ function renderServerPanels() {
         <div class="meta-line">${item.unlocked ? 'Unlocked' : 'Requires ' + esc(item.plan)}</div>
       </div>`).join('');
   }
+
+  const connections = Q('#connectionsBox');
+  if (connections) {
+    const base = [
+      { name:'GitHub', desc:'Repositories, pull requests, code review' },
+      { name:'Vercel', desc:'Deployments, environment variables, logs' },
+      { name:'Google Drive', desc:'Docs and files selected by you' },
+      { name:'Slack', desc:'Notifications and team updates' },
+      { name:'Notion', desc:'Pages, notes, and project databases' },
+      { name:'Custom API', desc:'Your own tools and private services' }
+    ];
+    const requested = new Set(connectionRequests.map(item => item.name.toLowerCase()));
+    connections.innerHTML = base.map(item => `
+      <div class="feature-card ${requested.has(item.name.toLowerCase()) ? '' : 'locked'}">
+        <strong>${esc(item.name)}</strong>
+        <div class="meta-line">${esc(item.desc)}</div>
+        <div class="meta-line">${requested.has(item.name.toLowerCase()) ? 'Permission requested' : 'Ask permission to connect'}</div>
+      </div>`).join('');
+  }
+
+  const permissions = Q('#permissionsBox');
+  if (permissions) {
+    permissions.innerHTML = permissionRequests.map(item => `
+      <div class="account-card">
+        <strong>${esc(item.name)}</strong>
+        <div class="meta-line">${esc(item.scope)}</div>
+        <div class="meta-line">Status: ${esc(item.status)}</div>
+        <div class="auth-actions">
+          <button class="add-btn" data-approve="${esc(item.id)}">Approve</button>
+          <button class="add-btn" data-deny="${esc(item.id)}">Deny</button>
+        </div>
+      </div>`).join('');
+    QQ('[data-approve]').forEach(btn => btn.addEventListener('click', () => updatePermission(btn.dataset.approve, 'approved')));
+    QQ('[data-deny]').forEach(btn => btn.addEventListener('click', () => updatePermission(btn.dataset.deny, 'denied')));
+  }
 }
 
 /* Settings */
@@ -1426,6 +1440,8 @@ function boot() {
     train.knowledge.push({title,content,ts:Date.now()});
     Q('#kbTitle').value=''; Q('#kbText').value=''; saveTrain(); renderSettings();
   });
+  Q('#addConnection').addEventListener('click',()=>requestConnection(Q('#connectionIn').value));
+  Q('#connectionIn').addEventListener('keydown',e=>{if(e.key==='Enter')Q('#addConnection').click();});
   Q('#addEx').addEventListener('click',()=>{
     const prompt=Q('#exQ').value.trim(), answer=Q('#exA').value.trim();
     if(!prompt||!answer) return;

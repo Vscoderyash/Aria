@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const ROOT = __dirname;
 const DATA_DIR = path.join(ROOT, 'data');
 const DB_FILE = path.join(DATA_DIR, 'aria-db.json');
+const KNOWLEDGE_DIR = path.join(ROOT, 'knowledge');
 
 loadEnvFile(path.join(ROOT, '.env'));
 
@@ -86,6 +87,45 @@ const defaultDb = () => ({
   payments: [],
   createdAt: new Date().toISOString()
 });
+
+let knowledgeLibraryCache = null;
+
+function parseKnowledgeFile(filePath) {
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const match = raw.match(/^---\n([\s\S]*?)\n---\n\n?([\s\S]*)$/);
+  const meta = {};
+  let content = raw;
+  if (match) {
+    for (const line of match[1].split(/\r?\n/)) {
+      const [key, ...rest] = line.split(':');
+      if (key && rest.length) meta[key.trim()] = rest.join(':').trim();
+    }
+    content = match[2].trim();
+  }
+  return {
+    id: meta.id || path.basename(filePath, '.md'),
+    title: meta.title || path.basename(filePath, '.md'),
+    kind: meta.kind || 'knowledge',
+    tags: String(meta.tags || '').split(',').map(tag => tag.trim()).filter(Boolean),
+    content,
+    sourcePath: path.relative(ROOT, filePath).replace(/\\/g, '/')
+  };
+}
+
+function walkMarkdown(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) return walkMarkdown(full);
+    return entry.isFile() && entry.name.endsWith('.md') ? [full] : [];
+  });
+}
+
+function loadKnowledgeLibrary() {
+  if (knowledgeLibraryCache) return knowledgeLibraryCache;
+  knowledgeLibraryCache = walkMarkdown(KNOWLEDGE_DIR).map(parseKnowledgeFile);
+  return knowledgeLibraryCache;
+}
 
 function ensureDb() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -221,7 +261,17 @@ function score(query, text) {
 }
 function findKnowledge(db, user, message) {
   const key = normalizeQuestion(message);
-  return db.knowledge
+  const library = loadKnowledgeLibrary().map(item => ({
+    id: item.id,
+    ownerId: 'aria-library',
+    question: `${item.title} ${item.kind} ${item.tags.join(' ')}`,
+    answer: item.content,
+    type: item.kind,
+    shared: true,
+    library: true,
+    sourcePath: item.sourcePath
+  }));
+  return [...db.knowledge, ...library]
     .filter(k => k.ownerId === user.id || k.shared)
     .map(k => ({ ...k, score: Math.max(score(key, k.question), score(key, k.answer), score(key, k.type || '')) }))
     .filter(k => k.score > 0)
@@ -254,7 +304,8 @@ async function webKnowledge(message) {
 function localReply(message, hit, user) {
   const plan = getPlan(user);
   if (hit) {
-    return `I found this in my saved knowledge, so I can answer faster without searching again.\n\n${hit.answer}`;
+    const place = hit.library ? 'ARIA working knowledge library' : 'my saved knowledge';
+    return `I found this in ${place}, so I can answer faster without searching again.\n\n${hit.answer}`;
   }
   if (/\b(code|build|html|css|javascript|debug|component|app|website)\b/i.test(message)) {
     return `I can help code it.\n\nPlan:\n1. Understand exactly what you want.\n2. Break it into files, UI, state, and behavior.\n3. Write the full implementation.\n4. Keep it clean, responsive, and testable.\n\nYour current plan is ${plan.name}. Coding workspace features unlock on Max 5x and above.`;
@@ -353,7 +404,11 @@ async function route(req, res) {
     url.pathname = proxyPath.startsWith('/api/') ? proxyPath : `/api/${proxyPath.replace(/^\/+/, '')}`;
   }
   try {
-    if (url.pathname === '/api/health') return json(res, 200, { ok: true, plans: PLANS });
+    if (url.pathname === '/api/health') return json(res, 200, { ok: true, plans: PLANS, knowledgeFiles: loadKnowledgeLibrary().length });
+    if (url.pathname === '/api/library') {
+      const files = loadKnowledgeLibrary().map(({ id, title, kind, tags, sourcePath }) => ({ id, title, kind, tags, sourcePath }));
+      return json(res, 200, { count: files.length, files });
+    }
     if (url.pathname === '/api/plans') return json(res, 200, { plans: PLANS, plugins: PLUGINS, skills: SKILLS });
     if (url.pathname === '/api/register' && req.method === 'POST') {
       const body = await parseBody(req);

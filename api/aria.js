@@ -1,6 +1,9 @@
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'aria-vercel-secret';
+const KNOWLEDGE_DIR = path.join(process.cwd(), 'knowledge');
 
 const PLANS = {
   free: {
@@ -67,6 +70,45 @@ function defaultDb() {
     payments: [],
     createdAt: new Date().toISOString()
   };
+}
+
+let knowledgeLibraryCache = null;
+
+function parseKnowledgeFile(filePath) {
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const match = raw.match(/^---\n([\s\S]*?)\n---\n\n?([\s\S]*)$/);
+  const meta = {};
+  let content = raw;
+  if (match) {
+    for (const line of match[1].split(/\r?\n/)) {
+      const [key, ...rest] = line.split(':');
+      if (key && rest.length) meta[key.trim()] = rest.join(':').trim();
+    }
+    content = match[2].trim();
+  }
+  return {
+    id: meta.id || path.basename(filePath, '.md'),
+    title: meta.title || path.basename(filePath, '.md'),
+    kind: meta.kind || 'knowledge',
+    tags: String(meta.tags || '').split(',').map(tag => tag.trim()).filter(Boolean),
+    content,
+    sourcePath: path.relative(process.cwd(), filePath).replace(/\\/g, '/')
+  };
+}
+
+function walkMarkdown(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) return walkMarkdown(full);
+    return entry.isFile() && entry.name.endsWith('.md') ? [full] : [];
+  });
+}
+
+function loadKnowledgeLibrary() {
+  if (knowledgeLibraryCache) return knowledgeLibraryCache;
+  knowledgeLibraryCache = walkMarkdown(KNOWLEDGE_DIR).map(parseKnowledgeFile);
+  return knowledgeLibraryCache;
 }
 
 function db() {
@@ -210,8 +252,18 @@ function score(query, text) {
 
 function findKnowledge(store, user, message) {
   const key = normalizeQuestion(message);
+  const library = loadKnowledgeLibrary().map(item => ({
+    id: item.id,
+    ownerId: 'aria-library',
+    question: `${item.title} ${item.kind} ${item.tags.join(' ')}`,
+    answer: item.content,
+    type: item.kind,
+    shared: true,
+    library: true,
+    sourcePath: item.sourcePath
+  }));
   const ownerMatches = item => item.ownerId === user.id || item.shared;
-  return store.knowledge
+  return [...store.knowledge, ...library]
     .filter(ownerMatches)
     .map(item => ({ ...item, score: Math.max(score(key, item.question), score(key, item.answer), score(key, item.type || '')) }))
     .filter(item => item.score > 0)
@@ -245,7 +297,10 @@ async function webKnowledge(message) {
 
 function localReply(message, hit, user) {
   const plan = getPlan(user);
-  if (hit) return `I found this in ARIA memory, so I can answer faster without searching again.\n\n${hit.answer}`;
+  if (hit) {
+    const place = hit.library ? 'ARIA working knowledge library' : 'ARIA memory';
+    return `I found this in ${place}, so I can answer faster without searching again.\n\n${hit.answer}`;
+  }
   if (/\b(code|build|html|css|javascript|debug|component|app|website)\b/i.test(message)) {
     return `I can help code it.\n\nPlan:\n1. Understand exactly what you want.\n2. Break it into files, UI, state, and behavior.\n3. Write the full implementation.\n4. Keep it clean, responsive, and testable.\n\nYour current plan is ${plan.name}. Coding workspace features unlock on Max 5x and above.`;
   }
@@ -315,7 +370,11 @@ module.exports = async function handler(req, res) {
   const requestUrl = new URL(req.url, `https://${req.headers.host || 'aria.local'}`);
   const path = requestUrl.searchParams.get('path') || '/api/health';
   try {
-    if (path === '/api/health') return json(res, 200, { ok: true, engine: 'aria-vercel', plans: PLANS });
+    if (path === '/api/health') return json(res, 200, { ok: true, engine: 'aria-vercel', plans: PLANS, knowledgeFiles: loadKnowledgeLibrary().length });
+    if (path === '/api/library') {
+      const files = loadKnowledgeLibrary().map(({ id, title, kind, tags, sourcePath }) => ({ id, title, kind, tags, sourcePath }));
+      return json(res, 200, { count: files.length, files });
+    }
     if (path === '/api/plans') return json(res, 200, { plans: PLANS, plugins: PLUGINS, skills: SKILLS });
     if (path === '/api/me') {
       const user = currentUser(req, store);
