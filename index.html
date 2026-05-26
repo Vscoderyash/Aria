@@ -588,13 +588,7 @@ button,input,textarea,select{font:inherit;color:inherit;background:none;border:n
         <span class="s-dot" id="sDot"></span>
         <span class="s-label" id="sLabel">Connecting…</span>
         <div class="sep"></div>
-        <select class="model-sel" id="modelSel" title="Switch AI model">
-          <option value="openai">GPT-4o Mini ⚡</option>
-          <option value="openai-large">GPT-4o</option>
-          <option value="mistral">Mistral</option>
-          <option value="llama">Llama 3.3</option>
-          <option value="gemini">Gemini</option>
-        </select>
+        <span class="model-sel" id="modelSel" title="ARIA server model">ARIA Core</span>
       </div>
 
       <div class="tb-acts">
@@ -719,24 +713,9 @@ button,input,textarea,select{font:inherit;color:inherit;background:none;border:n
 <script>
 'use strict';
 
-const MODEL_LABELS = {
-  'openai':       'GPT-4o Mini',
-  'openai-large': 'GPT-4o',
-  'mistral':      'Mistral',
-  'llama':        'Llama 3.3',
-  'gemini':       'Gemini',
-};
-
-// Sanitize saved model — old/invalid values reset to openai
-const _saved = localStorage.getItem('aria4.model');
-let currentModel = (MODEL_LABELS[_saved] ? _saved : 'openai');
-localStorage.setItem('aria4.model', currentModel);
-
 let online = false;
 let busy = false;
 let atts = [];
-
-document.getElementById('modelSel').value = currentModel;
 
 // ── Status ──
 function setStatus(state, label) {
@@ -756,84 +735,21 @@ function tFetch(url, opts, ms) {
 async function checkOnline() {
   setStatus('', 'Connecting…');
   try {
-    const r = await tFetch('https://text.pollinations.ai/hi?seed=1&model=openai', {}, 10000);
-    if (r.status < 500) {
-      online = true;
-      setStatus('online', MODEL_LABELS[currentModel] || currentModel);
-      updateHint(true); renderChat();
-    } else throw new Error(r.status);
+    const r = await tFetch('/api/health', {}, 5000);
+    if (r.status >= 500) throw new Error(r.status);
+    online = true;
+    serverOnline = true;
+    setStatus('online', 'ARIA Core');
+    updateHint(true); renderChat();
   } catch(e) {
     online = false;
+    serverOnline = false;
     setStatus('error', 'Offline');
     updateHint(false);
   }
 }
 
-// ── Fire POST stream + GET simultaneously — fastest wins ──
-async function streamAI(messages, onToken, onDone) {
-  const lastUser = [...messages].reverse().find(m=>m.role==='user')?.content || 'hi';
-  const seed = Math.random()*99999|0;
-  let claimed = false, postReader = null;
-
-  // POST: real-time streaming tokens
-  async function tryStream() {
-    try {
-      const r = await fetch('https://text.pollinations.ai/', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({messages, model:currentModel, stream:true, seed})
-      });
-      if (!r.ok || !r.body) return;
-      postReader = r.body.getReader();
-      const dec = new TextDecoder();
-      let buf='', full='', mine=false;
-      outer: while (true) {
-        const {done,value} = await postReader.read();
-        if (done) break;
-        buf += dec.decode(value, {stream:true});
-        const lines = buf.split('\n'); buf = lines.pop() ?? '';
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const raw = line.slice(6).trim();
-          if (raw === '[DONE]') break outer;
-          try {
-            const tok = JSON.parse(raw)?.choices?.[0]?.delta?.content;
-            if (tok) {
-              if (!mine && !claimed) { claimed = true; mine = true; } // first token wins
-              if (mine) { full += tok; onToken(full); }
-            }
-          } catch {}
-        }
-      }
-      if (mine) onDone(full);
-    } catch {}
-  }
-
-  // GET: no CORS preflight, returns full response at once
-  async function tryGet(model) {
-    try {
-      const url = 'https://text.pollinations.ai/'
-        + encodeURIComponent(lastUser.slice(0, 600))
-        + '?model=' + model + '&seed=' + seed;
-      const r = await fetch(url);
-      if (!r.ok) throw 0;
-      const t = (await r.text()).trim();
-      if (!t) throw 0;
-      if (!claimed) { claimed = true; postReader?.cancel(); onToken(t); onDone(t); }
-    } catch {}
-  }
-
-  // All run at the same time — no waiting, fastest wins
-  const workers = [tryStream()];
-  if (currentModel !== 'openai') workers.push(tryGet(currentModel));
-  workers.push(tryGet('openai')); // always include fastest model as backup
-
-  await Promise.race([
-    Promise.allSettled(workers),
-    new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 30000))
-  ]);
-  if (!claimed) throw new Error('no response');
-}
+// Browser chat requests go through ARIA's server knowledge engine.
 
 /* ═══════════════════════════════════════════
    Store
@@ -1150,7 +1066,7 @@ async function go(text) {
   openStreamCard();
   setStatus('thinking', 'Thinking…');
 
-  if (currentUser && serverOnline) {
+  if (serverOnline) {
     let final = '';
     try {
       if (streamProseEl) streamProseEl.innerHTML = 'Checking server memory and web knowledge<span class="cur">▊</span>';
@@ -1180,34 +1096,10 @@ async function go(text) {
     return;
   }
 
-  const history = chat.msgs.slice(-20).filter(m=>m.role==='user'||m.role==='assistant');
-  const msgs = [
-    {role:'system', content:buildSys(text)},
-    ...history.map(m=>({role:m.role, content:m.content}))
-  ];
-
-  let final = '';
-  try {
-    await streamAI(
-      msgs,
-      // onToken — fires for each chunk, renders instantly
-      (partial) => {
-        if (streamProseEl) {
-          streamProseEl.innerHTML = escRaw(partial) + '<span class="cur">▊</span>';
-          scrollBottom();
-        }
-      },
-      // onDone — full text, render markdown
-      (full) => { final = full; }
-    );
-    online = true;
-    setStatus('online', MODEL_LABELS[currentModel] || currentModel);
-  } catch(e) {
-    online = false;
-    setStatus('error', 'Offline');
-    final = offlineMsg(text);
-    if (streamProseEl) streamProseEl.innerHTML = md(final);
-  }
+  const final = offlineMsg(text);
+  online = false;
+  setStatus('error', 'Server offline');
+  if (streamProseEl) streamProseEl.innerHTML = md(final);
 
   closeStreamCard();
   chat.msgs.push({role:'assistant', content:final, ts:Date.now()});
@@ -1224,8 +1116,8 @@ async function go(text) {
 function offlineMsg(q) {
   const ex=bestEx(q); if(ex&&ex.sc>=2) return ex.answer;
   const docs=relDocs(q);
-  if(docs.length) return `**From your knowledge base:**\n\n${docs.map(d=>`**${d.title}**\n${snip(q,d.content,2)}`).join('\n\n')}\n\n*Check internet connection for AI responses.*`;
-  return `**Could not reach AI.**\n\nARIA uses free online AI (no API key). Please check your internet connection and try again.`;
+  if(docs.length) return `**From ARIA memory:**\n\n${docs.map(d=>`**${d.title}**\n${snip(q,d.content,2)}`).join('\n\n')}\n\n*Start the ARIA server to use Google knowledge training.*`;
+  return `**ARIA server is offline.**\n\nStart the server with \`npm start\`. ARIA answers from its own server, learns from Google search results when configured, and stores useful answers for future fast replies.`;
 }
 
 /* ═══════════════════════════════════════════
@@ -1279,21 +1171,20 @@ function renderChat() {
   const area = Q('#chatArea');
 
   if (!chat.msgs.length) {
-    const modelLabel = MODEL_LABELS[currentModel] || currentModel;
     area.innerHTML = `
       <div class="welcome">
         <div class="w-icon">A</div>
         <h1>How can I help?</h1>
-        <p>ARIA connects automatically to free online AI — no API key, no account, no setup.<br>Just type and get answers instantly.</p>
+        <p>ARIA answers from its own server, learns from Google knowledge when needed, and saves useful answers for faster future replies.</p>
         <div class="powered">
           <span style="width:7px;height:7px;border-radius:50%;background:${online?'var(--gr)':'var(--tx3)'};display:inline-block;flex-shrink:0"></span>
-          ${online ? `Connected · Powered by ${modelLabel}` : 'Connecting to AI…'}
+          ${online ? 'Connected · ARIA Core + Google training cache' : 'Connecting to ARIA server…'}
         </div>
         <div class="starters">
           <button class="starter" data-p="Write a complete responsive landing page in HTML, CSS, and JavaScript with a hero section, features grid, pricing, and contact form.">
             <strong>Build a landing page</strong><span>Full HTML/CSS/JS from scratch</span>
           </button>
-          <button class="starter" data-p="Explain how large language models like GPT-4 and Claude work — transformers, attention, tokenization, RLHF, and text generation.">
+          <button class="starter" data-p="Explain how modern AI assistants work — transformers, attention, tokenization, alignment, and text generation.">
             <strong>How do AI models work?</strong><span>Transformers, training, generation</span>
           </button>
           <button class="starter" data-p="Design the full architecture for a SaaS web app: database, backend API, frontend framework, auth system, and AI features to add.">
@@ -1357,8 +1248,8 @@ function updateHint(isOnline) {
     return;
   }
   Q('#iHint').textContent = isOnline
-    ? `ARIA · Connected · Using ${MODEL_LABELS[currentModel]||currentModel} · free · no API key`
-    : 'ARIA · Offline · Check internet connection';
+    ? 'ARIA · connected to own server · Google knowledge training on'
+    : 'ARIA · server offline · start npm start';
 }
 
 function renderServerPanels() {
@@ -1512,14 +1403,6 @@ function boot() {
   });
   Q('#clearBtn').addEventListener('click',()=>{ activeChat().msgs=[]; saveChats(); renderChat(); });
   Q('#exportBtn').addEventListener('click',exportChat);
-
-  // Model switch — instantly switch and re-ping
-  Q('#modelSel').addEventListener('change',e=>{
-    currentModel=e.target.value;
-    localStorage.setItem('aria4.model', currentModel);
-    setStatus('','Switching…');
-    checkOnline();
-  });
 
   // Settings modal
   Q('#settingsBtn').addEventListener('click',()=>{ renderSettings(); Q('#settingsOv').classList.add('open'); });

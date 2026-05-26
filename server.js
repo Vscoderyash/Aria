@@ -193,6 +193,24 @@ function authRequired(req, res, db) {
   if (!user) json(res, 401, { error: 'Login required' });
   return user;
 }
+function createGuestUser(db) {
+  const guestNumber = db.users.filter(u => u.email.startsWith('guest-')).length + 1;
+  const user = {
+    id: id('user'),
+    email: `guest-${Date.now()}-${guestNumber}@aria.local`,
+    name: 'Guest',
+    passwordHash: '',
+    subscription: { plan: 'free', status: 'active', startedAt: new Date().toISOString(), expiresAt: null },
+    settings: { trainFromChats: true },
+    usage: { messages: 0, webSearches: 0 },
+    chats: [],
+    connections: [],
+    guest: true,
+    createdAt: new Date().toISOString()
+  };
+  db.users.push(user);
+  return user;
+}
 function normalizeQuestion(text) {
   return String(text || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 240);
 }
@@ -241,8 +259,8 @@ function localReply(message, hit, user) {
   if (/\b(code|build|html|css|javascript|debug|component|app|website)\b/i.test(message)) {
     return `I can help code it.\n\nPlan:\n1. Understand exactly what you want.\n2. Break it into files, UI, state, and behavior.\n3. Write the full implementation.\n4. Keep it clean, responsive, and testable.\n\nYour current plan is ${plan.name}. Coding workspace features unlock on Max 5x and above.`;
   }
-  if (/\b(design|ui|ux|screen|layout|claude|chatgpt)\b/i.test(message)) {
-    return `I can design it like a clean Claude + ChatGPT style product.\n\nI will focus on:\n- simple chat-first layout\n- quiet side navigation\n- clear memory/settings panel\n- responsive spacing\n- strong code/design action buttons\n\nTell me the exact page or component and I will draft the UI structure.`;
+  if (/\b(design|ui|ux|screen|layout|interface|website)\b/i.test(message)) {
+    return `I can design it as a clean ARIA product experience.\n\nI will focus on:\n- simple chat-first layout\n- quiet side navigation\n- clear memory/settings panel\n- responsive spacing\n- strong code/design action buttons\n\nTell me the exact page or component and I will draft the UI structure.`;
   }
   return `I understand. Ask me naturally and I will reply here.\n\nI can help with code, design, planning, debugging, writing, and research. If I learn a useful answer, I will save it to your profile so next time I can respond faster without searching.`;
 }
@@ -378,12 +396,18 @@ async function route(req, res) {
       return json(res, 200, { user: user ? publicUser(user) : null, chats: user ? user.chats : [] });
     }
     if (url.pathname === '/api/chat' && req.method === 'POST') {
-      const user = authRequired(req, res, db);
-      if (!user) return;
+      let user = currentUser(req, db);
+      let cookie = null;
+      if (!user) {
+        user = createGuestUser(db);
+        const token = makeToken();
+        db.sessions[token.split('.')[0]] = user.id;
+        cookie = `aria_session=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax`;
+      }
       const body = await parseBody(req);
       const result = await handleChat(db, user, body);
       writeDb(db);
-      return json(res, result.error ? 400 : 200, result);
+      return json(res, result.error ? 400 : 200, result, cookie ? { 'Set-Cookie': cookie } : {});
     }
     if (url.pathname === '/api/chats') {
       const user = authRequired(req, res, db);
