@@ -84,6 +84,7 @@ const defaultDb = () => ({
   knowledge: [],
   training: [],
   automations: [],
+  actions: [],
   payments: [],
   createdAt: new Date().toISOString()
 });
@@ -133,11 +134,19 @@ function ensureDb() {
 }
 function readDb() {
   ensureDb();
-  return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+  return ensureCollections(JSON.parse(fs.readFileSync(DB_FILE, 'utf8')));
 }
 function writeDb(db) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+}
+function ensureCollections(db) {
+  db.actions = Array.isArray(db.actions) ? db.actions : [];
+  db.knowledge = Array.isArray(db.knowledge) ? db.knowledge : [];
+  db.training = Array.isArray(db.training) ? db.training : [];
+  db.automations = Array.isArray(db.automations) ? db.automations : [];
+  db.payments = Array.isArray(db.payments) ? db.payments : [];
+  return db;
 }
 function id(prefix) {
   return `${prefix}_${crypto.randomBytes(12).toString('hex')}`;
@@ -277,6 +286,57 @@ function findKnowledge(db, user, message) {
     .filter(k => k.score > 0)
     .sort((a, b) => b.score - a.score)[0] || null;
 }
+
+function isSelfImproveRequest(message) {
+  return /\b(add|create|save|write|learn|remember|update|improve|upgrade|make)\b[\s\S]{0,80}\b(file|files|knowledge|memory|brain|server|yourself|skill|plugin|connection|ability)\b/i.test(message);
+}
+
+function createSelfImproveAction(db, user, message) {
+  const clean = String(message || '').replace(/\s+/g, ' ').trim();
+  const title = clean.length > 70 ? `${clean.slice(0, 67)}...` : clean;
+  const action = {
+    id: id('act'),
+    userId: user.id,
+    type: 'self-improvement',
+    status: 'needs approval',
+    title: `Learn: ${title}`,
+    summary: 'ARIA prepared a self-improvement knowledge update. Approve it before ARIA saves this into server memory.',
+    requestedText: clean,
+    draft: {
+      question: normalizeQuestion(clean),
+      type: 'self-improvement',
+      answer: `Self-improvement note from user request:\n\n${clean}\n\nWorking rule: convert this into future ARIA behavior only after user approval. Ask permission before creating files, connecting services, deploying, purchasing, deleting, or changing external systems.`,
+      tags: ['self-improvement', 'user-request', 'permission']
+    },
+    createdAt: new Date().toISOString()
+  };
+  db.actions.unshift(action);
+  return action;
+}
+
+function applyAction(db, user, action) {
+  if (action.type !== 'self-improvement' || action.appliedAt) return null;
+  const knowledge = {
+    id: id('know'),
+    ownerId: user.id,
+    question: action.draft.question,
+    type: action.draft.type,
+    answer: action.draft.answer,
+    links: [],
+    shared: false,
+    createdAt: new Date().toISOString(),
+    sourceActionId: action.id,
+    hits: 0
+  };
+  db.knowledge.unshift(knowledge);
+  action.appliedAt = new Date().toISOString();
+  return knowledge;
+}
+
+function userActions(db, user) {
+  return db.actions.filter(action => action.userId === user.id).slice(0, 50);
+}
+
 async function webKnowledge(message) {
   const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
   const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
@@ -303,17 +363,25 @@ async function webKnowledge(message) {
 }
 function localReply(message, hit, user) {
   const plan = getPlan(user);
+  const text = String(message || '').trim();
+  const lower = text.toLowerCase();
   if (hit) {
     const place = hit.library ? 'ARIA working knowledge library' : 'my saved knowledge';
     return `I found this in ${place}, so I can answer faster without searching again.\n\n${hit.answer}`;
   }
+  if (/^(hi|hello|hey|yo|sup|start|are you online)\b/i.test(lower)) {
+    return `I am online as ARIA Core.\n\nI can help in four modes:\n\n1. **Answer**: ask a question and I will use server memory first.\n2. **Build**: ask for code, UI, API routes, files, or debugging.\n3. **Learn**: say "learn this..." and I will prepare a permission-gated memory update.\n4. **Connect**: ask for GitHub, Vercel, Drive, Slack, or custom plugins and I will request permission before setup.\n\nGive me a real task and I will work from my server brain instead of repeating a canned message.`;
+  }
+  if (/\b(who are you|what are you|what can you do|help)\b/i.test(lower)) {
+    return `I am ARIA, a server-backed AI workspace.\n\nMy current abilities:\n- use built-in working knowledge files before web search\n- learn approved user instructions into server memory\n- keep profile chats and subscriptions on the account\n- plan code like an agent, including files, tests, and deployment steps\n- expose plugins, skills, connections, automations, and permission gates\n\nFor sensitive actions, I will ask permission first.`;
+  }
   if (/\b(code|build|html|css|javascript|debug|component|app|website)\b/i.test(message)) {
-    return `I can help code it.\n\nPlan:\n1. Understand exactly what you want.\n2. Break it into files, UI, state, and behavior.\n3. Write the full implementation.\n4. Keep it clean, responsive, and testable.\n\nYour current plan is ${plan.name}. Coding workspace features unlock on Max 5x and above.`;
+    return `I can build it.\n\n**Implementation path**\n1. Define the target behavior and UI.\n2. Split it into files, state, server routes, and styling.\n3. Generate or patch the code.\n4. Run syntax/API checks.\n5. Ask permission before deploys, external writes, or repo changes.\n\nYour current plan is **${plan.name}**. Advanced coding workspace features unlock on Max 5x and above.`;
   }
   if (/\b(design|ui|ux|screen|layout|interface|website)\b/i.test(message)) {
     return `I can design it as a clean ARIA product experience.\n\nI will focus on:\n- simple chat-first layout\n- quiet side navigation\n- clear memory/settings panel\n- responsive spacing\n- strong code/design action buttons\n\nTell me the exact page or component and I will draft the UI structure.`;
   }
-  return `I understand. Ask me naturally and I will reply here.\n\nI can help with code, design, planning, debugging, writing, and research. If I learn a useful answer, I will save it to your profile so next time I can respond faster without searching.`;
+  return `I do not have a strong saved memory match for that yet, so I will handle it as a fresh task.\n\n**What I understood**\n${text}\n\n**How I will proceed**\n- If you want an answer, I will explain it directly.\n- If you want code, I will turn it into files and steps.\n- If you want me to remember it, say **learn this:** and I will ask permission before saving it.\n- If this needs current web knowledge, add Google Search keys in the server environment and I will search once, cache the useful result, and answer faster next time.`;
 }
 async function handleChat(db, user, body) {
   const message = String(body.message || '').trim();
@@ -333,12 +401,23 @@ async function handleChat(db, user, body) {
   }
   chat.messages.push({ role: 'user', content: message, ts: Date.now() });
 
-  let hit = findKnowledge(db, user, message);
-  let answer = localReply(message, hit, user);
-  let source = hit ? 'knowledge-cache' : 'local';
+  let action = null;
+  let hit = null;
+  let answer = '';
+  let source = 'local';
   let links = [];
 
-  if (!hit && body.useWeb !== false && user.usage.webSearches < plan.webSearches) {
+  if (isSelfImproveRequest(message)) {
+    action = createSelfImproveAction(db, user, message);
+    source = 'permission-required';
+    answer = `I prepared a self-improvement update, but I need your permission before I save it into my server memory.\n\n**Pending action:** ${action.title}\n\nOpen **Settings > Permission Center** and approve it. After approval, I will store it as ARIA knowledge and use it for future answers.`;
+  } else {
+    hit = findKnowledge(db, user, message);
+    answer = localReply(message, hit, user);
+    source = hit ? 'knowledge-cache' : 'local';
+  }
+
+  if (!action && !hit && body.useWeb !== false && user.usage.webSearches < plan.webSearches) {
     try {
       const web = await webKnowledge(message);
       user.usage.webSearches += 1;
@@ -376,7 +455,7 @@ async function handleChat(db, user, body) {
       createdAt: new Date().toISOString()
     });
   }
-  return { chat, answer, source, links, user: publicUser(user) };
+  return { chat, answer, source, links, action, actions: userActions(db, user), user: publicUser(user) };
 }
 function serveStatic(req, res) {
   const urlPath = decodeURIComponent(new URL(req.url, `http://${req.headers.host}`).pathname);
@@ -472,6 +551,23 @@ async function route(req, res) {
       const user = authRequired(req, res, db);
       if (!user) return;
       return json(res, 200, { chats: user.chats });
+    }
+    if (url.pathname === '/api/actions') {
+      const user = authRequired(req, res, db);
+      if (!user) return;
+      if (req.method === 'GET') return json(res, 200, { actions: userActions(db, user) });
+      if (req.method === 'POST') {
+        const body = await parseBody(req);
+        const action = db.actions.find(item => item.id === body.actionId && item.userId === user.id);
+        if (!action) return json(res, 404, { error: 'Action not found' });
+        if (!['approved', 'denied'].includes(body.status)) return json(res, 400, { error: 'Use approved or denied' });
+        action.status = body.status;
+        action.decidedAt = new Date().toISOString();
+        let knowledge = null;
+        if (body.status === 'approved') knowledge = applyAction(db, user, action);
+        writeDb(db);
+        return json(res, 200, { action, knowledge, actions: userActions(db, user), user: publicUser(user) });
+      }
     }
     if (url.pathname === '/api/settings' && req.method === 'POST') {
       const user = authRequired(req, res, db);

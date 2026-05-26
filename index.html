@@ -273,8 +273,8 @@ button,input,textarea,select{font:inherit;color:inherit;background:none;border:n
 .prose th{background:var(--bg2);font-weight:600}
 .prose blockquote{border-left:3px solid var(--ac);padding-left:14px;color:var(--tx2);font-style:italic;margin:12px 0}
 
-.m-acts{display:flex;gap:6px;margin-top:9px;opacity:0;transition:opacity .15s}
-.msg:hover .m-acts{opacity:1}
+.m-acts{display:none}
+.msg:hover .m-acts{display:none}
 .m-btn{
   padding:3px 10px;border-radius:var(--rx);font-size:12px;
   color:var(--tx2);border:1px solid var(--bd);background:var(--bg2);transition:.12s;
@@ -740,6 +740,7 @@ let serverPlans = {};
 let serverPlugins = [];
 let serverSkills = [];
 let serverAutomations = [];
+let serverActions = [];
 let permissionRequests = ld(K.permissions, DEFAULT_PERMISSIONS);
 let connectionRequests = ld(K.connections, []);
 
@@ -791,13 +792,26 @@ async function bootServerProfile() {
     serverSkills = plans.skills || [];
     currentUser = me.user || null;
     serverChatsToLocal(me.chats);
+    if (currentUser) await refreshServerActions();
     serverOnline = true;
   } catch {
     serverOnline = false;
     currentUser = null;
+    serverActions = [];
   }
   renderServerPanels();
   updateHint(online || serverOnline);
+}
+
+async function refreshServerActions() {
+  if (!currentUser) {
+    serverActions = [];
+    return;
+  }
+  try {
+    const data = await api('/api/actions');
+    serverActions = data.actions || [];
+  } catch {}
 }
 
 async function refreshServerFeatures() {
@@ -807,6 +821,7 @@ async function refreshServerFeatures() {
     serverPlugins = data.plugins || serverPlugins;
     serverSkills = data.skills || serverSkills;
     serverAutomations = data.automations || [];
+    await refreshServerActions();
   } catch {}
   renderServerPanels();
 }
@@ -831,6 +846,7 @@ async function serverAuth(mode) {
 async function serverLogout() {
   await api('/api/logout', {}, 'POST').catch(() => {});
   currentUser = null;
+  serverActions = [];
   renderServerPanels();
   updateHint(online || serverOnline);
 }
@@ -873,6 +889,18 @@ function updatePermission(id, status) {
   permissionRequests = permissionRequests.map(item => item.id === id ? { ...item, status } : item);
   saveControls();
   renderServerPanels();
+}
+
+async function updateServerAction(id, status) {
+  if (!id) return;
+  try {
+    const data = await api('/api/actions', { actionId: id, status });
+    serverActions = data.actions || serverActions;
+    currentUser = data.user || currentUser;
+    renderServerPanels();
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
 function requestConnection(name) {
@@ -1052,6 +1080,8 @@ async function go(text) {
       const data = await api('/api/chat', { chatId: chat.id, message: text, useWeb: true });
       final = data.answer;
       currentUser = data.user || currentUser;
+      serverActions = data.actions || serverActions;
+      if (data.action && !serverActions.some(action => action.id === data.action.id)) serverActions.unshift(data.action);
       setStatus('online', `Server · ${data.source || 'memory'}`);
       if (streamProseEl) streamProseEl.innerHTML = md(final);
     } catch (e) {
@@ -1188,30 +1218,11 @@ function renderChat() {
       <div class="mb">
         <div class="mname">${m.role==='user'?'You':'ARIA'}</div>
         <div class="prose">${md(m.content)}</div>
-        <div class="m-acts">
-          <button class="m-btn" data-cp="${i}">Copy</button>
-          ${m.role==='assistant'?`<button class="m-btn" data-teach="${i}">Save as example</button>`:''}
-        </div>
       </div>`;
     inner.appendChild(div);
   });
   area.innerHTML=''; area.appendChild(inner);
-  QQ('[data-cp]').forEach(b=>b.addEventListener('click',()=>{
-    navigator.clipboard.writeText(chat.msgs[+b.dataset.cp].content);
-    b.textContent='Copied!'; setTimeout(()=>b.textContent='Copy',2e3);
-  }));
-  QQ('[data-teach]').forEach(b=>b.addEventListener('click',()=>saveEx(+b.dataset.teach,b)));
   scrollBottom();
-}
-
-function saveEx(i,btn) {
-  const chat=activeChat(), ai=chat.msgs[i];
-  if(!ai||ai.role!=='assistant') return;
-  const user=[...chat.msgs.slice(0,i)].reverse().find(m=>m.role==='user');
-  if(!user) return;
-  train.examples.unshift({prompt:user.content,answer:ai.content,ts:Date.now()});
-  saveTrain();
-  btn.textContent='Saved!'; setTimeout(()=>btn.textContent='Save as example',2e3);
 }
 
 /* Attachments */
@@ -1329,7 +1340,18 @@ function renderServerPanels() {
 
   const permissions = Q('#permissionsBox');
   if (permissions) {
-    permissions.innerHTML = permissionRequests.map(item => `
+    const serverCards = serverActions.map(action => `
+      <div class="account-card">
+        <strong>${esc(action.title || 'ARIA action')}</strong>
+        <div class="meta-line">${esc(action.summary || action.requestedText || '')}</div>
+        <div class="meta-line">Status: ${esc(action.status || 'needs approval')}</div>
+        ${action.status === 'needs approval' ? `
+          <div class="auth-actions">
+            <button class="add-btn" data-action-approve="${esc(action.id)}">Approve</button>
+            <button class="add-btn" data-action-deny="${esc(action.id)}">Deny</button>
+          </div>` : ''}
+      </div>`).join('');
+    const localCards = permissionRequests.map(item => `
       <div class="account-card">
         <strong>${esc(item.name)}</strong>
         <div class="meta-line">${esc(item.scope)}</div>
@@ -1339,6 +1361,9 @@ function renderServerPanels() {
           <button class="add-btn" data-deny="${esc(item.id)}">Deny</button>
         </div>
       </div>`).join('');
+    permissions.innerHTML = serverCards + localCards || '<div class="meta-line">No pending permissions.</div>';
+    QQ('[data-action-approve]').forEach(btn => btn.addEventListener('click', () => updateServerAction(btn.dataset.actionApprove, 'approved')));
+    QQ('[data-action-deny]').forEach(btn => btn.addEventListener('click', () => updateServerAction(btn.dataset.actionDeny, 'denied')));
     QQ('[data-approve]').forEach(btn => btn.addEventListener('click', () => updatePermission(btn.dataset.approve, 'approved')));
     QQ('[data-deny]').forEach(btn => btn.addEventListener('click', () => updatePermission(btn.dataset.deny, 'denied')));
   }
