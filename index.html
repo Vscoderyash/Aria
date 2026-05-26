@@ -735,8 +735,7 @@ function tFetch(url, opts, ms) {
 async function checkOnline() {
   setStatus('', 'Connecting…');
   try {
-    const r = await tFetch('/api/health', {}, 5000);
-    if (r.status >= 500) throw new Error(r.status);
+    await api('/api/health', null, 'GET');
     online = true;
     serverOnline = true;
     setStatus('online', 'ARIA Core');
@@ -800,12 +799,13 @@ function saveTrain() { sv(K.train, train); }
 function saveChats() { sv(K.chats, chats.slice(0,120)); sv(K.active, activeId); }
 
 async function api(path, body, method) {
+  const endpoint = `/api/aria?path=${encodeURIComponent(path)}`;
   const opts = { method: method || (body ? 'POST' : 'GET'), headers: {} };
   if (body) {
     opts.headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(body);
   }
-  const res = await fetch(path, opts);
+  const res = await fetch(endpoint, opts);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || data.message || 'Server request failed');
   return data;
