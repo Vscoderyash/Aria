@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 const GITHUB_API = "https://api.github.com";
 const headers = {
+  // This securely pulls your token from Vercel Environment Variables
   Authorization: `token ${process.env.GITHUB_TOKEN}`,
   Accept: "application/vnd.github.v3+json",
 };
@@ -14,8 +15,8 @@ export async function POST(req) {
       return NextResponse.json({ error: "Action denied: Owner permission required." }, { status: 403 });
     }
 
-    const owner = process.env.GITHUB_REPO_OWNER;
-    const repo = process.env.GITHUB_REPO_NAME;
+    const owner = "Vscoderyash"; // Your GitHub Username
+    const repo = "Aria"; // Your Repo Name
 
     const fileRes = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/${filePath}`, { headers });
     if (!fileRes.ok) return NextResponse.json({ error: "File not found in repository." }, { status: 404 });

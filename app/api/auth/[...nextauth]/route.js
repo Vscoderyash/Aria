@@ -21,7 +21,7 @@ const handler = NextAuth({
     }),
   ],
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: "aria_secrect_login_yash180", // Your custom secret string
 });
 
 export { handler as GET, handler as POST };
