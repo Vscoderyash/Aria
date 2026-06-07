@@ -1,0 +1,600 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: ARIA GOLD AI V3 API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: conversations
+    description: Chat conversations
+  - name: messages
+    description: Chat messages
+  - name: agents
+    description: AI agents
+  - name: memory
+    description: Memory system
+  - name: repositories
+    description: Repository intelligence
+  - name: owner
+    description: Owner panel
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /conversations:
+    get:
+      operationId: listConversations
+      tags: [conversations]
+      summary: List conversations
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+    post:
+      operationId: createConversation
+      tags: [conversations]
+      summary: Create conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+
+  /conversations/{id}:
+    get:
+      operationId: getConversation
+      tags: [conversations]
+      summary: Get conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteConversation
+      tags: [conversations]
+      summary: Delete conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /conversations/{id}/messages:
+    get:
+      operationId: listMessages
+      tags: [messages]
+      summary: List messages in conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+    post:
+      operationId: sendMessage
+      tags: [messages]
+      summary: Send message and get AI response
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagePair"
+
+  /agents:
+    get:
+      operationId: listAgents
+      tags: [agents]
+      summary: List all agents with status
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Agent"
+
+  /agents/{id}:
+    get:
+      operationId: getAgent
+      tags: [agents]
+      summary: Get agent detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Agent"
+        "404":
+          description: Not found
+
+  /memory:
+    get:
+      operationId: listMemory
+      tags: [memory]
+      summary: List/search memories
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Memory"
+    post:
+      operationId: createMemory
+      tags: [memory]
+      summary: Create memory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memory"
+
+  /memory/{id}:
+    patch:
+      operationId: updateMemory
+      tags: [memory]
+      summary: Update memory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memory"
+    delete:
+      operationId: deleteMemory
+      tags: [memory]
+      summary: Delete memory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /repositories:
+    get:
+      operationId: listRepositories
+      tags: [repositories]
+      summary: List repositories
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Repository"
+    post:
+      operationId: addRepository
+      tags: [repositories]
+      summary: Add repository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RepositoryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Repository"
+
+  /repositories/{id}:
+    get:
+      operationId: getRepository
+      tags: [repositories]
+      summary: Get repository with scores
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Repository"
+
+  /repositories/{id}/analyze:
+    post:
+      operationId: analyzeRepository
+      tags: [repositories]
+      summary: Trigger repository analysis
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Repository"
+
+  /owner/stats:
+    get:
+      operationId: getOwnerStats
+      tags: [owner]
+      summary: Get system stats
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OwnerStats"
+
+  /owner/usage:
+    get:
+      operationId: getUsageAnalytics
+      tags: [owner]
+      summary: Get usage analytics
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UsageDataPoint"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Conversation:
+      type: object
+      required: [id, title, agentId, createdAt, updatedAt, messageCount]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        agentId:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        messageCount:
+          type: integer
+
+    ConversationInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        agentId:
+          type: string
+
+    Message:
+      type: object
+      required: [id, conversationId, role, content, createdAt]
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        agentId:
+          type: ["string", "null"]
+        tokensUsed:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    MessageInput:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+        agentId:
+          type: string
+
+    MessagePair:
+      type: object
+      required: [userMessage, assistantMessage]
+      properties:
+        userMessage:
+          $ref: "#/components/schemas/Message"
+        assistantMessage:
+          $ref: "#/components/schemas/Message"
+
+    Agent:
+      type: object
+      required: [id, name, role, description, status, goals, tools]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        goals:
+          type: array
+          items:
+            type: string
+        tools:
+          type: array
+          items:
+            type: string
+        tasksCompleted:
+          type: ["integer", "null"]
+        lastActive:
+          type: ["string", "null"]
+
+    Memory:
+      type: object
+      required: [id, type, content, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        content:
+          type: string
+        key:
+          type: ["string", "null"]
+        conversationId:
+          type: ["integer", "null"]
+        repositoryId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    MemoryInput:
+      type: object
+      required: [type, content]
+      properties:
+        type:
+          type: string
+        content:
+          type: string
+        key:
+          type: string
+        conversationId:
+          type: integer
+        repositoryId:
+          type: integer
+
+    MemoryUpdate:
+      type: object
+      properties:
+        content:
+          type: string
+        key:
+          type: string
+
+    Repository:
+      type: object
+      required: [id, name, url, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        url:
+          type: string
+        description:
+          type: ["string", "null"]
+        language:
+          type: ["string", "null"]
+        branch:
+          type: ["string", "null"]
+        status:
+          type: string
+        overallScore:
+          type: ["number", "null"]
+        securityScore:
+          type: ["number", "null"]
+        performanceScore:
+          type: ["number", "null"]
+        maintainabilityScore:
+          type: ["number", "null"]
+        issuesFound:
+          type: ["integer", "null"]
+        lastAnalyzedAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    RepositoryInput:
+      type: object
+      required: [name, url]
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        description:
+          type: string
+        branch:
+          type: string
+
+    OwnerStats:
+      type: object
+      required: [systemHealth, totalTokensUsed, totalCostUsd, activeAgents, totalConversations, totalRepositories, agentHealth]
+      properties:
+        systemHealth:
+          type: string
+        totalTokensUsed:
+          type: integer
+        totalCostUsd:
+          type: number
+        activeAgents:
+          type: integer
+        totalConversations:
+          type: integer
+        totalRepositories:
+          type: integer
+        agentHealth:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentHealthItem"
+
+    AgentHealthItem:
+      type: object
+      required: [agentId, name, status, tasksCompleted]
+      properties:
+        agentId:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        tasksCompleted:
+          type: integer
+
+    UsageDataPoint:
+      type: object
+      required: [date, tokensUsed, costUsd, requestCount]
+      properties:
+        date:
+          type: string
+        tokensUsed:
+          type: integer
+        costUsd:
+          type: number
+        requestCount:
+          type: integer
