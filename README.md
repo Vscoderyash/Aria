@@ -10,14 +10,26 @@ A premium autonomous AI engineering platform — analyzes repos, writes code, fi
 - **AI**: 8 specialized agents (Architect, Frontend, Backend, Security, Performance, Testing, Docs, Research)
 - **GitHub**: Commit files directly from the chat interface
 
-## Pages
+## Deploying to Vercel
 
-- `/` — Landing page
-- `/chat` — Claude-style streaming AI chat with GitHub commit
-- `/workspace` — 3-panel IDE workspace
-- `/owner` — Admin dashboard with usage analytics
+This repo deploys the **React frontend** on Vercel. Configure these in your Vercel project settings:
 
-## Setup
+| Setting | Value |
+|---------|-------|
+| Framework Preset | Other |
+| Root Directory | (leave empty — monorepo root) |
+| Build Command | `pnpm --filter @workspace/aria-gold run build` |
+| Output Directory | `artifacts/aria-gold/dist` |
+| Install Command | `pnpm install --frozen-lockfile` |
+| Node.js Version | 20.x or 22.x |
+
+**Environment variables to set in Vercel:**
+
+```
+VITE_API_BASE_URL=https://<your-api-server-url>
+```
+
+## Local Setup
 
 ```bash
 pnpm install
