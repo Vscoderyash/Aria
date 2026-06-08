@@ -6,8 +6,20 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
+const apiKey = process.env.OPENAI_API_KEY ?? "";
+const isOpenRouter = apiKey.startsWith("sk-or-");
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey,
+  ...(isOpenRouter
+    ? {
+        baseURL: "https://openrouter.ai/api/v1",
+        defaultHeaders: {
+          "HTTP-Referer": "https://aria-gold.replit.app",
+          "X-Title": "ARIA GOLD AI",
+        },
+      }
+    : {}),
 });
 
 const AGENT_SYSTEM_PROMPTS: Record<string, string> = {
@@ -109,8 +121,8 @@ router.post("/ai/conversations/:id/stream", async (req, res) => {
     let fullResponse = "";
 
     const stream = await openai.chat.completions.create({
-      model: "gpt-4.1",
-      max_completion_tokens: 8192,
+      model: isOpenRouter ? "openai/gpt-4.1" : "gpt-4.1",
+      max_completion_tokens: 3000,
       messages: [
         { role: "system", content: systemPrompt },
         ...chatMessages,
