@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
+import { useClerk, useUser } from "@clerk/react";
 import {
   Plus, MessageSquare, ChevronDown, Send, GitCommit,
   CheckCircle, XCircle, Loader2, Copy, Check, Github,
-  Cpu, Zap, ChevronRight, Menu, X
+  Cpu, Zap, ChevronRight, Menu, X, LogOut, User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";

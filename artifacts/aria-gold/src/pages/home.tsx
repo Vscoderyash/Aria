@@ -1,8 +1,56 @@
 import React from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, Code, Shield, Zap, Terminal, Activity, GitPullRequest, Search, CheckCircle, GitCommit, Layers, Cpu } from "lucide-react";
+import { ArrowRight, Code, Shield, Zap, Terminal, Activity, GitPullRequest, Search, CheckCircle, GitCommit, Layers, Cpu, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Show, useClerk, useUser } from "@clerk/react";
+
+function AuthButtons() {
+  const { signOut } = useClerk();
+  const { user } = useUser();
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+  return (
+    <>
+      <Show when="signed-in">
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="w-7 h-7 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
+              <User className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <span className="text-foreground/80 font-medium">{user?.firstName ?? user?.emailAddresses[0]?.emailAddress?.split("@")[0]}</span>
+          </div>
+          <Link href="/chat">
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold">
+              Open Chat
+            </Button>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => signOut({ redirectUrl: basePath || "/" })}
+            className="text-muted-foreground hover:text-foreground gap-1.5"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden md:inline">Sign out</span>
+          </Button>
+        </div>
+      </Show>
+      <Show when="signed-out">
+        <div className="flex items-center gap-3">
+          <Link href="/sign-in" className="text-sm font-medium hover:text-primary transition-colors hidden md:flex items-center gap-1.5">
+            <LogIn className="w-4 h-4" /> Sign in
+          </Link>
+          <Link href="/sign-up">
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold">
+              Get Started
+            </Button>
+          </Link>
+        </div>
+      </Show>
+    </>
+  );
+}
 
 export default function Home() {
   return (
@@ -20,14 +68,7 @@ export default function Home() {
             <a href="#intelligence" className="hover:text-primary transition-colors">Intelligence</a>
             <a href="#pricing" className="hover:text-primary transition-colors">Pricing</a>
           </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/chat" className="text-sm font-medium hover:text-primary transition-colors hidden md:block">Console</Link>
-            <Link href="/workspace">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold">
-                Deploy ARIA
-              </Button>
-            </Link>
-          </div>
+          <AuthButtons />
         </div>
       </header>
 
