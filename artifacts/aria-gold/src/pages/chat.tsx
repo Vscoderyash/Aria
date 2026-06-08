@@ -21,6 +21,7 @@ import {
   useListAgents,
   getListConversationsQueryKey,
   getListMessagesQueryKey,
+  getGetConversationQueryKey,
 } from "@workspace/api-client-react";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -198,7 +199,7 @@ export default function Chat() {
   const { data: conversations = [] } = useListConversations();
   const { data: agents = [] } = useListAgents();
   const { data: activeConversation } = useGetConversation(activeConversationId as number, {
-    query: { enabled: !!activeConversationId },
+    query: { enabled: !!activeConversationId, queryKey: getGetConversationQueryKey(activeConversationId as number) },
   });
   const { data: serverMessages = [] } = useListMessages(activeConversationId as number, {
     query: { enabled: !!activeConversationId, queryKey: getListMessagesQueryKey(activeConversationId as number) },

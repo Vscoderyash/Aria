@@ -1,32 +1,31 @@
 # ARIA GOLD AI V3
 
-A premium autonomous AI engineering platform. Analyzes repositories, writes code, finds bugs, and commits directly to GitHub.
+A premium autonomous AI engineering platform — analyzes repos, writes code, finds bugs, and commits to GitHub.
 
 ## Stack
 
 - **Frontend**: React + Vite + TypeScript + TailwindCSS + Framer Motion
-- **Backend**: Express 5 + TypeScript + OpenAI streaming
+- **Backend**: Express 5 + TypeScript + OpenAI GPT-4.1 streaming
 - **Database**: PostgreSQL + Drizzle ORM
-- **AI**: GPT-4.1 with multi-agent system (8 agents)
-- **GitHub**: Full commit/PR API integration
+- **AI**: 8 specialized agents (Architect, Frontend, Backend, Security, Performance, Testing, Docs, Research)
+- **GitHub**: Commit files directly from the chat interface
 
-## Agents
+## Pages
 
-Architect · Frontend · Backend · Security · Performance · Testing · Documentation · Research
+- `/` — Landing page
+- `/chat` — Claude-style streaming AI chat with GitHub commit
+- `/workspace` — 3-panel IDE workspace
+- `/owner` — Admin dashboard with usage analytics
 
 ## Setup
 
 ```bash
 pnpm install
-cp .env.example .env  # add DATABASE_URL, OPENAI_API_KEY, GITHUB_TOKEN
+# Create .env with:
+#   DATABASE_URL=<postgres url>
+#   OPENAI_API_KEY=sk-...
+#   GITHUB_TOKEN=<github PAT with repo scope>
 pnpm --filter @workspace/db run push
-pnpm --filter @workspace/api-server run dev
-pnpm --filter @workspace/aria-gold run dev
+pnpm --filter @workspace/api-server run dev   # :8080
+pnpm --filter @workspace/aria-gold run dev    # :21132
 ```
-
-## Pages
-
-- `/` — Landing page
-- `/chat` — AI chat (Claude-style, streaming)
-- `/workspace` — 3-panel IDE workspace
-- `/owner` — Admin dashboard
