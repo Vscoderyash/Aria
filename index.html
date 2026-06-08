@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARIA — AI </title>
+<link rel="stylesheet" href="/ui.css">
+
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ══ SIDEBAR ══ -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sb-top">
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>
+          <div class="brand-name">ARIA</div>
+          <div class="brand-sub">AI Assistant</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="new-btn" id="newBtn">
+      <svg width="13" height="13" fill="none" viewBox="0 0 13 13">
+        <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+      New chat
+    </button>
+
+    <div class="sb-scroll" id="sbScroll"></div>
+
+    <div class="sb-foot">
+      <button class="sb-foot-btn" id="settingsBtn">
+        <svg width="15" height="15" fill="none" viewBox="0 0 15 15">
+          <path d="M6.07 1.5a1 1 0 0 1 2 0v.28a4.2 4.2 0 0 1 1.1.46l.2-.2a1 1 0 0 1 1.42 1.41l-.2.2c.2.34.36.7.46 1.1h.28a1 1 0 0 1 0 2h-.28a4.2 4.2 0 0 1-.46 1.1l.2.2a1 1 0 0 1-1.41 1.42l-.2-.2a4.2 4.2 0 0 1-1.1.46v.28a1 1 0 0 1-2 0v-.28a4.2 4.2 0 0 1-1.1-.46l-.2.2A1 1 0 0 1 3.36 8.5l.2-.2a4.2 4.2 0 0 1-.46-1.1H2.82a1 1 0 0 1 0-2h.28c.1-.4.26-.76.46-1.1l-.2-.2A1 1 0 0 1 4.77 2.5l.2.2a4.2 4.2 0 0 1 1.1-.46V1.5ZM7.07 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" fill="currentColor"/>
+        </svg>
+        Settings &amp; Training
+      </button>
+    </div>
+  </nav>
+
+  <div class="sb-back" id="sbBack"></div>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" title="Toggle sidebar">
+        <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+          <path d="M2 3.5h13M2 8.5h13M2 13.5h13" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="tb-title" id="tbTitle">ARIA</div>
+
+      <!-- Status + model switcher — always visible, auto-connects -->
+      <div class="status-area" id="statusArea">
+        <span class="s-dot" id="sDot"></span>
+        <span class="s-label" id="sLabel">Connecting…</span>
+        <div class="sep"></div>
+        <span class="model-sel" id="modelSel" title="ARIA server model">ARIA Core</span>
+      </div>
+
+      <div class="tb-acts">
+        <button class="tb-btn" id="exportBtn" title="Export chat">
+          <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
+            <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="tb-btn" id="clearBtn" title="Clear chat">
+          <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
+            <path d="M2 4h10M5.5 4V3h3v1M4 4l.7 8h4.6L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="tb-btn" id="themeBtn" title="Toggle theme">
+          <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
+            <circle cx="7" cy="7" r="2.8" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M7 1v1M7 12v1M1 7h1M12 7h1M2.8 2.8l.7.7M10.5 10.5l.7.7M10.5 2.8l-.7.7M3.5 10.5l-.7.7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="chat-area" id="chatArea"></div>
+
+    <div class="input-zone">
+      <div class="input-inner">
+        <div class="att-bar" id="attBar"></div>
+        <div class="composer">
+          <label class="att-lbl" title="Attach file">
+            <svg width="15" height="15" fill="none" viewBox="0 0 15 15">
+              <path d="M13 8l-5.2 5.2a3.8 3.8 0 0 1-5.37-5.37l6.03-6.03a2.37 2.37 0 0 1 3.36 3.36L5.8 11.2a.95.95 0 0 1-1.34-1.34L9.5 4.83" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+            </svg>
+            <input type="file" id="fileIn" accept=".txt,.md,.csv,.json,.js,.ts,.jsx,.tsx,.html,.css,.py,.java,.cpp,.c,.rs,.go,.rb,.php,.sh" hidden multiple>
+          </label>
+          <textarea id="msgin" rows="1" placeholder="Message ARIA…" title="Message ARIA" aria-label="Message ARIA"></textarea>
+          <button class="send-btn" id="sendBtn" title="Send (Enter)">
+            <svg width="15" height="15" fill="none" viewBox="0 0 15 15">
+              <path d="M7.5 12.5V2.5M3 7l4.5-4.5L12 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="i-hint" id="iHint">ARIA · Free AI · no API key · no account · works automatically online</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS MODAL ══ -->
+<div class="ov" id="settingsOv">
+  <div class="modal">
+    <div class="mh">
+      <h2>Settings &amp; Training</h2>
+      <button class="mc" id="closeSettings">✕</button>
+    </div>
+
+    <div class="s-sec">
+      <h3>Account &amp; Server</h3>
+      <div class="server-pill off" id="serverStatus">Server offline</div>
+      <div id="accountBox" class="stack"></div>
+    </div>
+
+    <div class="s-sec">
+      <h3>Pricing</h3>
+      <div class="plan-grid" id="pricingBox"></div>
+    </div>
+
+    <div class="s-sec">
+      <h3>Plugins, Skills &amp; Automations</h3>
+      <div class="feature-grid" id="featuresBox"></div>
+    </div>
+
+    <div class="s-sec">
+      <h3>Connections</h3>
+      <div class="feature-grid" id="connectionsBox"></div>
+      <div class="add-row mt-8">
+        <input class="f-in" id="connectionIn" placeholder="GitHub, Vercel, Google Drive, Slack..." title="Connection request" aria-label="Connection request">
+        <button class="add-btn" id="addConnection">Request</button>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <h3>Permission Center</h3>
+      <div class="stack" id="permissionsBox"></div>
+    </div>
+
+    <div class="s-sec">
+      <h3>Personality</h3>
+      <textarea class="f-ta" id="persFld" rows="3" placeholder="How should ARIA speak and behave?" title="Personality prompt" aria-label="Personality prompt"></textarea>
+    </div>
+
+    <div class="s-sec">
+      <h3>Behavior Rules</h3>
+      <div class="tags" id="rulesTags"></div>
+      <div class="add-row mt-8">
+        <input class="f-in" id="ruleIn" placeholder="e.g. Always give complete code examples" title="Behavior rule" aria-label="Behavior rule">
+        <button class="add-btn" id="addRule">Add</button>
+      </div>
+    </div>
+
+    <div class="s-sec">
+      <h3>Knowledge Base</h3>
+      <div id="kbTags" class="mb-10"></div>
+      <div class="f-lbl">Title</div>
+      <input class="f-in mt-8" id="kbTitle" placeholder="e.g. My Project Notes" title="Knowledge base title" aria-label="Knowledge base title">
+      <div class="f-lbl">Content</div>
+      <textarea class="f-ta" id="kbText" rows="4" placeholder="Paste facts, notes, or context ARIA should know…" title="Knowledge base content" aria-label="Knowledge base content"></textarea>
+      <button class="add-btn mt-8" id="addKb">Add to knowledge base</button>
+    </div>
+
+    <div class="s-sec">
+      <h3>Teach Examples</h3>
+      <div class="f-lbl">When user asks…</div>
+      <input class="f-in mt-8" id="exQ" placeholder="e.g. What is ARIA?" title="Example question" aria-label="Example question">
+      <div class="f-lbl">ARIA should answer…</div>
+      <textarea class="f-ta" id="exA" rows="3" placeholder="ARIA is a local AI assistant built by Yash Raj…" title="Example answer" aria-label="Example answer"></textarea>
+      <button class="add-btn mt-8" id="addEx">Save example</button>
+    </div>
+
+    <div class="s-sec">
+      <h3>Preferences</h3>
+      <div class="tog-row">
+        <div class="tog-info">
+          <div class="tog-title">Auto-learn from chats</div>
+          <div class="tog-desc">ARIA automatically saves useful interaction pairs as training examples.</div>
+        </div>
+        <label class="tog" aria-label="Auto learn from chats">
+          <input type="checkbox" id="autoLearn" aria-label="Auto learn from chats">
+          <div class="tog-track"></div>
+          <div class="tog-thumb"></div>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/ui.js"></script>
+
+</body>
+</html>

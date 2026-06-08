@@ -1,0 +1,1159 @@
+{
+  "count": 112,
+  "generatedAt": "2026-05-26T10:20:12.368Z",
+  "files": [
+    {
+      "id": "working-001-agent-loop",
+      "title": "Agent Loop",
+      "kind": "working",
+      "tags": [
+        "plan",
+        "act",
+        "observe",
+        "learn"
+      ],
+      "path": "knowledge/working/working-001-agent-loop.md"
+    },
+    {
+      "id": "working-002-permission-gates",
+      "title": "Permission Gates",
+      "kind": "working",
+      "tags": [
+        "approval",
+        "safety",
+        "actions"
+      ],
+      "path": "knowledge/working/working-002-permission-gates.md"
+    },
+    {
+      "id": "working-003-coding-workspace",
+      "title": "Coding Workspace",
+      "kind": "working",
+      "tags": [
+        "code",
+        "files",
+        "implementation"
+      ],
+      "path": "knowledge/working/working-003-coding-workspace.md"
+    },
+    {
+      "id": "working-004-web-research",
+      "title": "Web Research",
+      "kind": "working",
+      "tags": [
+        "google",
+        "search",
+        "citation"
+      ],
+      "path": "knowledge/working/working-004-web-research.md"
+    },
+    {
+      "id": "working-005-memory-routing",
+      "title": "Memory Routing",
+      "kind": "working",
+      "tags": [
+        "cache",
+        "retrieval",
+        "speed"
+      ],
+      "path": "knowledge/working/working-005-memory-routing.md"
+    },
+    {
+      "id": "working-006-design-review",
+      "title": "Design Review",
+      "kind": "working",
+      "tags": [
+        "ui",
+        "ux",
+        "critique"
+      ],
+      "path": "knowledge/working/working-006-design-review.md"
+    },
+    {
+      "id": "working-007-debugging",
+      "title": "Debugging",
+      "kind": "working",
+      "tags": [
+        "errors",
+        "tests",
+        "logs"
+      ],
+      "path": "knowledge/working/working-007-debugging.md"
+    },
+    {
+      "id": "working-008-deployment",
+      "title": "Deployment Flow",
+      "kind": "working",
+      "tags": [
+        "vercel",
+        "release",
+        "api"
+      ],
+      "path": "knowledge/working/working-008-deployment.md"
+    },
+    {
+      "id": "working-009-subscription-flow",
+      "title": "Subscription Flow",
+      "kind": "working",
+      "tags": [
+        "pricing",
+        "plans",
+        "access"
+      ],
+      "path": "knowledge/working/working-009-subscription-flow.md"
+    },
+    {
+      "id": "working-010-profile-chat",
+      "title": "Profile Chat",
+      "kind": "working",
+      "tags": [
+        "auth",
+        "history",
+        "persistence"
+      ],
+      "path": "knowledge/working/working-010-profile-chat.md"
+    },
+    {
+      "id": "working-011-automation",
+      "title": "Automation",
+      "kind": "working",
+      "tags": [
+        "scheduled",
+        "reminders",
+        "monitors"
+      ],
+      "path": "knowledge/working/working-011-automation.md"
+    },
+    {
+      "id": "working-012-plugin-system",
+      "title": "Plugin System",
+      "kind": "working",
+      "tags": [
+        "tools",
+        "connectors",
+        "skills"
+      ],
+      "path": "knowledge/working/working-012-plugin-system.md"
+    },
+    {
+      "id": "working-013-connections",
+      "title": "Connections",
+      "kind": "working",
+      "tags": [
+        "github",
+        "drive",
+        "slack",
+        "vercel"
+      ],
+      "path": "knowledge/working/working-013-connections.md"
+    },
+    {
+      "id": "working-014-coding-agent",
+      "title": "Coding Agent",
+      "kind": "working",
+      "tags": [
+        "codex",
+        "files",
+        "patch"
+      ],
+      "path": "knowledge/working/working-014-coding-agent.md"
+    },
+    {
+      "id": "working-015-code-review",
+      "title": "Code Review",
+      "kind": "working",
+      "tags": [
+        "bugs",
+        "risk",
+        "tests"
+      ],
+      "path": "knowledge/working/working-015-code-review.md"
+    },
+    {
+      "id": "working-016-project-planning",
+      "title": "Project Planning",
+      "kind": "working",
+      "tags": [
+        "roadmap",
+        "milestones"
+      ],
+      "path": "knowledge/working/working-016-project-planning.md"
+    },
+    {
+      "id": "working-017-prompt-engineering",
+      "title": "Prompt Engineering",
+      "kind": "working",
+      "tags": [
+        "instructions",
+        "context"
+      ],
+      "path": "knowledge/working/working-017-prompt-engineering.md"
+    },
+    {
+      "id": "working-018-knowledge-ingest",
+      "title": "Knowledge Ingest",
+      "kind": "working",
+      "tags": [
+        "files",
+        "chunks",
+        "metadata"
+      ],
+      "path": "knowledge/working/working-018-knowledge-ingest.md"
+    },
+    {
+      "id": "working-019-retrieval",
+      "title": "Retrieval",
+      "kind": "working",
+      "tags": [
+        "ranking",
+        "scoring"
+      ],
+      "path": "knowledge/working/working-019-retrieval.md"
+    },
+    {
+      "id": "working-020-account-safety",
+      "title": "Account Safety",
+      "kind": "working",
+      "tags": [
+        "auth",
+        "password",
+        "sessions"
+      ],
+      "path": "knowledge/working/working-020-account-safety.md"
+    },
+    {
+      "id": "working-021-payment-safety",
+      "title": "Payment Safety",
+      "kind": "working",
+      "tags": [
+        "stripe",
+        "razorpay",
+        "webhook"
+      ],
+      "path": "knowledge/working/working-021-payment-safety.md"
+    },
+    {
+      "id": "working-022-rate-limits",
+      "title": "Rate Limits",
+      "kind": "working",
+      "tags": [
+        "usage",
+        "quota"
+      ],
+      "path": "knowledge/working/working-022-rate-limits.md"
+    },
+    {
+      "id": "working-023-guest-mode",
+      "title": "Guest Mode",
+      "kind": "working",
+      "tags": [
+        "anonymous",
+        "trial"
+      ],
+      "path": "knowledge/working/working-023-guest-mode.md"
+    },
+    {
+      "id": "working-024-testing",
+      "title": "Testing",
+      "kind": "working",
+      "tags": [
+        "checks",
+        "smoke",
+        "syntax"
+      ],
+      "path": "knowledge/working/working-024-testing.md"
+    },
+    {
+      "id": "working-025-responsive-ui",
+      "title": "Responsive UI",
+      "kind": "working",
+      "tags": [
+        "mobile",
+        "desktop"
+      ],
+      "path": "knowledge/working/working-025-responsive-ui.md"
+    },
+    {
+      "id": "working-026-accessibility",
+      "title": "Accessibility",
+      "kind": "working",
+      "tags": [
+        "keyboard",
+        "focus",
+        "contrast"
+      ],
+      "path": "knowledge/working/working-026-accessibility.md"
+    },
+    {
+      "id": "working-027-error-handling",
+      "title": "Error Handling",
+      "kind": "working",
+      "tags": [
+        "fallback",
+        "recovery"
+      ],
+      "path": "knowledge/working/working-027-error-handling.md"
+    },
+    {
+      "id": "working-028-serverless",
+      "title": "Serverless",
+      "kind": "working",
+      "tags": [
+        "vercel",
+        "stateless"
+      ],
+      "path": "knowledge/working/working-028-serverless.md"
+    },
+    {
+      "id": "working-029-database",
+      "title": "Database",
+      "kind": "working",
+      "tags": [
+        "postgres",
+        "supabase",
+        "schema"
+      ],
+      "path": "knowledge/working/working-029-database.md"
+    },
+    {
+      "id": "working-030-privacy",
+      "title": "Privacy",
+      "kind": "working",
+      "tags": [
+        "training",
+        "consent"
+      ],
+      "path": "knowledge/working/working-030-privacy.md"
+    },
+    {
+      "id": "working-031-security",
+      "title": "Security",
+      "kind": "working",
+      "tags": [
+        "secrets",
+        "scopes"
+      ],
+      "path": "knowledge/working/working-031-security.md"
+    },
+    {
+      "id": "working-032-observability",
+      "title": "Observability",
+      "kind": "working",
+      "tags": [
+        "logs",
+        "metrics"
+      ],
+      "path": "knowledge/working/working-032-observability.md"
+    },
+    {
+      "id": "working-033-file-attachments",
+      "title": "File Attachments",
+      "kind": "working",
+      "tags": [
+        "upload",
+        "context"
+      ],
+      "path": "knowledge/working/working-033-file-attachments.md"
+    },
+    {
+      "id": "working-034-markdown-output",
+      "title": "Markdown Output",
+      "kind": "working",
+      "tags": [
+        "formatting",
+        "code"
+      ],
+      "path": "knowledge/working/working-034-markdown-output.md"
+    },
+    {
+      "id": "working-035-long-tasks",
+      "title": "Long Tasks",
+      "kind": "working",
+      "tags": [
+        "progress",
+        "status"
+      ],
+      "path": "knowledge/working/working-035-long-tasks.md"
+    },
+    {
+      "id": "working-036-self-improvement",
+      "title": "Self Improvement",
+      "kind": "working",
+      "tags": [
+        "feedback",
+        "learning"
+      ],
+      "path": "knowledge/working/working-036-self-improvement.md"
+    },
+    {
+      "id": "working-037-action-runner",
+      "title": "Action Runner",
+      "kind": "working",
+      "tags": [
+        "tools",
+        "permission"
+      ],
+      "path": "knowledge/working/working-037-action-runner.md"
+    },
+    {
+      "id": "working-038-browser-agent",
+      "title": "Browser Agent",
+      "kind": "working",
+      "tags": [
+        "web",
+        "inspect",
+        "screenshot"
+      ],
+      "path": "knowledge/working/working-038-browser-agent.md"
+    },
+    {
+      "id": "working-039-agent-persona",
+      "title": "Agent Persona",
+      "kind": "working",
+      "tags": [
+        "voice",
+        "helpfulness"
+      ],
+      "path": "knowledge/working/working-039-agent-persona.md"
+    },
+    {
+      "id": "working-040-research-brief",
+      "title": "Research Brief",
+      "kind": "working",
+      "tags": [
+        "summarize",
+        "sources"
+      ],
+      "path": "knowledge/working/working-040-research-brief.md"
+    },
+    {
+      "id": "working-041-api-design",
+      "title": "API Design",
+      "kind": "working",
+      "tags": [
+        "routes",
+        "contracts"
+      ],
+      "path": "knowledge/working/working-041-api-design.md"
+    },
+    {
+      "id": "working-042-schema-design",
+      "title": "Schema Design",
+      "kind": "working",
+      "tags": [
+        "models",
+        "relations"
+      ],
+      "path": "knowledge/working/working-042-schema-design.md"
+    },
+    {
+      "id": "working-043-ui-copy",
+      "title": "UI Copy",
+      "kind": "working",
+      "tags": [
+        "labels",
+        "clarity"
+      ],
+      "path": "knowledge/working/working-043-ui-copy.md"
+    },
+    {
+      "id": "working-044-coding-output",
+      "title": "Coding Output",
+      "kind": "working",
+      "tags": [
+        "complete",
+        "runnable"
+      ],
+      "path": "knowledge/working/working-044-coding-output.md"
+    },
+    {
+      "id": "working-045-version-control",
+      "title": "Version Control",
+      "kind": "working",
+      "tags": [
+        "git",
+        "commit",
+        "push"
+      ],
+      "path": "knowledge/working/working-045-version-control.md"
+    },
+    {
+      "id": "working-046-release-check",
+      "title": "Release Check",
+      "kind": "working",
+      "tags": [
+        "production",
+        "smoke"
+      ],
+      "path": "knowledge/working/working-046-release-check.md"
+    },
+    {
+      "id": "working-047-memory-confidence",
+      "title": "Memory Confidence",
+      "kind": "working",
+      "tags": [
+        "match",
+        "trust"
+      ],
+      "path": "knowledge/working/working-047-memory-confidence.md"
+    },
+    {
+      "id": "working-048-workspace-cleanup",
+      "title": "Workspace Cleanup",
+      "kind": "working",
+      "tags": [
+        "files",
+        "artifacts"
+      ],
+      "path": "knowledge/working/working-048-workspace-cleanup.md"
+    },
+    {
+      "id": "working-049-plan-unlock",
+      "title": "Plan Unlock",
+      "kind": "working",
+      "tags": [
+        "features",
+        "billing"
+      ],
+      "path": "knowledge/working/working-049-plan-unlock.md"
+    },
+    {
+      "id": "working-050-permission-ui",
+      "title": "Permission UI",
+      "kind": "working",
+      "tags": [
+        "approval",
+        "scope"
+      ],
+      "path": "knowledge/working/working-050-permission-ui.md"
+    },
+    {
+      "id": "knowledge-051-html-basics",
+      "title": "HTML Basics",
+      "kind": "knowledge",
+      "tags": [
+        "html",
+        "semantic",
+        "structure"
+      ],
+      "path": "knowledge/knowledge/knowledge-051-html-basics.md"
+    },
+    {
+      "id": "knowledge-052-css-layout",
+      "title": "CSS Layout",
+      "kind": "knowledge",
+      "tags": [
+        "css",
+        "grid",
+        "flex"
+      ],
+      "path": "knowledge/knowledge/knowledge-052-css-layout.md"
+    },
+    {
+      "id": "knowledge-053-javascript-state",
+      "title": "JavaScript State",
+      "kind": "knowledge",
+      "tags": [
+        "js",
+        "state",
+        "events"
+      ],
+      "path": "knowledge/knowledge/knowledge-053-javascript-state.md"
+    },
+    {
+      "id": "knowledge-054-node-http",
+      "title": "Node HTTP",
+      "kind": "knowledge",
+      "tags": [
+        "node",
+        "server",
+        "api"
+      ],
+      "path": "knowledge/knowledge/knowledge-054-node-http.md"
+    },
+    {
+      "id": "knowledge-055-cookies",
+      "title": "Cookies",
+      "kind": "knowledge",
+      "tags": [
+        "session",
+        "auth"
+      ],
+      "path": "knowledge/knowledge/knowledge-055-cookies.md"
+    },
+    {
+      "id": "knowledge-056-password-hashing",
+      "title": "Password Hashing",
+      "kind": "knowledge",
+      "tags": [
+        "security",
+        "pbkdf2"
+      ],
+      "path": "knowledge/knowledge/knowledge-056-password-hashing.md"
+    },
+    {
+      "id": "knowledge-057-google-cse",
+      "title": "Google Custom Search",
+      "kind": "knowledge",
+      "tags": [
+        "google",
+        "api",
+        "search"
+      ],
+      "path": "knowledge/knowledge/knowledge-057-google-cse.md"
+    },
+    {
+      "id": "knowledge-058-vercel-api",
+      "title": "Vercel API Routes",
+      "kind": "knowledge",
+      "tags": [
+        "vercel",
+        "serverless"
+      ],
+      "path": "knowledge/knowledge/knowledge-058-vercel-api.md"
+    },
+    {
+      "id": "knowledge-059-serverless-state",
+      "title": "Serverless State",
+      "kind": "knowledge",
+      "tags": [
+        "memory",
+        "persistence"
+      ],
+      "path": "knowledge/knowledge/knowledge-059-serverless-state.md"
+    },
+    {
+      "id": "knowledge-060-supabase",
+      "title": "Supabase",
+      "kind": "knowledge",
+      "tags": [
+        "postgres",
+        "auth",
+        "db"
+      ],
+      "path": "knowledge/knowledge/knowledge-060-supabase.md"
+    },
+    {
+      "id": "knowledge-061-stripe",
+      "title": "Stripe Billing",
+      "kind": "knowledge",
+      "tags": [
+        "payments",
+        "subscription"
+      ],
+      "path": "knowledge/knowledge/knowledge-061-stripe.md"
+    },
+    {
+      "id": "knowledge-062-razorpay",
+      "title": "Razorpay Billing",
+      "kind": "knowledge",
+      "tags": [
+        "payments",
+        "india"
+      ],
+      "path": "knowledge/knowledge/knowledge-062-razorpay.md"
+    },
+    {
+      "id": "knowledge-063-github-connector",
+      "title": "GitHub Connector",
+      "kind": "knowledge",
+      "tags": [
+        "repo",
+        "code",
+        "pr"
+      ],
+      "path": "knowledge/knowledge/knowledge-063-github-connector.md"
+    },
+    {
+      "id": "knowledge-064-vercel-connector",
+      "title": "Vercel Connector",
+      "kind": "knowledge",
+      "tags": [
+        "deploy",
+        "project"
+      ],
+      "path": "knowledge/knowledge/knowledge-064-vercel-connector.md"
+    },
+    {
+      "id": "knowledge-065-drive-connector",
+      "title": "Drive Connector",
+      "kind": "knowledge",
+      "tags": [
+        "files",
+        "docs"
+      ],
+      "path": "knowledge/knowledge/knowledge-065-drive-connector.md"
+    },
+    {
+      "id": "knowledge-066-slack-connector",
+      "title": "Slack Connector",
+      "kind": "knowledge",
+      "tags": [
+        "messages",
+        "notifications"
+      ],
+      "path": "knowledge/knowledge/knowledge-066-slack-connector.md"
+    },
+    {
+      "id": "knowledge-067-notion-connector",
+      "title": "Notion Connector",
+      "kind": "knowledge",
+      "tags": [
+        "docs",
+        "database"
+      ],
+      "path": "knowledge/knowledge/knowledge-067-notion-connector.md"
+    },
+    {
+      "id": "knowledge-068-prompt-context",
+      "title": "Prompt Context",
+      "kind": "knowledge",
+      "tags": [
+        "ai",
+        "instructions"
+      ],
+      "path": "knowledge/knowledge/knowledge-068-prompt-context.md"
+    },
+    {
+      "id": "knowledge-069-rag",
+      "title": "Retrieval Augmented Generation",
+      "kind": "knowledge",
+      "tags": [
+        "rag",
+        "memory"
+      ],
+      "path": "knowledge/knowledge/knowledge-069-rag.md"
+    },
+    {
+      "id": "knowledge-070-embeddings",
+      "title": "Embeddings",
+      "kind": "knowledge",
+      "tags": [
+        "semantic",
+        "vector"
+      ],
+      "path": "knowledge/knowledge/knowledge-070-embeddings.md"
+    },
+    {
+      "id": "knowledge-071-keyword-search",
+      "title": "Keyword Search",
+      "kind": "knowledge",
+      "tags": [
+        "retrieval",
+        "score"
+      ],
+      "path": "knowledge/knowledge/knowledge-071-keyword-search.md"
+    },
+    {
+      "id": "knowledge-072-code-generation",
+      "title": "Code Generation",
+      "kind": "knowledge",
+      "tags": [
+        "coding",
+        "output"
+      ],
+      "path": "knowledge/knowledge/knowledge-072-code-generation.md"
+    },
+    {
+      "id": "knowledge-073-debugging-method",
+      "title": "Debugging Method",
+      "kind": "knowledge",
+      "tags": [
+        "bugs",
+        "root cause"
+      ],
+      "path": "knowledge/knowledge/knowledge-073-debugging-method.md"
+    },
+    {
+      "id": "knowledge-074-api-errors",
+      "title": "API Errors",
+      "kind": "knowledge",
+      "tags": [
+        "http",
+        "errors"
+      ],
+      "path": "knowledge/knowledge/knowledge-074-api-errors.md"
+    },
+    {
+      "id": "knowledge-075-http-methods",
+      "title": "HTTP Methods",
+      "kind": "knowledge",
+      "tags": [
+        "get",
+        "post",
+        "put"
+      ],
+      "path": "knowledge/knowledge/knowledge-075-http-methods.md"
+    },
+    {
+      "id": "knowledge-076-json",
+      "title": "JSON",
+      "kind": "knowledge",
+      "tags": [
+        "data",
+        "api"
+      ],
+      "path": "knowledge/knowledge/knowledge-076-json.md"
+    },
+    {
+      "id": "knowledge-077-markdown",
+      "title": "Markdown",
+      "kind": "knowledge",
+      "tags": [
+        "format",
+        "docs"
+      ],
+      "path": "knowledge/knowledge/knowledge-077-markdown.md"
+    },
+    {
+      "id": "knowledge-078-accessibility-basics",
+      "title": "Accessibility Basics",
+      "kind": "knowledge",
+      "tags": [
+        "a11y",
+        "ui"
+      ],
+      "path": "knowledge/knowledge/knowledge-078-accessibility-basics.md"
+    },
+    {
+      "id": "knowledge-079-responsive-design",
+      "title": "Responsive Design",
+      "kind": "knowledge",
+      "tags": [
+        "mobile",
+        "css"
+      ],
+      "path": "knowledge/knowledge/knowledge-079-responsive-design.md"
+    },
+    {
+      "id": "knowledge-080-ui-hierarchy",
+      "title": "UI Hierarchy",
+      "kind": "knowledge",
+      "tags": [
+        "design",
+        "layout"
+      ],
+      "path": "knowledge/knowledge/knowledge-080-ui-hierarchy.md"
+    },
+    {
+      "id": "knowledge-081-color-systems",
+      "title": "Color Systems",
+      "kind": "knowledge",
+      "tags": [
+        "design",
+        "palette"
+      ],
+      "path": "knowledge/knowledge/knowledge-081-color-systems.md"
+    },
+    {
+      "id": "knowledge-082-forms",
+      "title": "Forms",
+      "kind": "knowledge",
+      "tags": [
+        "inputs",
+        "validation"
+      ],
+      "path": "knowledge/knowledge/knowledge-082-forms.md"
+    },
+    {
+      "id": "knowledge-083-modals",
+      "title": "Modals",
+      "kind": "knowledge",
+      "tags": [
+        "ui",
+        "overlay"
+      ],
+      "path": "knowledge/knowledge/knowledge-083-modals.md"
+    },
+    {
+      "id": "knowledge-084-chat-ui",
+      "title": "Chat UI",
+      "kind": "knowledge",
+      "tags": [
+        "messages",
+        "composer"
+      ],
+      "path": "knowledge/knowledge/knowledge-084-chat-ui.md"
+    },
+    {
+      "id": "knowledge-085-sidebar-navigation",
+      "title": "Sidebar Navigation",
+      "kind": "knowledge",
+      "tags": [
+        "nav",
+        "chats"
+      ],
+      "path": "knowledge/knowledge/knowledge-085-sidebar-navigation.md"
+    },
+    {
+      "id": "knowledge-086-pricing-pages",
+      "title": "Pricing Pages",
+      "kind": "knowledge",
+      "tags": [
+        "plans",
+        "features"
+      ],
+      "path": "knowledge/knowledge/knowledge-086-pricing-pages.md"
+    },
+    {
+      "id": "knowledge-087-subscription-state",
+      "title": "Subscription State",
+      "kind": "knowledge",
+      "tags": [
+        "account",
+        "billing"
+      ],
+      "path": "knowledge/knowledge/knowledge-087-subscription-state.md"
+    },
+    {
+      "id": "knowledge-088-usage-metering",
+      "title": "Usage Metering",
+      "kind": "knowledge",
+      "tags": [
+        "limits",
+        "quotas"
+      ],
+      "path": "knowledge/knowledge/knowledge-088-usage-metering.md"
+    },
+    {
+      "id": "knowledge-089-privacy-toggle",
+      "title": "Privacy Toggle",
+      "kind": "knowledge",
+      "tags": [
+        "training",
+        "consent"
+      ],
+      "path": "knowledge/knowledge/knowledge-089-privacy-toggle.md"
+    },
+    {
+      "id": "knowledge-090-source-links",
+      "title": "Source Links",
+      "kind": "knowledge",
+      "tags": [
+        "research",
+        "trust"
+      ],
+      "path": "knowledge/knowledge/knowledge-090-source-links.md"
+    },
+    {
+      "id": "knowledge-091-cache-invalidation",
+      "title": "Cache Invalidation",
+      "kind": "knowledge",
+      "tags": [
+        "freshness",
+        "memory"
+      ],
+      "path": "knowledge/knowledge/knowledge-091-cache-invalidation.md"
+    },
+    {
+      "id": "knowledge-092-coding-sandbox",
+      "title": "Coding Sandbox",
+      "kind": "knowledge",
+      "tags": [
+        "execution",
+        "safety"
+      ],
+      "path": "knowledge/knowledge/knowledge-092-coding-sandbox.md"
+    },
+    {
+      "id": "knowledge-093-file-system-safety",
+      "title": "File Safety",
+      "kind": "knowledge",
+      "tags": [
+        "paths",
+        "delete"
+      ],
+      "path": "knowledge/knowledge/knowledge-093-file-system-safety.md"
+    },
+    {
+      "id": "knowledge-094-git-safety",
+      "title": "Git Safety",
+      "kind": "knowledge",
+      "tags": [
+        "status",
+        "diff"
+      ],
+      "path": "knowledge/knowledge/knowledge-094-git-safety.md"
+    },
+    {
+      "id": "knowledge-095-commit-messages",
+      "title": "Commit Messages",
+      "kind": "knowledge",
+      "tags": [
+        "git",
+        "history"
+      ],
+      "path": "knowledge/knowledge/knowledge-095-commit-messages.md"
+    },
+    {
+      "id": "knowledge-096-tests",
+      "title": "Tests",
+      "kind": "knowledge",
+      "tags": [
+        "quality",
+        "verification"
+      ],
+      "path": "knowledge/knowledge/knowledge-096-tests.md"
+    },
+    {
+      "id": "knowledge-097-linting",
+      "title": "Linting",
+      "kind": "knowledge",
+      "tags": [
+        "quality",
+        "style"
+      ],
+      "path": "knowledge/knowledge/knowledge-097-linting.md"
+    },
+    {
+      "id": "knowledge-098-performance",
+      "title": "Performance",
+      "kind": "knowledge",
+      "tags": [
+        "speed",
+        "cache"
+      ],
+      "path": "knowledge/knowledge/knowledge-098-performance.md"
+    },
+    {
+      "id": "knowledge-099-rate-limiting",
+      "title": "Rate Limiting",
+      "kind": "knowledge",
+      "tags": [
+        "api",
+        "abuse"
+      ],
+      "path": "knowledge/knowledge/knowledge-099-rate-limiting.md"
+    },
+    {
+      "id": "knowledge-100-logging",
+      "title": "Logging",
+      "kind": "knowledge",
+      "tags": [
+        "ops",
+        "debug"
+      ],
+      "path": "knowledge/knowledge/knowledge-100-logging.md"
+    },
+    {
+      "id": "knowledge-101-environment-vars",
+      "title": "Environment Variables",
+      "kind": "knowledge",
+      "tags": [
+        "secrets",
+        "config"
+      ],
+      "path": "knowledge/knowledge/knowledge-101-environment-vars.md"
+    },
+    {
+      "id": "knowledge-102-cors",
+      "title": "CORS",
+      "kind": "knowledge",
+      "tags": [
+        "browser",
+        "api"
+      ],
+      "path": "knowledge/knowledge/knowledge-102-cors.md"
+    },
+    {
+      "id": "knowledge-103-content-security",
+      "title": "Content Security",
+      "kind": "knowledge",
+      "tags": [
+        "csp",
+        "browser"
+      ],
+      "path": "knowledge/knowledge/knowledge-103-content-security.md"
+    },
+    {
+      "id": "knowledge-104-oauth",
+      "title": "OAuth",
+      "kind": "knowledge",
+      "tags": [
+        "auth",
+        "connectors"
+      ],
+      "path": "knowledge/knowledge/knowledge-104-oauth.md"
+    },
+    {
+      "id": "knowledge-105-webhooks",
+      "title": "Webhooks",
+      "kind": "knowledge",
+      "tags": [
+        "events",
+        "provider"
+      ],
+      "path": "knowledge/knowledge/knowledge-105-webhooks.md"
+    },
+    {
+      "id": "knowledge-106-queues",
+      "title": "Queues",
+      "kind": "knowledge",
+      "tags": [
+        "background",
+        "jobs"
+      ],
+      "path": "knowledge/knowledge/knowledge-106-queues.md"
+    },
+    {
+      "id": "knowledge-107-cron",
+      "title": "Cron",
+      "kind": "knowledge",
+      "tags": [
+        "schedule",
+        "automation"
+      ],
+      "path": "knowledge/knowledge/knowledge-107-cron.md"
+    },
+    {
+      "id": "knowledge-108-notifications",
+      "title": "Notifications",
+      "kind": "knowledge",
+      "tags": [
+        "email",
+        "slack"
+      ],
+      "path": "knowledge/knowledge/knowledge-108-notifications.md"
+    },
+    {
+      "id": "knowledge-109-agent-actions",
+      "title": "Agent Actions",
+      "kind": "knowledge",
+      "tags": [
+        "tools",
+        "permission"
+      ],
+      "path": "knowledge/knowledge/knowledge-109-agent-actions.md"
+    },
+    {
+      "id": "knowledge-110-tool-results",
+      "title": "Tool Results",
+      "kind": "knowledge",
+      "tags": [
+        "agents",
+        "observation"
+      ],
+      "path": "knowledge/knowledge/knowledge-110-tool-results.md"
+    },
+    {
+      "id": "knowledge-111-reasoning-summary",
+      "title": "Reasoning Summary",
+      "kind": "knowledge",
+      "tags": [
+        "thinking",
+        "transparency"
+      ],
+      "path": "knowledge/knowledge/knowledge-111-reasoning-summary.md"
+    },
+    {
+      "id": "knowledge-112-jarvis-style",
+      "title": "Assistant Autonomy",
+      "kind": "knowledge",
+      "tags": [
+        "agent",
+        "proactive"
+      ],
+      "path": "knowledge/knowledge/knowledge-112-jarvis-style.md"
+    }
+  ]
+}
