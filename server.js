@@ -338,27 +338,10 @@ function userActions(db, user) {
 }
 
 async function webKnowledge(message) {
-  const apiKey = process.env.GOOGLE_SEARCH_API_KEY;
-  const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
-  if (!apiKey || !cx) {
-    return {
-      source: 'local-fallback',
-      answer: 'Web search is ready but not configured. Add GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_ENGINE_ID to enable Google Custom Search.',
-      links: []
-    };
-  }
-  const url = new URL('https://www.googleapis.com/customsearch/v1');
-  url.searchParams.set('key', apiKey);
-  url.searchParams.set('cx', cx);
-  url.searchParams.set('q', message);
-  const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
-  if (!response.ok) throw new Error(`Google search failed: ${response.status}`);
-  const data = await response.json();
-  const items = (data.items || []).slice(0, 5);
   return {
-    source: 'google-custom-search',
-    answer: items.map((item, index) => `${index + 1}. ${item.title}: ${item.snippet}`).join('\n'),
-    links: items.map(item => ({ title: item.title, url: item.link }))
+    source: 'search-disabled',
+    answer: 'Web search is disabled. ARIA is running in chat-only mode with server memory and OpenAI chat.',
+    links: []
   };
 }
 function localReply(message, hit, user) {
@@ -373,7 +356,7 @@ function localReply(message, hit, user) {
     return `I am online as ARIA Core.\n\nI can help in four modes:\n\n1. **Answer**: ask a question and I will use server memory first.\n2. **Build**: ask for code, UI, API routes, files, or debugging.\n3. **Learn**: say "learn this..." and I will prepare a permission-gated memory update.\n4. **Connect**: ask for GitHub, Vercel, Drive, Slack, or custom plugins and I will request permission before setup.\n\nGive me a real task and I will work from my server brain instead of repeating a canned message.`;
   }
   if (/\b(who are you|what are you|what can you do|help)\b/i.test(lower)) {
-    return `I am ARIA, a server-backed AI workspace.\n\nMy current abilities:\n- use built-in working knowledge files before web search\n- learn approved user instructions into server memory\n- keep profile chats and subscriptions on the account\n- plan code like an agent, including files, tests, and deployment steps\n- expose plugins, skills, connections, automations, and permission gates\n\nFor sensitive actions, I will ask permission first.`;
+    return `I am ARIA, a server-backed AI workspace.\n\nMy current abilities:\n- use built-in working knowledge files before external search\n- learn approved user instructions into server memory\n- keep profile chats and subscriptions on the account\n- plan code like an agent, including files, tests, and deployment steps\n- expose plugins, skills, connections, automations, and permission gates\n\nFor sensitive actions, I will ask permission first.`;
   }
   if (/\b(code|build|html|css|javascript|debug|component|app|website)\b/i.test(message)) {
     return `I can build it.\n\n**Implementation path**\n1. Define the target behavior and UI.\n2. Split it into files, state, server routes, and styling.\n3. Generate or patch the code.\n4. Run syntax/API checks.\n5. Ask permission before deploys, external writes, or repo changes.\n\nYour current plan is **${plan.name}**. Advanced coding workspace features unlock on Max 5x and above.`;
@@ -381,7 +364,7 @@ function localReply(message, hit, user) {
   if (/\b(design|ui|ux|screen|layout|interface|website)\b/i.test(message)) {
     return `I can design it as a clean ARIA product experience.\n\nI will focus on:\n- simple chat-first layout\n- quiet side navigation\n- clear memory/settings panel\n- responsive spacing\n- strong code/design action buttons\n\nTell me the exact page or component and I will draft the UI structure.`;
   }
-  return `I do not have a strong saved memory match for that yet, so I will handle it as a fresh task.\n\n**What I understood**\n${text}\n\n**How I will proceed**\n- If you want an answer, I will explain it directly.\n- If you want code, I will turn it into files and steps.\n- If you want me to remember it, say **learn this:** and I will ask permission before saving it.\n- If this needs current web knowledge, add Google Search keys in the server environment and I will search once, cache the useful result, and answer faster next time.`;
+  return `I do not have a strong saved memory match for that yet, so I will handle it as a fresh task.\n\n**What I understood**\n${text}\n\n**How I will proceed**\n- If you want an answer, I will explain it directly.\n- If you want code, I will turn it into files and steps.\n- If you want me to remember it, say **learn this:** and I will ask permission before saving it.\n- If this needs current external knowledge, use the OpenAI chat key; ARIA will answer from server memory and the chat model.`;
 }
 async function handleChat(db, user, body) {
   const message = String(body.message || '').trim();
@@ -417,30 +400,7 @@ async function handleChat(db, user, body) {
     source = hit ? 'knowledge-cache' : 'local';
   }
 
-  if (!action && !hit && body.useWeb !== false && user.usage.webSearches < plan.webSearches) {
-    try {
-      const web = await webKnowledge(message);
-      user.usage.webSearches += 1;
-      source = web.source;
-      links = web.links;
-      if (web.source !== 'local-fallback') {
-        answer = `I checked web knowledge and saved this for faster future answers.\n\n${web.answer}`;
-        db.knowledge.unshift({
-          id: id('know'),
-          ownerId: user.id,
-          question: normalizeQuestion(message),
-          type: /code|design|ui|app|debug/i.test(message) ? 'build' : 'general',
-          answer,
-          links,
-          shared: false,
-          createdAt: new Date().toISOString(),
-          hits: 0
-        });
-      }
-    } catch (error) {
-      answer += `\n\nWeb knowledge failed safely: ${error.message}`;
-    }
-  }
+  // External web search is disabled. ARIA responds from local server memory only.
 
   chat.messages.push({ role: 'assistant', content: answer, ts: Date.now(), source, links });
   chat.updatedAt = new Date().toISOString();
@@ -578,18 +538,7 @@ async function route(req, res) {
       return json(res, 200, { user: publicUser(user) });
     }
     if (url.pathname === '/api/checkout' && req.method === 'POST') {
-      const user = authRequired(req, res, db);
-      if (!user) return;
-      const body = await parseBody(req);
-      const plan = PLANS[body.plan];
-      if (!plan || plan.id === 'free') return json(res, 400, { error: 'Paid plan required' });
-      const payment = { id: id('pay'), userId: user.id, plan: plan.id, status: 'requires_provider', amount: plan.price, createdAt: new Date().toISOString() };
-      db.payments.push(payment);
-      writeDb(db);
-      return json(res, 200, {
-        payment,
-        message: 'Payment provider not configured yet. Connect Stripe or Razorpay, then replace this with a real checkout session.'
-      });
+      return json(res, 400, { error: 'Payments are disabled. This app supports chat only with OpenAI.' });
     }
     if (url.pathname === '/api/dev/activate-plan' && req.method === 'POST') {
       const user = authRequired(req, res, db);

@@ -4,8 +4,8 @@ A premium autonomous AI engineering platform — analyzes repos, writes code, fi
 
 ## Stack
 
-- **Frontend**: React + Vite + TypeScript + TailwindCSS + Framer Motion
-- **Backend**: Express 5 + TypeScript + OpenAI GPT-4.1 streaming
+- **Frontend**: React + Vite + TailwindCSS + Framer Motion
+- **Backend**: Express 5 + OpenAI GPT-4.1 streaming
 - **Database**: PostgreSQL + Drizzle ORM
 - **AI**: 8 specialized agents (Architect, Frontend, Backend, Security, Performance, Testing, Docs, Research)
 - **GitHub**: Commit files directly from the chat interface
@@ -27,7 +27,10 @@ This repo deploys the **React frontend** on Vercel. Configure these in your Verc
 
 ```
 VITE_API_BASE_URL=https://<your-api-server-url>
+OPENAI_API_KEY=sk-or-v1-<your-openai-key>
 ```
+
+> Only OpenAI chat is required. Google search keys are not used in this version.
 
 ## Local Setup
 

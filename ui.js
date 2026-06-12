@@ -48,7 +48,7 @@ const K = {
 };
 
 const DEFAULT_PERMISSIONS = [
-  { id: 'perm_web', name: 'Use Google knowledge', scope: 'Search Google when ARIA memory is not enough', status: 'approved' },
+  { id: 'perm_web', name: 'Use server knowledge', scope: 'Use stored server memory when ARIA memory is not enough', status: 'approved' },
   { id: 'perm_code', name: 'Coding actions', scope: 'Suggest and generate code; ask before editing external systems', status: 'needs approval' },
   { id: 'perm_deploy', name: 'Deployment actions', scope: 'Deploy, change environment variables, or publish releases', status: 'needs approval' },
   { id: 'perm_connect', name: 'Connect apps', scope: 'Connect GitHub, Vercel, Drive, Slack, or other services', status: 'needs approval' }
@@ -96,6 +96,15 @@ let connectionRequests = ld(K.connections, []);
 
 const Q = s => document.querySelector(s);
 const QQ = s => Array.from(document.querySelectorAll(s));
+const on = (selector, event, handler) => { const el = Q(selector); if (el) el.addEventListener(event, handler); };
+const delegate = (root, selector, handler) => {
+  if (!root) return;
+  root.onclick = e => {
+    const target = e.target.closest(selector);
+    if (!target || !root.contains(target)) return;
+    handler(e, target);
+  };
+};
 
 function saveTrain() { sv(K.train, train); }
 function saveChats() { sv(K.chats, chats.slice(0, 120)); sv(K.active, activeId); }
@@ -202,13 +211,7 @@ async function serverLogout() {
 }
 
 async function requestCheckout(planId) {
-  if (!currentUser) return alert('Create an account or log in first.');
-  try {
-    const data = await api('/api/checkout', { plan: planId });
-    alert(data.message || 'Checkout provider not configured yet.');
-  } catch (error) {
-    alert(error.message);
-  }
+  alert('Payments are disabled. This app supports chat only with OpenAI.');
 }
 
 async function devUnlock(planId) {
@@ -417,8 +420,8 @@ async function go(text) {
   if (serverOnline) {
     let final = '';
     try {
-      if (streamProseEl) streamProseEl.innerHTML = 'Checking server memory and web knowledge<span class="cur">▊</span>';
-      const data = await api('/api/chat', { chatId: chat.id, message: text, useWeb: true });
+      if (streamProseEl) streamProseEl.innerHTML = 'Checking server memory<span class="cur">▊</span>';
+      const data = await api('/api/chat', { chatId: chat.id, message: text });
       final = data.answer;
       currentUser = data.user || currentUser;
       serverActions = data.actions || serverActions;
@@ -466,8 +469,8 @@ async function go(text) {
 function offlineMsg(q) {
   const ex = bestEx(q); if (ex && ex.sc >= 2) return ex.answer;
   const docs = relDocs(q);
-  if (docs.length) return `**From ARIA memory:**\n\n${docs.map(d => `**${d.title}**\n${snip(q, d.content, 2)}`).join('\n\n')}\n\n*Start the ARIA server to use Google knowledge training.*`;
-  return `**ARIA server is offline.**\n\nStart the server with \`npm start\`. ARIA answers from its own server, learns from Google search results when configured, and stores useful answers for future fast replies.`;
+  if (docs.length) return `**From ARIA memory:**\n\n${docs.map(d => `**${d.title}**\n${snip(q, d.content, 2)}`).join('\n\n')}\n\n*Start the ARIA server to use cached server knowledge.*`;
+  return `**ARIA server is offline.**\n\nStart the server with \`npm start\`. ARIA answers from its own server, uses stored server knowledge, and saves useful answers for future fast replies.`;
 }
 
 /* ═══════════════════════════════════════════
@@ -499,16 +502,19 @@ function renderSidebar() {
       </button>`).join('');
   }
   root.innerHTML = html;
-  QQ('[data-cid]').forEach(el => el.addEventListener('click', e => {
-    if (e.target.matches('[data-del]')) return;
-    activeId = el.dataset.cid; saveChats(); renderSidebar(); renderChat();
-  }));
-  QQ('[data-del]').forEach(btn => btn.addEventListener('click', e => {
-    e.stopPropagation();
-    chats = chats.filter(c => c.id !== btn.dataset.del);
-    if (activeId === btn.dataset.del) activeId = chats[0]?.id || null;
-    saveChats(); renderSidebar(); renderChat();
-  }));
+  delegate(root, '[data-cid], [data-del]', (e, target) => {
+    if (target.dataset.del) {
+      e.stopPropagation();
+      chats = chats.filter(c => c.id !== target.dataset.del);
+      if (activeId === target.dataset.del) activeId = chats[0]?.id || null;
+      saveChats(); renderSidebar(); renderChat();
+      return;
+    }
+    activeId = target.dataset.cid;
+    if (activeId) {
+      saveChats(); renderSidebar(); renderChat();
+    }
+  });
 }
 
 /* ═══════════════════════════════════════════
@@ -524,10 +530,10 @@ function renderChat() {
       <div class="welcome">
         <div class="w-icon">A</div>
         <h1>How can I help?</h1>
-        <p>ARIA answers from its own server, learns from Google knowledge when needed, and saves useful answers for faster future replies.</p>
+        <p>ARIA answers from its own server, uses stored knowledge, and saves useful answers for faster future replies.</p>
         <div class="powered">
           <span style="width:7px;height:7px;border-radius:50%;background:${online?'var(--gr)':'var(--tx3)'};display:inline-block;flex-shrink:0"></span>
-          ${online ? 'Connected · ARIA Core + Google training cache' : 'Connecting to ARIA server…'}
+          ${online ? 'Connected · ARIA Core' : 'Connecting to ARIA server…'}
         </div>
         <div class="starters">
           <button class="starter" data-p="Write a complete responsive landing page in HTML, CSS, and JavaScript with a hero section, features grid, pricing, and contact form.">
@@ -578,7 +584,7 @@ function updateHint(isOnline) {
     return;
   }
   Q('#iHint').textContent = isOnline
-    ? 'ARIA · connected to own server · Google knowledge training on'
+    ? 'ARIA · connected to own server'
     : 'ARIA · server offline · start npm start';
 }
 
@@ -598,7 +604,7 @@ function renderServerPanels() {
         <div class="account-card">
           <strong>${esc(currentUser.name || currentUser.email)}</strong>
           <div class="meta-line">${esc(currentUser.email)} · ${esc(currentUser.plan?.name || 'Free')}</div>
-          <div class="meta-line">Messages: ${currentUser.usage?.messages || 0}/${currentUser.plan?.messageLimit || 0} · Web searches: ${currentUser.usage?.webSearches || 0}/${currentUser.plan?.webSearches || 0}</div>
+          <div class="meta-line">Messages: ${currentUser.usage?.messages || 0}/${currentUser.plan?.messageLimit || 0} · Searches: ${currentUser.usage?.webSearches || 0}/${currentUser.plan?.webSearches || 0}</div>
           <div class="meta-line">Subscription expires: ${esc(expires)}</div>
           <div class="auth-actions"><button class="add-btn" id="logoutBtn">Log out</button></div>
         </div>`;
@@ -638,10 +644,46 @@ function renderServerPanels() {
         <div class="meta-line">${(plan.features || []).map(esc).join(' · ')}</div>
         ${plan.id === 'free'
           ? '<button class="add-btn" disabled>Included</button>'
-          : `<button class="add-btn" data-checkout="${esc(plan.id)}">Unlock</button><button class="add-btn" data-devunlock="${esc(plan.id)}">Dev unlock</button>`}
+          : '<button class="add-btn" disabled>Not available</button>'}
       </div>`).join('');
-    QQ('[data-checkout]').forEach(b => b.addEventListener('click', () => requestCheckout(b.dataset.checkout)));
-    QQ('[data-devunlock]').forEach(b => b.addEventListener('click', () => devUnlock(b.dataset.devunlock)));
+  }
+
+  const permissions = Q('#permissionsBox');
+  if (permissions) {
+    const serverCards = serverActions.map(action => `
+      <div class="account-card">
+        <strong>${esc(action.title || 'ARIA action')}</strong>
+        <div class="meta-line">${esc(action.summary || action.requestedText || '')}</div>
+        <div class="meta-line">Status: ${esc(action.status || 'needs approval')}</div>
+        ${action.status === 'needs approval' ? `
+          <div class="auth-actions">
+            <button class="add-btn" data-action-approve="${esc(action.id)}">Approve</button>
+            <button class="add-btn" data-action-deny="${esc(action.id)}">Deny</button>
+          </div>` : ''}
+      </div>`).join('');
+    const localCards = permissionRequests.map(item => `
+      <div class="account-card">
+        <strong>${esc(item.name)}</strong>
+        <div class="meta-line">${esc(item.scope)}</div>
+        <div class="meta-line">Status: ${esc(item.status)}</div>
+        <div class="auth-actions">
+          <button class="add-btn" data-approve="${esc(item.id)}">Approve</button>
+          <button class="add-btn" data-deny="${esc(item.id)}">Deny</button>
+        </div>
+      </div>`).join('');
+    permissions.innerHTML = serverCards + localCards || '<div class="meta-line">No pending permissions.</div>';
+  }
+
+  const settingsRoot = Q('#settingsOv');
+  if (settingsRoot) {
+    delegate(settingsRoot, '[data-action-approve], [data-action-deny], [data-approve], [data-deny], [data-checkout], [data-devunlock]', (e, target) => {
+      if (target.dataset.checkout) return requestCheckout(target.dataset.checkout);
+      if (target.dataset.devunlock) return devUnlock(target.dataset.devunlock);
+      if (target.dataset.actionApprove) return updateServerAction(target.dataset.actionApprove, 'approved');
+      if (target.dataset.actionDeny) return updateServerAction(target.dataset.actionDeny, 'denied');
+      if (target.dataset.approve) return updatePermission(target.dataset.approve, 'approved');
+      if (target.dataset.deny) return updatePermission(target.dataset.deny, 'denied');
+    });
   }
 
   const features = Q('#featuresBox');
@@ -702,10 +744,6 @@ function renderServerPanels() {
         </div>
       </div>`).join('');
     permissions.innerHTML = serverCards + localCards || '<div class="meta-line">No pending permissions.</div>';
-    QQ('[data-action-approve]').forEach(btn => btn.addEventListener('click', () => updateServerAction(btn.dataset.actionApprove, 'approved')));
-    QQ('[data-action-deny]').forEach(btn => btn.addEventListener('click', () => updateServerAction(btn.dataset.actionDeny, 'denied')));
-    QQ('[data-approve]').forEach(btn => btn.addEventListener('click', () => updatePermission(btn.dataset.approve, 'approved')));
-    QQ('[data-deny]').forEach(btn => btn.addEventListener('click', () => updatePermission(btn.dataset.deny, 'denied')));
   }
 }
 
@@ -738,9 +776,12 @@ function setSB(open) {
   sbOpen = open;
   const sb = Q('#sidebar'), bk = Q('#sbBack');
   if (window.innerWidth <= 720) {
-    sb.classList.toggle('open', open); sb.classList.remove('closed'); bk.classList.toggle('show', open);
+    sb?.classList.toggle('open', open);
+    sb?.classList.remove('closed');
+    bk?.classList.toggle('show', open);
   } else {
-    sb.classList.toggle('closed', !open); bk.classList.remove('show');
+    sb?.classList.toggle('closed', !open);
+    bk?.classList.remove('show');
   }
 }
 const closeOv = sel => Q(sel)?.classList.remove('open');
@@ -752,58 +793,61 @@ function boot() {
   document.documentElement.setAttribute('data-theme', localStorage.getItem(K.theme) || 'light');
   setSB(sbOpen);
 
-  Q('#menuBtn').addEventListener('click', () => setSB(!sbOpen));
-  Q('#sbBack').addEventListener('click', () => setSB(false));
-  Q('#newBtn').addEventListener('click', () => { createChat(); if (window.innerWidth <= 720) setSB(false); });
+  on('#menuBtn', 'click', () => setSB(!sbOpen));
+  on('#sbBack', 'click', () => setSB(false));
+  on('#newBtn', 'click', () => { createChat(); if (window.innerWidth <= 720) setSB(false); });
 
   const inp = Q('#msgin');
-  inp.addEventListener('input', e => {
-    e.target.style.height = 'auto';
-    e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
-    Q('#sendBtn').classList.toggle('on', !!e.target.value.trim() && !busy);
-  });
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); }
-    if (e.key === 'Escape') { e.target.value = ''; e.target.style.height = 'auto'; Q('#sendBtn').classList.remove('on'); }
-  });
-  Q('#sendBtn').addEventListener('click', go);
+  const sendBtn = Q('#sendBtn');
+  if (inp) {
+    inp.addEventListener('input', e => {
+      e.target.style.height = 'auto';
+      e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+      sendBtn?.classList.toggle('on', !!e.target.value.trim() && !busy);
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); }
+      if (e.key === 'Escape') { e.target.value = ''; e.target.style.height = 'auto'; sendBtn?.classList.remove('on'); }
+    });
+  }
+  sendBtn?.addEventListener('click', go);
 
-  Q('#fileIn').addEventListener('change', async e => {
+  on('#fileIn', 'change', async e => {
     for (const f of e.target.files) { const text = await f.text(); atts.push({ name: f.name, content: text.slice(0, 22000) }); }
     renderAtts(); e.target.value = '';
   });
 
-  Q('#themeBtn').addEventListener('click', () => {
+  on('#themeBtn', 'click', () => {
     const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next); localStorage.setItem(K.theme, next);
   });
-  Q('#clearBtn').addEventListener('click', () => { activeChat().msgs = []; saveChats(); renderChat(); });
-  Q('#exportBtn').addEventListener('click', exportChat);
+  on('#clearBtn', 'click', () => { activeChat().msgs = []; saveChats(); renderChat(); });
+  on('#exportBtn', 'click', exportChat);
 
-  Q('#settingsBtn').addEventListener('click', () => { renderSettings(); Q('#settingsOv').classList.add('open'); });
-  Q('#closeSettings').addEventListener('click', () => closeOv('#settingsOv'));
-  Q('#settingsOv').addEventListener('click', e => { if (e.target === Q('#settingsOv')) closeOv('#settingsOv'); });
+  on('#settingsBtn', 'click', () => { renderSettings(); Q('#settingsOv')?.classList.add('open'); });
+  on('#closeSettings', 'click', () => closeOv('#settingsOv'));
+  on('#settingsOv', 'click', e => { if (e.target === Q('#settingsOv')) closeOv('#settingsOv'); });
 
-  Q('#persFld').addEventListener('input', e => { train.personality = e.target.value; saveTrain(); });
-  Q('#autoLearn').addEventListener('change', e => {
+  on('#persFld', 'input', e => { train.personality = e.target.value; saveTrain(); });
+  on('#autoLearn', 'change', e => {
     train.settings.autoLearn = e.target.checked;
     saveTrain();
     if (currentUser) api('/api/settings', { settings: { trainFromChats: e.target.checked } }).then(d => { currentUser = d.user || currentUser; }).catch(() => {});
   });
-  Q('#addRule').addEventListener('click', () => {
+  on('#addRule', 'click', () => {
     const v = Q('#ruleIn').value.trim(); if (!v) return;
     train.rules.push(v); Q('#ruleIn').value = ''; saveTrain(); renderSettings();
   });
-  Q('#ruleIn').addEventListener('keydown', e => { if (e.key === 'Enter') Q('#addRule').click(); });
-  Q('#addKb').addEventListener('click', () => {
+  on('#ruleIn', 'keydown', e => { if (e.key === 'Enter') Q('#addRule')?.click(); });
+  on('#addKb', 'click', () => {
     const title = Q('#kbTitle').value.trim(), content = Q('#kbText').value.trim();
     if (!title || !content) return;
     train.knowledge.push({ title, content, ts: Date.now() });
     Q('#kbTitle').value = ''; Q('#kbText').value = ''; saveTrain(); renderSettings();
   });
-  Q('#addConnection').addEventListener('click', () => requestConnection(Q('#connectionIn').value));
-  Q('#connectionIn').addEventListener('keydown', e => { if (e.key === 'Enter') Q('#addConnection').click(); });
-  Q('#addEx').addEventListener('click', () => {
+  on('#addConnection', 'click', () => requestConnection(Q('#connectionIn').value));
+  on('#connectionIn', 'keydown', e => { if (e.key === 'Enter') Q('#addConnection')?.click(); });
+  on('#addEx', 'click', () => {
     const prompt = Q('#exQ').value.trim(), answer = Q('#exA').value.trim();
     if (!prompt || !answer) return;
     train.examples.unshift({ prompt, answer, ts: Date.now() });
@@ -812,9 +856,17 @@ function boot() {
 
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOv('#settingsOv'); });
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 720) { Q('#sbBack').classList.remove('show'); Q('#sidebar').classList.remove('open'); }
+    if (window.innerWidth > 720) {
+      Q('#sbBack')?.classList.remove('show');
+      Q('#sidebar')?.classList.remove('open');
+    }
   });
 }
+
+window.addEventListener('error', event => {
+  console.error('ARIA runtime error', event.error || event.message, event.filename, event.lineno, event.colno);
+  setStatus('error', 'Client error');
+});
 
 /* ═══════════════════════════════════════════
    Init — auto-connect on load like Jarvis
@@ -826,4 +878,4 @@ renderSidebar();
 renderChat();
 bootServerProfile();
 checkOnline();
-Q('#msgin').focus();
+Q('#msgin')?.focus();
