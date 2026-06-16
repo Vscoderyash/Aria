@@ -2,6 +2,9 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 const handler = NextAuth({
+  pages: {
+    signIn: "/owner",
+  },
   providers: [
     CredentialsProvider({
       name: "Owner Login",
@@ -11,8 +14,8 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (
-          credentials.username === "yash_owner" &&
-          credentials.password === "owner_yash123"
+          credentials?.username === "yash_owner" &&
+          credentials?.password === "owner_yash123"
         ) {
           return { id: 1, name: "Yash (Owner)", role: "admin" };
         }
@@ -21,7 +24,7 @@ const handler = NextAuth({
     }),
   ],
   session: { strategy: "jwt" },
-  secret: "aria_secrect_login_yash180", // Your custom secret string
+  secret: process.env.NEXTAUTH_SECRET || "aria_secrect_login_yash180",
 });
 
 export { handler as GET, handler as POST };
