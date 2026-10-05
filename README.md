@@ -1,46 +1,41 @@
-# ARIA GOLD AI V3
+# ARIA
 
-A premium autonomous AI engineering platform — analyzes repos, writes code, finds bugs, and commits to GitHub.
+ARIA is a server-backed AI workspace prototype with:
 
-## Stack
+- user accounts and sessions
+- persistent profile chats
+- subscription plans
+- server-side knowledge cache
+- automatic chat training entries
+- plugin, skill, and automation unlock metadata
+- optional Google Custom Search connector
+- payment provider placeholders for Stripe or Razorpay
+- built-in ARIA knowledge library with 100+ working and knowledge files
 
-- **Frontend**: React + Vite + TailwindCSS + Framer Motion
-- **Backend**: Express 5 + OpenAI GPT-4.1 streaming
-- **Database**: PostgreSQL + Drizzle ORM
-- **AI**: 8 specialized agents (Architect, Frontend, Backend, Security, Performance, Testing, Docs, Research)
-- **GitHub**: Commit files directly from the chat interface
-
-## Deploying to Vercel
-
-This repo deploys the **React frontend** on Vercel. Configure these in your Vercel project settings:
-
-| Setting | Value |
-|---------|-------|
-| Framework Preset | Other |
-| Root Directory | (leave empty — monorepo root) |
-| Build Command | `pnpm --filter @workspace/aria-gold run build` |
-| Output Directory | `artifacts/aria-gold/dist` |
-| Install Command | `pnpm install --frozen-lockfile` |
-| Node.js Version | 20.x or 22.x |
-
-**Environment variables to set in Vercel:**
-
-```
-VITE_API_BASE_URL=https://<your-api-server-url>
-OPENAI_API_KEY=sk-or-v1-<your-openai-key>
-```
-
-> Only OpenAI chat is required. Google search keys are not used in this version.
-
-## Local Setup
+## Run
 
 ```bash
-pnpm install
-# Create .env with:
-#   DATABASE_URL=<postgres url>
-#   OPENAI_API_KEY=sk-...
-#   GITHUB_TOKEN=<github PAT with repo scope>
-pnpm --filter @workspace/db run push
-pnpm --filter @workspace/api-server run dev   # :8080
-pnpm --filter @workspace/aria-gold run dev    # :21132
+npm start
 ```
+
+Open:
+
+```text
+http://127.0.0.1:5000
+```
+
+## Configure
+
+Copy `.env.example` to `.env` and fill in production secrets:
+
+- `SESSION_SECRET`
+- `GOOGLE_SEARCH_API_KEY`
+- `GOOGLE_SEARCH_ENGINE_ID`
+- `STRIPE_SECRET_KEY` or Razorpay keys
+- payment webhook secrets
+
+## Notes
+
+The server stores local development data in `data/aria-db.json`. This is ignored by Git. Use a real database before production.
+
+The `knowledge/` directory contains ARIA's built-in working memory library. The server loads those Markdown files at runtime and uses them before Google search when a user asks about matching coding, design, deployment, security, automation, plugin, or product topics.
