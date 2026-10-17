@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JARVIS · AI engineer by Yash Raj</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--shell:#eceee9;--ink:#161a1e;--steel:#6f7b85;--line:#cdd3cf;--sig:#ff5a1f;--dark:#14181c}
+*{box-sizing:border-box;margin:0}html{scroll-behavior:smooth}
+body{background:var(--shell);color:var(--ink);font:17px/1.6 "IBM Plex Sans",system-ui,sans-serif;overflow-x:hidden}
+a{color:inherit}:focus-visible{outline:2px solid var(--sig);outline-offset:3px}
+nav{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;justify-content:space-between;align-items:center;padding:16px clamp(18px,4vw,48px);mix-blend-mode:difference;color:#fff}
+.logo{font:700 20px "Chakra Petch",sans-serif;letter-spacing:.06em;text-decoration:none}
+.btn{display:inline-block;border:1.5px solid currentColor;padding:10px 22px;border-radius:999px;font:600 15px "Chakra Petch",sans-serif;text-decoration:none;cursor:pointer;background:none;color:inherit;transition:.25s}
+.btn:hover{background:var(--sig);border-color:var(--sig);color:#fff}.btn.p{background:var(--sig);border-color:var(--sig);color:#fff}.btn.p:hover{background:var(--ink);border-color:var(--ink)}
+#stage{height:420vh;position:relative}
+.sticky{position:sticky;top:0;height:100vh;display:grid;grid-template-columns:1.05fr 1fr;align-items:center;padding:0 clamp(18px,5vw,72px);gap:20px;overflow:hidden}
+.sticky:before{content:"";position:absolute;inset:0;background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/72px 72px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/72px 72px;opacity:.55;mask:radial-gradient(70% 70% at 70% 55%,#000,transparent)}
+.copy{position:relative;z-index:2}
+h1{font:700 clamp(40px,6vw,84px)/1 "Chakra Petch",sans-serif;letter-spacing:-.01em}
+.lede{max-width:34ch;margin:20px 0 26px;color:#46515a}
+.caps{position:relative;height:110px;margin-top:34px;max-width:420px}
+.cap{position:absolute;inset:0;will-change:transform,opacity}.cap b{display:block;font:700 28px "Chakra Petch",sans-serif;color:var(--sig)}.cap span{color:#46515a}
+.arm{position:relative;z-index:1;width:100%;height:min(86vh,720px)}
+.arm svg{width:100%;height:100%;overflow:visible}
+.link{fill:#fff;stroke:var(--ink);stroke-width:2}.jt{fill:var(--ink)}.jt2{fill:var(--sig)}
+.rail{position:absolute;right:clamp(10px,2vw,28px);top:50%;transform:translateY(-50%);height:220px;width:2px;background:var(--line);z-index:3}
+.rail #fill{position:absolute;top:0;left:0;width:2px;background:var(--sig)}
+.tick{position:absolute;left:-5px;width:12px;height:12px;border-radius:50%;background:var(--shell);border:2px solid var(--steel);transition:.3s}.tick.on{background:var(--sig);border-color:var(--sig)}
+.tick:nth-of-type(1){top:-6px}.tick:nth-of-type(2){top:calc(33% - 6px)}.tick:nth-of-type(3){top:calc(66% - 6px)}.tick:nth-of-type(4){top:calc(100% - 6px)}
+.rows{max-width:980px;margin:0 auto;padding:110px 24px 60px}
+.row{display:grid;grid-template-columns:200px 1fr;gap:24px;padding:30px 0;position:relative}
+.row:before{content:"";position:absolute;top:0;left:0;right:0;height:1.5px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform 1s cubic-bezier(.2,.7,.2,1)}.row.in:before{transform:none}
+.row h3{font:700 26px "Chakra Petch",sans-serif}.row p{color:#46515a;max-width:52ch}
+.console{max-width:1040px;margin:0 auto 90px;padding:0 20px;opacity:0;transform:translateY(40px) scale(.98);transition:1s cubic-bezier(.2,.7,.2,1)}.console.in{opacity:1;transform:none}
+.console h2{font:700 clamp(30px,4vw,48px)/1.1 "Chakra Petch",sans-serif;margin-bottom:6px}.hint{color:var(--steel);margin-bottom:18px;font-size:15px}
+.box{display:flex;flex-direction:column;height:min(80vh,720px);background:var(--dark);color:#e7ece9;border-radius:20px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(20,24,28,.55)}
+.bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #2a3138;font-size:14px;color:#9aa6ae}
+.dot{width:9px;height:9px;border-radius:50%;background:#37e08f;box-shadow:0 0 0 0 #37e08f;animation:ping 2s infinite}@keyframes ping{70%{box-shadow:0 0 0 9px transparent}}
+.sp{flex:1}.bar button{background:none;border:1px solid #38414a;color:#cfd8dd;padding:5px 12px;border-radius:999px;font:500 13px inherit;cursor:pointer}.bar button:hover{border-color:var(--sig);color:var(--sig)}
+#log{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.m{max-width:88%;padding:11px 15px;border-radius:14px;word-wrap:break-word}
+.m.a{background:#1f262c;align-self:flex-start;border-top-left-radius:4px}.m.u{background:var(--sig);color:#fff;align-self:flex-end;border-top-right-radius:4px;white-space:pre-wrap}.m.e{background:#3a1f1f;color:#ffb4a8;align-self:flex-start}
+.m.a.live:after{content:"";display:inline-block;width:8px;height:16px;margin-left:3px;background:var(--sig);vertical-align:-2px;animation:bl .8s steps(1) infinite}@keyframes bl{50%{opacity:0}}
+.m p{margin:.4em 0}.m ul,.m ol{margin:.4em 0 .4em 1.3em}.m h3{margin:.6em 0 .2em;color:#fff}
+.m code{background:#0e1215;padding:1px 6px;border-radius:4px;font:13px "IBM Plex Mono",monospace;color:#ffb08f}
+.code{margin:10px 0;border-radius:10px;overflow:hidden;background:#0b0f12;border:1px solid #2a3138}
+.code header{display:flex;gap:8px;align-items:center;padding:6px 10px;background:#161c21;font:12px "IBM Plex Mono",monospace;color:#9aa6ae}.code header span{flex:1}
+.code header button{background:none;border:1px solid #38414a;color:#cfd8dd;border-radius:6px;font-size:11px;padding:2px 9px;cursor:pointer}.code header button:hover{border-color:var(--sig)}
+.code pre{padding:12px;overflow:auto;max-height:420px}.code pre code{background:none;padding:0;color:#d5dde1;font-size:13px;line-height:1.55;white-space:pre}
+.dots i{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--sig);animation:bn 1s infinite}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}@keyframes bn{50%{transform:translateY(-6px);opacity:.4}}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 20px 12px}.chips button{background:#1f262c;border:1px solid #2f383f;color:#c4ced4;padding:7px 14px;border-radius:999px;cursor:pointer;font-size:14px}.chips button:hover{border-color:var(--sig);color:#fff}
+form{display:flex;gap:10px;padding:12px;border-top:1px solid #2a3138}
+textarea{flex:1;resize:none;max-height:150px;background:#0e1215;border:1px solid #2f383f;border-radius:12px;color:#e7ece9;padding:11px 14px;font:inherit;outline:0}textarea:focus{border-color:var(--sig)}
+footer{text-align:center;padding:30px 0 50px;color:var(--steel);font-size:14px}
+@media(max-width:820px){.sticky{grid-template-columns:1fr;grid-template-rows:auto 1fr;align-content:center;padding-top:70px}.arm{height:44vh}.rail{display:none}.row{grid-template-columns:1fr;gap:6px}}
+@media(prefers-reduced-motion:reduce){*,*:before{animation:none!important;transition:none!important}.row:before{transform:none}.console{opacity:1;transform:none}}
+
+.tabs{display:flex;gap:6px;margin:0 0 14px}.tab{background:none;border:1.5px solid var(--line);color:var(--ink);padding:9px 20px;border-radius:999px;font:600 15px "Chakra Petch",sans-serif;cursor:pointer;transition:.25s}.tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}.tab:hover{border-color:var(--sig)}
+.ext{display:grid;grid-template-columns:1fr 1.1fr;gap:30px;align-items:center;background:var(--dark);color:#e7ece9;border-radius:20px;padding:36px;min-height:460px;position:relative;overflow:hidden;box-shadow:0 40px 80px -30px rgba(20,24,28,.55)}
+.ext[hidden]{display:none}.ext:before{content:"";position:absolute;inset:0;background:linear-gradient(#19d3ff22 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,#19d3ff22 1px,transparent 1px) 0 0/40px 40px;mask:radial-gradient(60% 70% at 25% 50%,#000,transparent)}
+.stage{position:relative;display:grid;place-items:center}.bigbot{width:min(300px,70%);animation:glide 6s ease-in-out infinite;filter:drop-shadow(0 20px 20px #000a)}
+@keyframes glide{0%,100%{transform:translateX(-26px) rotate(-4deg)}50%{transform:translateX(26px) rotate(4deg)}}
+.bigbot .hv{animation:hv 2.2s ease-in-out infinite}.bigbot .gl{animation:gl 2.2s infinite;transform-origin:50px 92px}.bigbot .core,.bigbot .an{animation:cr 1.4s infinite}.bigbot .ey{animation:bk 4.5s infinite;transform-origin:50px 26px}.bigbot .arm{transform-origin:72px 42px;animation:wv 1.2s ease-in-out infinite}.bigbot .wh circle{transform-box:fill-box;transform-origin:center;animation:spin .4s linear infinite}
+@keyframes hv{50%{transform:translateY(-4px)}}@keyframes gl{50%{transform:scale(.75);opacity:.25}}@keyframes cr{50%{opacity:.35}}@keyframes bk{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}@keyframes wv{50%{transform:rotate(-40deg)}}
+.ext h3{font:700 clamp(26px,3.4vw,40px)/1.1 "Chakra Petch",sans-serif;margin-bottom:14px;position:relative}.ext ol{margin:0 0 20px 1.2em;color:#b9c4ca;position:relative}.ext li{margin:6px 0}.ext code{background:#0e1215;padding:2px 7px;border-radius:5px;color:#ffb08f;font:13px "IBM Plex Mono",monospace}
+.say{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;position:relative}.say span{border:1px solid #2f383f;border-radius:999px;padding:5px 12px;font-size:13px;color:#9fe9ff;background:#0e1215}
+.mq{overflow:hidden;white-space:nowrap;border-block:1.5px solid var(--ink);padding:14px 0;margin:30px 0;font:700 clamp(22px,3.4vw,40px) "Chakra Petch",sans-serif}.mq div{display:inline-block;animation:mq 22s linear infinite}.mq span{margin:0 26px}.mq span:nth-child(even){color:var(--sig)}@keyframes mq{to{transform:translateX(-50%)}}
+#cur{position:fixed;left:0;top:0;width:340px;height:340px;margin:-170px 0 0 -170px;border-radius:50%;background:radial-gradient(circle,rgba(255,90,31,.14),transparent 65%);pointer-events:none;z-index:1;will-change:transform}
+.btn{will-change:transform}
+@media(max-width:820px){.ext{grid-template-columns:1fr;padding:24px}}
+@media(prefers-reduced-motion:reduce){.mq div,.bigbot{animation:none}}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+#pre{position:fixed;inset:0;z-index:100;display:grid;place-items:center;color:#19d3ff;font:600 15px "IBM Plex Mono",monospace;letter-spacing:.25em;pointer-events:none}
+#pre .h{position:absolute;left:0;right:0;height:50.6%;background:radial-gradient(circle at 50% 100%,#06283d,#02070c 70%);transition:transform 1s cubic-bezier(.77,0,.18,1)}#pre .t{top:0}#pre .b{bottom:0;background:radial-gradient(circle at 50% 0,#06283d,#02070c 70%)}
+#pre.out .t{transform:translateY(-101%)}#pre.out .b{transform:translateY(101%)}
+#pre .c{position:relative;width:280px;height:280px;display:grid;place-items:center;text-align:center;transition:opacity .4s,transform .9s}#pre.out .c{opacity:0;transform:scale(1.6)}
+#pre .pr{position:absolute;inset:0;border-radius:50%;border:2px dashed #19d3ff;box-shadow:0 0 40px #19d3ff55,inset 0 0 40px #19d3ff33;animation:spin 6s linear infinite}#pre .pr+.pr{inset:30px;border:3px solid #ff5a1f;border-color:#ff5a1f transparent;animation-duration:1.8s;animation-direction:reverse;box-shadow:none}
+#pn{font:800 62px "Chakra Petch",sans-serif;letter-spacing:0;color:#fff;text-shadow:0 0 24px #19d3ff}#pl{position:absolute;top:calc(100% + 26px);width:420px;max-width:90vw;font-size:13px;white-space:nowrap}
+#pre:after{content:"";position:absolute;left:0;right:0;height:120px;background:linear-gradient(transparent,#19d3ff30,transparent);animation:sc 1.4s linear infinite}@keyframes sc{from{top:-130px}to{top:100%}}
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.1em}.ch{display:inline-block;transform:translateY(115%) rotate(9deg);opacity:0}body.go .ch{transform:none;opacity:1;transition:transform .9s cubic-bezier(.2,.8,.2,1),opacity .6s;transition-delay:calc(var(--i)*30ms + .1s)}
+.lede,.copy .btn,.caps{opacity:0;transform:translateY(20px)}body.go .lede,body.go .copy .btn,body.go .caps{opacity:1;transform:none;transition:1s cubic-bezier(.2,.8,.2,1) .7s}
+#hs{height:380vh;position:relative}.hsticky{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center}.htrack{display:flex;gap:40px;padding:0 8vw;will-change:transform}
+.hp{flex:0 0 min(80vw,620px);height:min(68vh,500px);border:1.5px solid var(--ink);border-radius:26px;padding:32px;display:flex;flex-direction:column;justify-content:space-between;background:#fff;transition:transform .25s;will-change:transform}.hp:nth-child(even){background:var(--ink);color:#fff}
+.hp b{font:700 clamp(56px,10vw,128px)/.9 "Chakra Petch",sans-serif;display:block}.hp p{max-width:30ch;opacity:.8}.viz{height:84px;display:flex;align-items:flex-end;gap:5px}.viz i{flex:1;background:var(--sig);border-radius:3px;animation:eq 1s ease-in-out infinite;transform-origin:bottom}@keyframes eq{50%{transform:scaleY(.2)}}
+.rip{position:relative;height:84px}.rip i{position:absolute;left:20px;top:20px;width:44px;height:44px;border-radius:50%;border:3px solid var(--sig);animation:rp 2s infinite}.rip i:nth-child(2){animation-delay:.6s}.rip i:nth-child(3){animation-delay:1.2s}@keyframes rp{from{transform:scale(.2);opacity:1}to{transform:scale(2.6);opacity:0}}
+.tp{font:600 clamp(18px,3vw,28px) "IBM Plex Mono",monospace;white-space:nowrap;overflow:hidden;width:0;border-right:3px solid var(--sig);animation:ty 4s steps(22) infinite}@keyframes ty{0%{width:0}60%,90%{width:22ch}100%{width:0}}
+.gl2{position:relative;height:84px}.gl2:before{content:"";position:absolute;left:0;right:0;bottom:18px;height:3px;background:currentColor;opacity:.4}.gl2 i{position:absolute;bottom:12px;left:0;width:30px;height:30px;border-radius:8px;background:var(--sig);animation:gd 3s cubic-bezier(.6,0,.3,1) infinite}@keyframes gd{0%{left:0;transform:skewX(0)}45%{transform:skewX(-24deg)}100%{left:calc(100% - 30px);transform:skewX(0)}}
+#rider{position:fixed;left:0;bottom:6px;width:84px;z-index:20;pointer-events:none;will-change:transform}#rider svg{width:100%;filter:drop-shadow(0 10px 8px rgba(0,0,0,.35))}#rider .wh circle{transform-box:fill-box;transform-origin:center}#rider.mv .wh circle{animation:spin .22s linear infinite}#rider .hv{animation:hv 2.2s ease-in-out infinite}#rider .gl{animation:gl 2.2s infinite;transform-origin:50px 92px}#rider .core,#rider .an{animation:cr 1.4s infinite}
+@media(max-width:820px){#rider{width:60px}}
+@media(prefers-reduced-motion:reduce){#pre{display:none}.ch,.lede,.copy .btn,.caps{opacity:1;transform:none}}
+
+:root{--shell:#0a0405;--ink:#f2e8d5;--steel:#b49a8a;--line:#3d1a1a;--sig:#ff3b2f;--gold:#ffc247;--dark:#12070a}
+body{background:radial-gradient(1000px 600px at 78% 28%,#44090d 0%,transparent 62%),radial-gradient(800px 500px at 8% 92%,#2e1604 0%,transparent 60%),#0a0405;color:var(--ink)}
+#em{position:fixed;inset:0;z-index:-1;pointer-events:none}
+.lede,.row p,.cap span,.hp p{color:#cdb8a6}.cap b,.hp b{color:var(--gold)}.hp b{text-shadow:0 0 30px rgba(255,59,47,.35)}
+h1{background:linear-gradient(180deg,#fff2d0,var(--gold) 55%,var(--sig));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 22px rgba(255,59,47,.4))}h1 .ch{-webkit-text-fill-color:transparent}
+.btn.p{background:linear-gradient(135deg,var(--sig),#b3121a);border-color:transparent;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);border-radius:0;box-shadow:0 0 28px rgba(255,59,47,.5)}.btn.p:hover{background:var(--gold);color:#1a0a0c}
+.btn{border-radius:0;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.sticky:before{opacity:.5}
+.scene{position:relative;z-index:1;height:min(86vh,720px);display:grid;place-items:center;perspective:1200px}
+.giant{position:absolute;font:800 clamp(130px,23vw,360px)/1 "Chakra Petch",sans-serif;color:transparent;-webkit-text-stroke:2px rgba(255,194,71,.3);letter-spacing:-.02em;transform:translateX(calc(var(--p,0)*-16vw));user-select:none;white-space:nowrap}
+.rings{position:absolute;inset:0;display:grid;place-items:center;transform-style:preserve-3d}
+.rg{position:absolute;border-radius:50%;border:2px solid}.rg.a{width:min(560px,86vw);aspect-ratio:1;border-style:dashed;border-color:var(--gold);animation:ra 14s linear infinite;box-shadow:0 0 40px rgba(255,194,71,.3)}
+.rg.b{width:min(400px,64vw);aspect-ratio:1;border-color:var(--sig);border-width:3px;animation:rb 9s linear infinite;box-shadow:0 0 50px rgba(255,59,47,.45)}
+.rg.c{width:min(660px,96vw);aspect-ratio:1;border-style:dotted;border-color:#19d3ff99;animation:rc 22s linear infinite}
+@keyframes ra{from{transform:rotateX(72deg) rotateZ(0)}to{transform:rotateX(72deg) rotateZ(360deg)}}@keyframes rb{from{transform:rotateY(72deg) rotateZ(0)}to{transform:rotateY(72deg) rotateZ(-360deg)}}@keyframes rc{from{transform:rotateX(58deg) rotateY(18deg) rotateZ(0)}to{transform:rotateX(58deg) rotateY(18deg) rotateZ(360deg)}}
+#bot3{position:relative;width:min(440px,72vw);transform-style:preserve-3d;will-change:transform}
+#bot3>svg{width:100%;filter:drop-shadow(0 40px 36px #000d) drop-shadow(0 0 46px rgba(255,59,47,.5))}
+#bot3 [fill="#fff"],#rider [fill="#fff"]{fill:#c4161c}#bot3 [fill="#cfd3d6"],#rider [fill="#cfd3d6"]{fill:#e0a93b}#bot3 [fill="#ff5a1f"],#rider [fill="#ff5a1f"]{fill:#ffc247}
+#bot3 .hv{animation:hv 2.2s ease-in-out infinite}#bot3 .gl{animation:gl 2.2s infinite;transform-origin:50px 92px}#bot3 .core,#bot3 .an{animation:cr 1.2s infinite}#bot3 .ey{animation:bk 4.5s infinite;transform-origin:50px 26px}#bot3 .arm{transform-origin:72px 42px;animation:wv 1.4s ease-in-out infinite}#bot3 .wh circle{transform-box:fill-box;transform-origin:center;animation:spin .6s linear infinite}
+.chip{position:absolute;padding:7px 14px;color:var(--gold);background:rgba(26,10,12,.78);font:600 12px "IBM Plex Mono",monospace;letter-spacing:.2em;white-space:nowrap;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);border-left:2px solid var(--sig);transform:translateZ(90px);animation:fl 4s ease-in-out infinite}
+.c1{top:6%;left:-14%}.c2{top:46%;right:-18%;animation-delay:-1.3s}.c3{bottom:6%;left:-8%;animation-delay:-2.6s}@keyframes fl{50%{translate:0 -10px}}
+.hp{border:0;clip-path:polygon(0 0,calc(100% - 30px) 0,100% 30px,100% 100%,30px 100%,0 calc(100% - 30px));background:linear-gradient(160deg,#2c0c10,#12070a);color:var(--ink);box-shadow:inset 0 0 0 1.5px rgba(255,194,71,.25)}
+.hp:nth-child(even){background:linear-gradient(160deg,#3a1208,#12070a);color:var(--ink)}.viz i,.rip i,.gl2 i{background:var(--gold)}.rip i{background:none;border-color:var(--gold)}.tp{border-color:var(--gold)}
+.row:before{background:linear-gradient(90deg,var(--sig),var(--gold))}.mq{border-color:var(--sig)}.mq span:nth-child(even){color:var(--gold)}
+.tab{color:var(--ink);border-color:var(--line)}.tab.on{background:var(--sig);border-color:var(--sig);color:#fff}
+.console h2{color:var(--ink)}.box{box-shadow:0 0 0 1px rgba(255,194,71,.25),0 40px 80px -30px rgba(255,59,47,.35)}.m.a{border-left:2px solid var(--gold)}
+#pre{color:var(--gold)}#pre .h{background:radial-gradient(circle at 50% 100%,#44090d,#0a0405 70%)}#pre .b{background:radial-gradient(circle at 50% 0,#44090d,#0a0405 70%)}#pre .pr{border-color:var(--gold);box-shadow:0 0 40px rgba(255,194,71,.4),inset 0 0 40px rgba(255,59,47,.3)}#pre .pr+.pr{border-color:var(--sig) transparent}#pn{text-shadow:0 0 24px var(--sig)}#pre:after{background:linear-gradient(transparent,rgba(255,59,47,.25),transparent)}
+#cur{background:radial-gradient(circle,rgba(255,59,47,.2),transparent 65%)}footer{color:var(--steel)}nav{mix-blend-mode:normal;background:rgba(10,4,5,.55);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,194,71,.15)}
+@media(max-width:820px){.c1{left:0}.c2{right:0}.c3{left:0}.giant{font-size:34vw}}
+@media(prefers-reduced-motion:reduce){.rg,.chip,#bot3 *{animation:none!important}}
+</style></head><body>
+<canvas id="em"></canvas>
+<div id="pre"><div class="h t"></div><div class="h b"></div><div class="c"><i class="pr"></i><i class="pr"></i><div id="pn">0</div><div id="pl">INITIALIZING J.A.R.V.I.S.</div></div></div>
+<nav><a class="logo" href="#">JARVIS</a><a class="btn" href="#chat">Talk to JARVIS</a></nav>
+<section id="stage"><div class="sticky">
+ <div class="copy"><h1>Your AI, suited up.</h1>
+  <p class="lede">JARVIS plans, writes and debugs software one step at a time, the way a robot arm builds a product. Built by Yash Raj.</p>
+  <a class="btn p" href="#chat">Start a project</a>
+  <div class="caps"><div class="cap"><b>Plan</b><span>Describe what you want. JARVIS maps the files first.</span></div><div class="cap"><b>Write</b><span>Every file written in full, in the language you pick.</span></div><div class="cap"><b>Fix</b><span>Paste an error and get the cause and the patch.</span></div><div class="cap"><b>Ship</b><span>Export the whole conversation as one ZIP project.</span></div></div></div>
+ <div class="scene"><div class="giant" aria-hidden="true">JARVIS</div><div class="rings"><i class="rg a"></i><i class="rg b"></i><i class="rg c"></i></div><div id="bot3"><svg viewBox="0 0 100 100" ><g ><ellipse class="gl" cx="50" cy="92" rx="30" ry="5" fill="#19d3ff" opacity=".5"/><g class="hv"><path d="M8 74 Q8 80 16 80 L84 80 Q92 80 92 74 L86 76 L14 76 Z" fill="#ff5a1f"/><rect x="14" y="76" width="72" height="3.5" rx="1.7" fill="#14181c"/><g class="wh"><circle cx="28" cy="85" r="4.5" fill="#fff" stroke="#14181c" stroke-width="2"/><circle cx="72" cy="85" r="4.5" fill="#fff" stroke="#14181c" stroke-width="2"/></g><rect x="38" y="62" width="8" height="14" rx="3" fill="#cfd3d6" stroke="#14181c" stroke-width="2"/><rect x="55" y="62" width="8" height="14" rx="3" fill="#cfd3d6" stroke="#14181c" stroke-width="2"/><rect x="24" y="40" width="9" height="22" rx="4.5" fill="#cfd3d6" stroke="#14181c" stroke-width="2" transform="rotate(14 28 42)"/><g class="arm"><rect x="68" y="40" width="9" height="22" rx="4.5" fill="#cfd3d6" stroke="#14181c" stroke-width="2" transform="rotate(-14 72 42)"/></g><rect x="33" y="38" width="34" height="29" rx="10" fill="#fff" stroke="#14181c" stroke-width="2.5"/><circle class="core" cx="50" cy="52" r="6.5" fill="#19d3ff"/><circle cx="50" cy="52" r="10" fill="none" stroke="#ff5a1f" stroke-width="1.5" stroke-dasharray="3 3"/><line x1="50" y1="14" x2="50" y2="8" stroke="#14181c" stroke-width="2.5"/><circle class="an" cx="50" cy="6" r="3.5" fill="#ff5a1f"/><rect x="35" y="14" width="30" height="25" rx="11" fill="#fff" stroke="#14181c" stroke-width="2.5"/><rect x="39" y="21" width="22" height="10" rx="5" fill="#14181c"/><circle class="ey" cx="45.5" cy="26" r="2.4" fill="#19d3ff"/><circle class="ey" cx="54.5" cy="26" r="2.4" fill="#19d3ff"/></g></g></svg><span class="chip c1">VOICE · ONLINE</span><span class="chip c2">REPULSORS · 100%</span><span class="chip c3">TABS · LINKED</span></div></div>
+ <div class="rail"><div id="fill"></div><i class="tick"></i><i class="tick"></i><i class="tick"></i><i class="tick"></i></div>
+</div></section>
+<section id="hs"><div class="hsticky"><div class="htrack">
+<article class="hp"><div><b>Listen</b><p>Say it out loud. JARVIS hears you on every tab.</p></div><div class="viz" id="eq"></div></article>
+<article class="hp"><div><b>Click</b><p>"Click Sign in." He finds the button and presses it.</p></div><div class="rip"><i></i><i></i><i></i></div></article>
+<article class="hp"><div><b>Type</b><p>Dictate into any field, then press enter by voice.</p></div><div class="tp">hello, JARVIS_</div></article>
+<article class="hp"><div><b>Glide</b><p>Across pages and between tabs, hovering all the way.</p></div><div class="gl2"><i></i></div></article>
+</div></div></section>
+<section class="rows">
+ <div class="row"><h3>Code in any language</h3><p>Ask for a function, a bug fix or a whole app. Code arrives in labelled blocks you can copy or save with one click.</p></div>
+ <div class="row"><h3>Projects, not snippets</h3><p>JARVIS lists the file tree, then writes each file. Say "continue" for more, then export everything as a ZIP.</p></div>
+ <div class="row"><h3>Straight answers</h3><p>Architecture, APIs, deployment: explained in plain words, with the trade-offs.</p></div>
+</section>
+<div class="mq" aria-hidden="true"><div><span>LISTEN</span><span>CLICK</span><span>TYPE</span><span>SCROLL</span><span>GLIDE</span><span>BUILD</span><span>LISTEN</span><span>CLICK</span><span>TYPE</span><span>SCROLL</span><span>GLIDE</span><span>BUILD</span></div></div>
+<section class="console" id="chat"><h2>Talk to JARVIS</h2><p class="hint">Chat here, or take JARVIS with you across the web.</p>
+ <div class="tabs"><button class="tab on" data-t="chat">Chat</button><button class="tab" data-t="ext">Get the extension</button></div>
+ <div class="box" id="boxChat"><div class="bar"><span class="dot"></span>Online<span class="sp"></span><button id="zipBtn">Export ZIP</button><button id="clrBtn">Clear</button></div>
+ <div id="log" aria-live="polite"></div>
+ <div class="chips" id="chips"><button>Who are you?</button><button>Build a to-do app in HTML, CSS and JS</button><button>Write a Node.js REST API with Express</button></div>
+ <form id="f"><textarea id="in" rows="1" placeholder="Ask JARVIS to build something"></textarea><button class="btn p" id="go">Send</button></form></div>
+<div class="ext" id="ext" hidden>
+ <div class="stage"><svg id="bot" viewBox="0 0 100 100" class="bigbot"><g id="rig"><ellipse class="gl" cx="50" cy="92" rx="30" ry="5" fill="#19d3ff" opacity=".5"/><g class="hv"><path d="M8 74 Q8 80 16 80 L84 80 Q92 80 92 74 L86 76 L14 76 Z" fill="#ff5a1f"/><rect x="14" y="76" width="72" height="3.5" rx="1.7" fill="#14181c"/><g class="wh"><circle cx="28" cy="85" r="4.5" fill="#fff" stroke="#14181c" stroke-width="2"/><circle cx="72" cy="85" r="4.5" fill="#fff" stroke="#14181c" stroke-width="2"/></g><rect x="38" y="62" width="8" height="14" rx="3" fill="#cfd3d6" stroke="#14181c" stroke-width="2"/><rect x="55" y="62" width="8" height="14" rx="3" fill="#cfd3d6" stroke="#14181c" stroke-width="2"/><rect x="24" y="40" width="9" height="22" rx="4.5" fill="#cfd3d6" stroke="#14181c" stroke-width="2" transform="rotate(14 28 42)"/><g class="arm"><rect x="68" y="40" width="9" height="22" rx="4.5" fill="#cfd3d6" stroke="#14181c" stroke-width="2" transform="rotate(-14 72 42)"/></g><rect x="33" y="38" width="34" height="29" rx="10" fill="#fff" stroke="#14181c" stroke-width="2.5"/><circle class="core" cx="50" cy="52" r="6.5" fill="#19d3ff"/><circle cx="50" cy="52" r="10" fill="none" stroke="#ff5a1f" stroke-width="1.5" stroke-dasharray="3 3"/><line x1="50" y1="14" x2="50" y2="8" stroke="#14181c" stroke-width="2.5"/><circle class="an" cx="50" cy="6" r="3.5" fill="#ff5a1f"/><rect x="35" y="14" width="30" height="25" rx="11" fill="#fff" stroke="#14181c" stroke-width="2.5"/><rect x="39" y="21" width="22" height="10" rx="5" fill="#14181c"/><circle class="ey" cx="45.5" cy="26" r="2.4" fill="#19d3ff"/><circle class="ey" cx="54.5" cy="26" r="2.4" fill="#19d3ff"/></g></g></svg></div>
+ <div><h3>Take JARVIS with you.</h3><ol><li>Download the extension and unzip it.</li><li>Open <code>chrome://extensions</code> and switch on Developer mode.</li><li>Click <b>Load unpacked</b> and choose the unzipped folder.</li><li>Click the JARVIS icon, press <b>Save</b> then <b>Test</b>, and press the 🎤 to talk.</li></ol>
+ <a class="btn p" href="/jarvis-extension.zip" download>Download for Chrome / Edge / Brave</a>
+ <div class="say"><span>"click Sign in"</span><span>"type hello and press enter"</span><span>"scroll down"</span><span>"open youtube and search lo-fi"</span><span>"next tab"</span><span>"wake up"</span></div></div></div></section>
+<div id="cur"></div><div id="rider"><svg viewBox="0 0 100 100" ><g ><ellipse class="gl" cx="50" cy="92" rx="30" ry="5" fill="#19d3ff" opacity=".5"/><g class="hv"><path d="M8 74 Q8 80 16 80 L84 80 Q92 80 92 74 L86 76 L14 76 Z" fill="#ff5a1f"/><rect x="14" y="76" width="72" height="3.5" rx="1.7" fill="#14181c"/><g class="wh"><circle cx="28" cy="85" r="4.5" fill="#fff" stroke="#14181c" stroke-width="2"/><circle cx="72" cy="85" r="4.5" fill="#fff" stroke="#14181c" stroke-width="2"/></g><rect x="38" y="62" width="8" height="14" rx="3" fill="#cfd3d6" stroke="#14181c" stroke-width="2"/><rect x="55" y="62" width="8" height="14" rx="3" fill="#cfd3d6" stroke="#14181c" stroke-width="2"/><rect x="24" y="40" width="9" height="22" rx="4.5" fill="#cfd3d6" stroke="#14181c" stroke-width="2" transform="rotate(14 28 42)"/><g class="arm"><rect x="68" y="40" width="9" height="22" rx="4.5" fill="#cfd3d6" stroke="#14181c" stroke-width="2" transform="rotate(-14 72 42)"/></g><rect x="33" y="38" width="34" height="29" rx="10" fill="#fff" stroke="#14181c" stroke-width="2.5"/><circle class="core" cx="50" cy="52" r="6.5" fill="#19d3ff"/><circle cx="50" cy="52" r="10" fill="none" stroke="#ff5a1f" stroke-width="1.5" stroke-dasharray="3 3"/><line x1="50" y1="14" x2="50" y2="8" stroke="#14181c" stroke-width="2.5"/><circle class="an" cx="50" cy="6" r="3.5" fill="#ff5a1f"/><rect x="35" y="14" width="30" height="25" rx="11" fill="#fff" stroke="#14181c" stroke-width="2.5"/><rect x="39" y="21" width="22" height="10" rx="5" fill="#14181c"/><circle class="ey" cx="45.5" cy="26" r="2.4" fill="#19d3ff"/><circle class="ey" cx="54.5" cy="26" r="2.4" fill="#19d3ff"/></g></g></svg></div>
+<footer>JARVIS · Built by Yash Raj</footer>
+<script>
+const $=s=>document.querySelector(s),log=$('#log'),inp=$('#in'),KEY='jarvis.chat.v2';
+let hist=[],busy=false;
+try{hist=JSON.parse(localStorage.getItem(KEY)||'[]')}catch{}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(hist.slice(-60)))}catch{}};
+const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* ---------- markdown ---------- */
+const PATH=/^[\w\-./\\]+\.[A-Za-z0-9]+$/;
+function meta(info){info=(info||'').trim();const t=info.split(/\s+/).filter(Boolean);let lang=t[0]||'',file='';const cl=x=>x.replace(/^(title|file|filename|path)=/i,'').replace(/^["']|["']$/g,'');
+ if(lang.includes(':')){const p=lang.split(':');lang=p[0];file=cl(p.slice(1).join(':'))}
+ for(const x of t.slice(1)){const c=cl(x);if(!file&&PATH.test(c))file=c}
+ if(!file&&PATH.test(lang)){file=lang;lang=lang.split('.').pop()}
+ return{lang:lang.toLowerCase(),file}}
+function hint(code){const m=code.split('\n')[0].match(/(?:file(?:name)?|path)\s*[:=]\s*([\w\-./\\]+\.\w+)/i);return m?m[1]:''}
+function blocks(md){const out=[],lines=md.split('\n');let o=null;
+ for(const l of lines){const f=l.match(/^\s*```(.*)$/);
+  if(f){if(o){out.push({...o,code:o.buf.join('\n'),done:true});o=null}else o={...meta(f[1]),buf:[]};continue}
+  if(o)o.buf.push(l)}
+ if(o)out.push({...o,code:o.buf.join('\n'),done:false});return out}
+function inline(s){return esc(s).replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener" style="color:var(--c)">$1</a>')}
+function fmt(md){const lines=md.split('\n'),h=[];let o=null,list=null,para=[];
+ const fp=()=>{if(para.length){h.push('<p>'+inline(para.join(' '))+'</p>');para=[]}},fl=()=>{if(list){h.push('</'+list+'>');list=null}};
+ for(const l of lines){
+  if(o){if(/^\s*```\s*$/.test(l)){h.push(code(o,o.buf.join('\n')));o=null}else o.buf.push(l);continue}
+  const f=l.match(/^\s*```(.*)$/);if(f){fp();fl();o={...meta(f[1]),buf:[]};continue}
+  const li=l.match(/^\s*(?:([-*])|(\d+)\.)\s+(.*)$/);
+  if(li){fp();const t=li[1]?'ul':'ol';if(list!==t){fl();h.push('<'+t+'>');list=t}h.push('<li>'+inline(li[3])+'</li>');continue}
+  fl();const hd=l.match(/^(#{1,4})\s+(.*)$/);
+  if(hd){fp();h.push('<h3>'+inline(hd[2])+'</h3>');continue}
+  if(!l.trim()){fp();continue}para.push(l)}
+ if(o)h.push(code(o,o.buf.join('\n')));fp();fl();return h.join('')}
+function code(o,c){const name=o.file||hint(c)||o.lang||'code';return`<div class="code"><header><span>${esc(name)}</span><button data-copy>Copy</button><button data-dl="${esc(o.file||hint(c)||'snippet.'+(o.lang||'txt'))}">Save</button></header><pre><code>${esc(c)}</code></pre></div>`}
+/* ---------- zip (stored, no deps) ---------- */
+const T=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc=u=>{let c=-1;for(const b of u)c=T[(c^b)&255]^(c>>>8);return(c^-1)>>>0};
+function zip(files){const e=new TextEncoder(),d=new Date(),tm=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1),dt=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(),parts=[],cen=[];let off=0;
+ for(const f of files){const n=e.encode(f.name),c=crc(f.data),sz=f.data.length;
+  const lh=new DataView(new ArrayBuffer(30));[[0,0x04034b50,4],[4,20,2],[6,0x0800,2],[8,0,2],[10,tm,2],[12,dt,2],[14,c,4],[18,sz,4],[22,sz,4],[26,n.length,2],[28,0,2]].forEach(([o,v,w])=>w==4?lh.setUint32(o,v,true):lh.setUint16(o,v,true));
+  parts.push(new Uint8Array(lh.buffer),n,f.data);
+  const ch=new DataView(new ArrayBuffer(46));[[0,0x02014b50,4],[4,20,2],[6,20,2],[8,0x0800,2],[10,0,2],[12,tm,2],[14,dt,2],[16,c,4],[20,sz,4],[24,sz,4],[28,n.length,2],[30,0,2],[32,0,2],[34,0,2],[36,0,2],[38,0,4],[42,off,4]].forEach(([o,v,w])=>w==4?ch.setUint32(o,v,true):ch.setUint16(o,v,true));
+  cen.push(new Uint8Array(ch.buffer),n);off+=30+n.length+sz}
+ const cs=cen.reduce((a,b)=>a+b.length,0),end=new DataView(new ArrayBuffer(22));
+ [[0,0x06054b50,4],[4,0,2],[6,0,2],[8,files.length,2],[10,files.length,2],[12,cs,4],[16,off,4],[20,0,2]].forEach(([o,v,w])=>w==4?end.setUint32(o,v,true):end.setUint16(o,v,true));
+ return new Blob([...parts,...cen,new Uint8Array(end.buffer)],{type:'application/zip'})}
+const safe=p=>p.replace(/\\/g,'/').replace(/^[a-zA-Z]:/,'').split('/').filter(s=>s&&s!=='..'&&s!=='.').join('/');
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+function exportZip(){const map=new Map();let n=0;
+ for(const m of hist)if(m.role==='assistant')for(const b of blocks(m.content)){if(!b.done||!b.code.trim())continue;n++;const nm=safe(b.file||hint(b.code)||'')||`snippets/snippet-${String(n).padStart(2,'0')}.${b.lang||'txt'}`;map.set(nm,b.code)}
+ if(!map.size)return alert('No code to export yet. Ask JARVIS to build something first.');
+ const e=new TextEncoder();download(zip([...map].map(([name,c])=>({name,data:e.encode(c)}))),'jarvis-project.zip')}
+/* ---------- chat ---------- */
+const OWNER=/who\s*(made|created|built|developed|designed|programmed|trained|owns)\s*(you|u)\b|who('?s|\s+is)\s+your\s+(creator|maker|developer|owner|author|father)|your\s+(creator|maker|developer)\b|kisne\s*(banaya|bnaya)|(tumhe|tujhe|aapko)\s*kisne/i;
+const WHO=/^\s*(who\s*(are|r)\s*(you|u)|what\s*(are|r)\s*(you|u)|(what('?s|\s+is)|tell\s+me)\s+your\s+name|introduce\s+yourself|tum\s*kaun\s*ho|aap\s*kaun\s*ho|tu\s*kaun\s*hai)\s*[?.!]*\s*$/i;
+const local=t=>OWNER.test(t)?'I was created by **Yash Raj**.':WHO.test(t)?"I'm **JARVIS** (Just A Rather Very Intelligent System), an AI assistant created by **Yash Raj**. I write and debug code in any language, plan whole projects, explain concepts, and can export multi-file projects as a ZIP. What shall we build?":null;
+function add(cls,html){const d=document.createElement('div');d.className='m '+cls;d.innerHTML=html;log.appendChild(d);log.scrollTop=log.scrollHeight;return d}
+const near=()=>log.scrollHeight-log.scrollTop-log.clientHeight<140;
+function draw(){log.innerHTML='';if(!hist.length)add('a',fmt("Good day. I'm **JARVIS**, created by **Yash Raj**. What are we building today?"));for(const m of hist)add(m.role==='user'?'u':'a',m.role==='user'?esc(m.content):fmt(m.content));$('#chips').style.display=hist.length?'none':''}
+async function send(text){
+ text=text.trim();if(!text||busy)return;busy=true;$('#chips').style.display='none';
+ hist.push({role:'user',content:text});inp.value='';inp.style.height='auto';if(hist.length===1)log.innerHTML='';add('u',esc(text));
+ const w=add('a','<span class="dots"><i></i><i></i><i></i></span>');
+ try{
+  const ans=local(text);let full='';
+  if(ans){for(const ch of ans.match(/.{1,3}/gs)){full+=ch;w.innerHTML=fmt(full);await new Promise(r=>setTimeout(r,12))}}
+  else{
+   const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:hist.slice(-12)})});
+   if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'Request failed ('+r.status+')')}
+   const rd=r.body.getReader(),dec=new TextDecoder();w.classList.add('live');let q=false;
+   for(;;){const{done,value}=await rd.read();if(done)break;full+=dec.decode(value,{stream:true});
+    if(!q){q=true;requestAnimationFrame(()=>{q=false;const s=near();w.innerHTML=fmt(full);if(s)log.scrollTop=log.scrollHeight})}}
+   if(!full.trim())throw new Error('Empty reply, please try again.')}
+  w.classList.remove('live');w.innerHTML=fmt(full);hist.push({role:'assistant',content:full});save();
+ }catch(e){hist.pop();w.className='m e';w.innerHTML=esc(e.message)+' <button class="btn" style="padding:3px 10px;margin-left:8px" id="retry">Retry</button>';$('#retry').onclick=()=>{w.remove();send(text)}}
+ finally{busy=false;if(near())log.scrollTop=log.scrollHeight;inp.focus()}}
+$('#f').onsubmit=e=>{e.preventDefault();send(inp.value)};
+inp.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send(inp.value)}};
+inp.oninput=()=>{inp.style.height='auto';inp.style.height=inp.scrollHeight+'px'};
+$('#chips').onclick=e=>{if(e.target.tagName==='BUTTON')send(e.target.textContent)};
+$('#zipBtn').onclick=exportZip;
+$('#clrBtn').onclick=()=>{if(busy||!confirm('Clear this conversation?'))return;hist=[];save();draw();$('#chips').style.display=''};
+log.onclick=e=>{const b=e.target,c=b.closest('.code');if(!c)return;const txt=c.querySelector('code').textContent;
+ if(b.dataset.copy!==undefined){navigator.clipboard.writeText(txt).then(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1400)})}
+ else if(b.dataset.dl)download(new Blob([txt],{type:'text/plain'}),b.dataset.dl.split('/').pop())};
+draw();
+/* ---------- 3D scene: scroll + pointer ---------- */
+const stage=$('#stage'),caps=[...document.querySelectorAll('.cap')],ticks=[...document.querySelectorAll('.tick')],fill=$('#fill'),b3=$('#bot3'),sc=$('.scene'),RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let p=0,tp=0,mx=0,my=0,tx2=0,ty2=0;
+const aim=()=>{const r=stage.getBoundingClientRect();tp=Math.min(1,Math.max(0,-r.top/(stage.offsetHeight-innerHeight)))};
+addEventListener('scroll',aim,{passive:true});addEventListener('resize',aim);aim();
+addEventListener('pointermove',e=>{tx2=e.clientX/innerWidth-.5;ty2=e.clientY/innerHeight-.5});
+(function frame(t){p+=(tp-p)*(RM?1:.09);mx+=(tx2-mx)*.08;my+=(ty2-my)*.08;const x=p*3;
+ b3.style.transform=`rotateY(${mx*26+Math.sin(p*6.283)*34}deg) rotateX(${-my*16}deg) translateY(${(RM?0:Math.sin(t/700)*8)-p*30}px) scale(${1+p*.3})`;sc.style.setProperty('--p',p.toFixed(3));
+ caps.forEach((c,n)=>{const d=n-x;c.style.opacity=Math.max(0,1-Math.abs(d)*1.7);c.style.transform=`translateY(${d*38}px)`});
+ ticks.forEach((k,n)=>k.classList.toggle('on',n<=Math.round(x)));fill.style.height=p*100+'%';requestAnimationFrame(frame)})(0);
+(function(){const c=$('#em'),x=c.getContext('2d');if(RM)return;let W,H;const P=[],rs=()=>{W=c.width=innerWidth;H=c.height=innerHeight};rs();addEventListener('resize',rs);
+ for(let i=0;i<70;i++)P.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2+.4,v:Math.random()*.6+.2,a:Math.random()*6.28,g:Math.random()<.5});
+ (function d(){if(!document.hidden){x.clearRect(0,0,W,H);for(const q of P){q.y-=q.v;q.x+=Math.sin(q.a+=.01)*.4;if(q.y<-5){q.y=H+5;q.x=Math.random()*W}x.fillStyle=q.g?'rgba(255,194,71,.85)':'rgba(255,59,47,.85)';x.shadowBlur=10;x.shadowColor=x.fillStyle;x.beginPath();x.arc(q.x,q.y,q.r,0,6.283);x.fill()}}requestAnimationFrame(d)})()})();
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.2});
+document.querySelectorAll('.row,.console').forEach(el=>io.observe(el));
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));const e=b.dataset.t==='ext';$('#boxChat').style.display=e?'none':'';$('#ext').hidden=!e});
+const cur=$('#cur');let cx=innerWidth/2,cy=innerHeight/2,tx=cx,ty=cy;addEventListener('pointermove',e=>{tx=e.clientX;ty=e.clientY});(function m(){cx+=(tx-cx)*.12;cy+=(ty-cy)*.12;cur.style.transform=`translate(${cx}px,${cy}px)`;requestAnimationFrame(m)})();
+document.querySelectorAll('.btn').forEach(b=>{b.addEventListener('pointermove',e=>{const r=b.getBoundingClientRect();b.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.25}px,${(e.clientY-r.top-r.height/2)*.35}px)`});b.addEventListener('pointerleave',()=>b.style.transform='')});
+
+const sl=ms=>new Promise(r=>setTimeout(r,ms));
+(function(){const h=$('h1');let n=0;h.innerHTML=h.textContent.split(' ').map(w=>'<span class="w">'+[...w].map(c=>`<span class="ch" style="--i:${n++}">${c}</span>`).join('')+'</span>').join(' ')})();
+(async()=>{const pre=$('#pre');let seen=false;try{seen=sessionStorage.getItem('jv')}catch{}
+ if(seen||matchMedia('(prefers-reduced-motion:reduce)').matches){pre.remove();document.body.classList.add('go');return}
+ try{sessionStorage.setItem('jv',1)}catch{}document.body.style.overflow='hidden';pre.style.pointerEvents='auto';
+ const L=['INITIALIZING J.A.R.V.I.S.','LOADING NEURAL CORE','CALIBRATING REPULSORS','GOOD DAY, SIR.'],pn=$('#pn'),pl=$('#pl');
+ for(let i=0;i<=100;i++){pn.textContent=i;pl.textContent=L[Math.min(3,i/26|0)];await sl(i>90?30:14)}
+ await sl(350);pre.classList.add('out');document.body.classList.add('go');await sl(1000);pre.remove();document.body.style.overflow=''})();
+const eq=$('#eq');for(let i=0;i<26;i++){const b=document.createElement('i');b.style.height=(30+Math.random()*70)+'%';b.style.animationDelay=(-Math.random()).toFixed(2)+'s';b.style.animationDuration=(.6+Math.random()*.8)+'s';eq.appendChild(b)}
+const hs=$('#hs'),tr=$('.htrack');function hz(){const r=hs.getBoundingClientRect(),p=Math.min(1,Math.max(0,-r.top/(hs.offsetHeight-innerHeight)));tr.style.transform=`translateX(${-p*Math.max(0,tr.scrollWidth-innerWidth)}px)`}
+addEventListener('scroll',hz,{passive:true});addEventListener('resize',hz);hz();
+document.querySelectorAll('.hp').forEach(c=>{c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;c.style.transform=`perspective(900px) rotateY(${x*10}deg) rotateX(${-y*10}deg) translateZ(14px)`});c.addEventListener('pointerleave',()=>c.style.transform='')});
+const SCR='!<>-_\\/[]{}=+*^?#';function scr(el){const o=el.dataset.o||(el.dataset.o=el.textContent);let f=0;clearInterval(el._t);el._t=setInterval(()=>{el.textContent=[...o].map((c,i)=>i<f/2?c:c===' '?c:SCR[Math.random()*SCR.length|0]).join('');if(++f>o.length*2)clearInterval(el._t)},28)}
+document.querySelectorAll('.row h3').forEach(e=>e.addEventListener('pointerenter',()=>scr(e)));
+const rd=$('#rider');let rx=0,ly=scrollY,dir=1;(function r(){const H=document.documentElement.scrollHeight-innerHeight||1,t=scrollY/H*(innerWidth-96),dy=scrollY-ly;ly=scrollY;if(Math.abs(dy)>.5)dir=dy>0?1:-1;rx+=(t-rx)*.08;rd.classList.toggle('mv',Math.abs(t-rx)>1.5);rd.style.transform=`translateX(${rx}px) scaleX(${dir}) rotate(${Math.max(-10,Math.min(10,(t-rx)/6))*dir}deg)`;requestAnimationFrame(r)})();
+</script></body></html>
