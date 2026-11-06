@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@jarvis/grammar": "1.0.0"
+    "@jarvis/grammar": "1.0.0",
+    "@jarvis/schema": "1.0.0",
+    "ajv": "8.20.0"
   },
   "devDependencies": {
     "wxt": "0.21.5"

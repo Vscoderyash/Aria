@@ -12,7 +12,7 @@ JARVIS is Yash Raj's voice-enabled AI assistant. This repository keeps the exist
 
 ## Build and verify
 
-Requires Node.js 22 or newer.
+Requires Node.js 22.13 or newer.
 
 ```sh
 npm ci
@@ -26,6 +26,8 @@ WXT is the extension build tool; Vitest runs the golden tests; Ajv validates the
 ## Website deployment
 
 Import this repository into Vercel with Framework set to **Other**. Keep the repository root as the project root and set `NVIDIA_API_KEY` in the Vercel environment. The static site and `/api/chat` remain at their existing paths.
+
+The chat accepts text/code, PDF, DOCX, and PNG/JPG/WebP attachments (up to four files and 2.7 MB combined). PDF and Word text is extracted by the API; images use NVIDIA's vision model. File bytes stay in the current browser tab's memory and are not written into saved chat history. Reattach files after reloading the page.
 
 ## Desktop app
 

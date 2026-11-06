@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13"
   },
   "workspaces": [
     "apps/extension",
@@ -22,5 +22,9 @@
     "ajv": "8.20.0",
     "typescript": "5.9.3",
     "vitest": "5.1.0"
+  },
+  "dependencies": {
+    "mammoth": "1.13.0",
+    "pdfjs-dist": "6.5.438"
   }
 }

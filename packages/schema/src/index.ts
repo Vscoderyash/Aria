@@ -1,6 +1,7 @@
 import actionJson from '../schemas/action.schema.json';
 import bridgeMessageJson from '../schemas/bridge-message.schema.json';
 import pageModelJson from '../schemas/page-model.schema.json';
+import browserAgentReplyJson from '../schemas/browser-agent-reply.schema.json';
 
 export interface PageModel {
   version: 1;
@@ -62,6 +63,19 @@ export interface Action {
   risk: 'low' | 'medium' | 'high';
 }
 
+export interface BrowserAgentReply {
+  thought?: string;
+  say?: string;
+  action: 'click' | 'type' | 'select' | 'key' | 'read' | 'wait' | 'back' | 'navigate' | 'scroll' | 'ask' | 'done';
+  id?: number | null;
+  text?: string;
+  key?: string;
+  seconds?: number;
+  submit?: boolean;
+  url?: string;
+  dir?: 'up' | 'down';
+}
+
 export type BridgeMessage =
   | { type: 'hello'; v: 1; device: string; caps: string[] }
   | { type: 'ping' | 'pong'; id?: string }
@@ -76,5 +90,6 @@ export type BridgeMessage =
   | { type: 'stop'; id?: string };
 
 export const pageModelSchema: object = pageModelJson;
+export const browserAgentReplySchema: object = browserAgentReplyJson;
 export const actionSchema: object = actionJson;
 export const bridgeMessageSchema: object = bridgeMessageJson;

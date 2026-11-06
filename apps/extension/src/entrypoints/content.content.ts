@@ -1,5 +1,27 @@
 import { near, normalizeSpokenText, parseCmd, scoreLabel, splitCmds, toks } from '@jarvis/grammar';
 
+type PageElement = HTMLElement & {
+  autocomplete?: string;
+  form?: HTMLFormElement | null;
+  href?: string;
+  name?: string;
+  options?: HTMLOptionsCollection;
+  placeholder?: string;
+  type?: string;
+  value?: string;
+};
+type AgentReply = { text?: string; error?: string; say?: string; reply?: Record<string, any> };
+type SpeechRecognitionLike = any;
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+
+declare global {
+  interface Window {
+    __jarvisAgent?: { alive: () => boolean; host?: HTMLElement };
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  }
+}
+
 export default defineContentScript({
   matches: ['http://*/*', 'https://*/*'],
   runAt: 'document_idle',
@@ -58,11 +80,13 @@ export default defineContentScript({
   <div id="bar"><input id="in" placeholder="Tell JARVIS what to do…"><button id="go">Go</button><button id="st">Stop</button></div></div>`;
   document.documentElement.appendChild(host);
   window.__jarvisAgent.host = host;
-  const $ = s => root.querySelector(s), orb = $('#orb'), panel = $('#panel'), logEl = $('#log');
-  const bg = m => new Promise(r => { try { chrome.runtime.sendMessage(m, res => { void chrome.runtime.lastError; r(res); }); } catch { r(null); } });
+  const $ = <T extends HTMLElement = HTMLElement>(s: string): T => root.querySelector(s) as T;
+  const orb = $('#orb'), panel = $('#panel'), logEl = $('#log');
+  const bg = <T = AgentReply>(m: Record<string, unknown>) => new Promise<T | null>(r => { try { chrome.runtime.sendMessage(m, res => { void chrome.runtime.lastError; r(res as T); }); } catch { r(null); } });
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  const store = { get: k => chrome.storage.local.get(k).then(v => v[k]), set: (k, v) => chrome.storage.local.set({ [k]: v }) };
-  let pos = { x: 0.92, y: 0.82 }, job = null, tabId = null, running = false, approveResolve = null;
+  const store = { get: async <T = unknown>(k: string): Promise<T | undefined> => { const values = await chrome.storage.local.get(k); return values[k] as T | undefined; }, set: (k: string, v: unknown) => chrome.storage.local.set({ [k]: v }) };
+  type TargetMemory = { el: HTMLElement; label: string; href: string };
+  let pos = { x: 0.92, y: 0.82 }, job: any = null, tabId: number | null = null, running = false, approveResolve: ((approved: boolean) => void) | null = null, lastTarget: TargetMemory | null = null;
 
   /* ---- orb: position, drag, fly ---- */
   const px = () => ({ x: Math.min(innerWidth - (orb.offsetWidth || 96) - 8, Math.max(8, pos.x * innerWidth)), y: Math.min(innerHeight - (orb.offsetHeight || 96) - 8, Math.max(8, pos.y * innerHeight)) });
@@ -71,7 +95,7 @@ export default defineContentScript({
   function trail(ms) { const t = setInterval(() => { const r = orb.getBoundingClientRect(), g = document.createElement('div'); g.className = 'ghost'; g.style.left = r.left + 13 + 'px'; g.style.top = r.top + 13 + 'px'; root.appendChild(g); setTimeout(() => g.remove(), 650); }, 45); setTimeout(() => clearInterval(t), ms); }
   async function flyTo(x, y, ms = 900) {
     const r = orb.getBoundingClientRect(), dx = x - r.left, dy = y - r.top;
-    trail(ms); orb.style.setProperty('--f', dx < 0 ? -1 : 1); orb.style.setProperty('--t', Math.max(-14, Math.min(14, dx / 25)) + 'deg'); orb.classList.add('moving');
+    trail(ms); orb.style.setProperty('--f', dx < 0 ? '-1' : '1'); orb.style.setProperty('--t', Math.max(-14, Math.min(14, dx / 25)) + 'deg'); orb.classList.add('moving');
     const a = orb.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx * .5}px,${dy * .5 - 90}px) scale(1.2)` }, { transform: `translate(${dx}px,${dy}px) scale(1)` }], { duration: ms, easing: 'cubic-bezier(.5,0,.2,1)' });
     await a.finished.catch(() => {}); place(x, y); orb.classList.remove('moving'); orb.style.setProperty('--t', '0deg'); if (panel.classList.contains('open')) fit();
   }
@@ -81,74 +105,115 @@ export default defineContentScript({
   orb.onpointerdown = e => { drag = { sx: e.clientX, sy: e.clientY, ox: orb.offsetLeft, oy: orb.offsetTop, moved: false }; orb.setPointerCapture(e.pointerId); orb.style.cursor = 'grabbing'; };
   orb.onpointermove = e => { if (!drag) return; const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) { place(drag.ox + dx, drag.oy + dy); if (panel.classList.contains('open')) fit(); } };
   orb.onpointerup = () => { orb.style.cursor = 'grab'; if (!drag) return; if (drag.moved) { pos = { x: orb.offsetLeft / innerWidth, y: orb.offsetTop / innerHeight }; store.set('orbPos', pos); } else toggle(); drag = null; };
-  function toggle(on) { panel.classList.toggle('open', on); if (panel.classList.contains('open')) { fit(); $('#in').focus(); } }
+  function toggle(on = !panel.classList.contains('open')) { panel.classList.toggle('open', on); if (panel.classList.contains('open')) { fit(); $('#in').focus(); } }
   addEventListener('keydown', e => { if (e.altKey && e.key.toLowerCase() === 'j') { e.preventDefault(); toggle(); } });
   $('#x').onclick = () => toggle(false);
   const applySize = () => { const s = size === 's' ? 64 : size === 'm' ? 96 : size === 'l' ? 128 : (innerWidth < 700 ? 64 : innerWidth > 1800 ? 120 : 96); orb.style.width = orb.style.height = s + 'px'; };
   addEventListener('resize', () => { applySize(); home(); });
-  chrome.storage.onChanged.addListener(ch => { if (ch.size) { size = ch.size.newValue || 'auto'; applySize(); home(); } if (ch.companion) companionOn = !!ch.companion.newValue; if (ch.voiceName) { voiceName = ch.voiceName.newValue || ''; pv(); } if (ch.lang) lang = ch.lang.newValue || lang; if (ch.skills) skills = ch.skills.newValue || {}; if (ch.facts) facts = ch.facts.newValue || []; if (ch.aliases) aliases = ch.aliases.newValue || {}; if (ch.exp) exp = ch.exp.newValue || []; if (ch.lessons) lessons = ch.lessons.newValue || []; });
+  chrome.storage.onChanged.addListener(ch => {
+    if (ch.size) { size = (ch.size.newValue as string) || 'auto'; applySize(); home(); }
+    if (ch.brain) brain = ch.brain.newValue === 'smart' ? 'smart' : 'fast';
+    if (ch.companion) companionOn = !!ch.companion.newValue;
+    if (ch.voiceName) { voiceName = (ch.voiceName.newValue as string) || ''; pv(); }
+    if (ch.lang) lang = (ch.lang.newValue as string) || lang;
+    if (ch.skills) skills = (ch.skills.newValue as Record<string, string>) || {};
+    if (ch.facts) facts = (ch.facts.newValue as string[]) || [];
+    if (ch.aliases) aliases = (ch.aliases.newValue as Record<string, string>) || {};
+    if (ch.exp) exp = (ch.exp.newValue as any[]) || [];
+    if (ch.lessons) lessons = (ch.lessons.newValue as Array<{ goal: string; lesson: string }>) || [];
+  });
 
   /* ---- chat log ---- */
-  let voice = null, speakOn = true, lang = navigator.language || 'en-US', size = 'auto', companionOn = false, voiceName = '', skills = {}, facts = [], aliases = {}, exp = [], lessons = [], lastGoal = '', awaitingLesson = false;
+  let voice: SpeechSynthesisVoice | null = null, speakOn = true, lang = navigator.language || 'en-US', size = 'auto', companionOn = false, voiceName = '', brain: 'fast' | 'smart' = 'fast', skills: Record<string, string> = {}, facts: string[] = [], aliases: Record<string, string> = {}, exp: any[] = [], lessons: Array<{ goal: string; lesson: string }> = [], lastGoal = '', awaitingLesson = false;
   function pv() { const vs = speechSynthesis.getVoices(); voice = (voiceName && vs.find(v => v.name === voiceName)) || vs.find(v => /(Ryan|Guy|Prabhat|Christopher|Brian|Andrew|Eric|Davis).*Natural|Natural.*(Ryan|Guy|Prabhat|Christopher|Brian|Andrew|Eric)/i.test(v.name)) || vs.find(v => /Google UK English Male/i.test(v.name)) || vs.find(v => /David|Daniel|Mark|George|Ravi/i.test(v.name)) || vs.find(v => /^en/i.test(v.lang)) || null; }
   if (window.speechSynthesis) { pv(); speechSynthesis.onvoiceschanged = pv; }
-  function speak(t, long) { if (!speakOn) return; if (companionOn) { bg({ type: 'say', text: String(t).slice(0, 300) }); return; } if (!window.speechSynthesis) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(t).slice(0, long ? 1800 : 220)); if (voice) u.voice = voice; u.rate = long ? 1 : 1.04; u.pitch = 1; speechSynthesis.speak(u); } catch {} }
+  function speak(t: string, long = false) { if (!speakOn) return; if (companionOn) { bg({ type: 'say', text: String(t).slice(0, 300) }); return; } if (!window.speechSynthesis) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(t).slice(0, long ? 1800 : 220)); if (voice) u.voice = voice; u.rate = long ? 1 : 1.04; u.pitch = 1; speechSynthesis.speak(u); } catch {} }
   function say(cls, text) {
     if (cls === 'a') speak(text); const d = document.createElement('div'); d.className = 'm ' + cls; d.textContent = text; logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight; if (panel.classList.contains('open')) fit(); }
-  const approve = text => new Promise(res => { say('s', 'Needs your OK: ' + text); $('#ap').classList.add('on'); toggle(true); approveResolve = ok => { $('#ap').classList.remove('on'); approveResolve = null; res(ok); }; });
+  const approve = (text: string) => new Promise<boolean>(res => { say('s', 'Needs your OK: ' + text); $('#ap').classList.add('on'); toggle(true); approveResolve = ok => { $('#ap').classList.remove('on'); approveResolve = null; res(ok); }; });
   $('#yes').onclick = () => approveResolve && approveResolve(true);
   $('#no').onclick = () => approveResolve && approveResolve(false);
 
   /* ---- reading the page ---- */
+  function rememberTarget(el: HTMLElement) {
+    if (host.contains(el)) return;
+    const target = el as PageElement;
+    const label = (target.getAttribute('aria-label') || target.innerText || target.value || target.title || '').trim().replace(/\s+/g, ' ').slice(0, 100);
+    lastTarget = { el, label, href: target.href || (el instanceof HTMLAnchorElement ? el.href : '') };
+  }
+  document.addEventListener('pointermove', event => {
+    const source = event.target;
+    if (!(source instanceof Element)) return;
+    const el = source.closest<HTMLElement>('a[href],button,input,textarea,select,[role=button],[role=link],[onclick]');
+    if (el && !host.contains(el)) rememberTarget(el);
+  }, { capture: true, passive: true });
   function snap() {
     document.querySelectorAll('[data-jv]').forEach(x => x.removeAttribute('data-jv'));
-    const out = [];
-    document.querySelectorAll('a[href],button,input,textarea,select,[role=button],[role=link],[onclick]').forEach(e => {
+    const out: Array<{ id: number; tag: string; type?: string; label: string; href?: string; onScreen: boolean }> = [];
+    document.querySelectorAll<HTMLElement>('a[href],button,input,textarea,select,[role=button],[role=link],[onclick]').forEach(e => {
       if (out.length >= 160 || host.contains(e)) return;
       const r = e.getBoundingClientRect();
       if (r.width < 4 || r.height < 4 || getComputedStyle(e).visibility === 'hidden') return;
-      const id = out.length; e.setAttribute('data-jv', id);
-      out.push({ id, tag: e.tagName.toLowerCase(), type: e.type || undefined, label: (e.getAttribute('aria-label') || e.innerText || e.value || e.placeholder || e.name || e.title || '').trim().replace(/\s+/g, ' ').slice(0, 80), href: e.href ? String(e.href).slice(0, 90) : undefined, onScreen: r.top < innerHeight && r.bottom > 0 });
+      const node = e as PageElement;
+      const id = out.length; e.setAttribute('data-jv', String(id));
+      out.push({ id, tag: e.tagName.toLowerCase(), type: node.type || undefined, label: (e.getAttribute('aria-label') || e.innerText || node.value || node.placeholder || node.name || e.getAttribute('title') || '').trim().replace(/\s+/g, ' ').slice(0, 80), href: node.href ? String(node.href).slice(0, 90) : undefined, onScreen: r.top < innerHeight && r.bottom > 0 });
     });
     return out;
   }
   const parse = t => { try { return JSON.parse((String(t).match(/\{[\s\S]*\}/) || [''])[0]); } catch { return null; } };
   const SENSITIVE = /(buy|purchase|pay|place order|checkout|delete|remove|confirm|send|submit|book|transfer|subscribe|post|publish)/i;
   const SECRET = /(password|passwd|card|cc-|cvv|cvc|iban|ssn|otp|pin)/i;
-  function typeInto(el, text) {
+  const PERSONAL_FIELD = /(email|e-mail|phone|mobile|address|first.?name|last.?name|full.?name|personal.?data)/i;
+  function submissionNeedsApproval(el: HTMLElement) {
+    const form = (el as PageElement).form || el.closest('form');
+    if (!form) return false;
+    const submitters = [...form.querySelectorAll<HTMLElement>('button[type="submit"],input[type="submit"]')];
+    const submitText = submitters.map(button => button.innerText || (button as PageElement).value || button.getAttribute('aria-label') || '').join(' ');
+    const personalFields = [...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input,textarea,select')]
+      .some(field => PERSONAL_FIELD.test([field.type, field.name, field.id, field.getAttribute('autocomplete'), field.getAttribute('aria-label'), field.getAttribute('placeholder')].join(' ')));
+    return SENSITIVE.test(submitText) || personalFields;
+  }
+  async function mayClick(el: HTMLElement, label: string) {
+    if (!SENSITIVE.test(label) && !submissionNeedsApproval(el)) return true;
+    const ok = await approve(`continue with "${label || 'this action'}" on ${location.hostname}`);
+    if (!ok) say('s', 'Cancelled.');
+    return ok;
+  }
+  function typeInto(el: HTMLElement, text: string) {
     el.focus();
-    const set = Object.getOwnPropertyDescriptor(el.constructor.prototype, 'value'); set && set.set ? set.set.call(el, text) : (el.value = text);
+    const control = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+    const set = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(control), 'value'); set && set.set ? set.set.call(control, text) : (control.value = text);
     el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true }));
   }
-  const enter = el => { ['keydown', 'keypress', 'keyup'].forEach(t => el.dispatchEvent(new KeyboardEvent(t, { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }))); if (el.form) el.form.requestSubmit ? el.form.requestSubmit() : el.form.submit(); };
+  const enter = (el: HTMLElement) => { ['keydown', 'keypress', 'keyup'].forEach(t => el.dispatchEvent(new KeyboardEvent(t, { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }))); const form = (el as PageElement).form; if (form) form.requestSubmit ? form.requestSubmit() : form.submit(); };
 
   /* ---- agent loop (survives page navigation) ---- */
   const save = () => store.set('job' + tabId, job);
-  async function finish(msg) { if (msg) say('a', msg); if (job) { job.status = 'idle'; await save(); } orb.classList.remove('busy'); home && flyTo(px().x, px().y, 800); }
+  async function finish(msg = '') { if (msg) say('a', msg); if (job) { job.status = 'idle'; await save(); } orb.classList.remove('busy'); home && flyTo(px().x, px().y, 800); }
   async function act(a) {
-    const el = a.id != null ? document.querySelector(`[data-jv="${a.id}"]`) : null;
+    const el = a.id != null ? document.querySelector<HTMLElement>(`[data-jv="${a.id}"]`) : null;
     if (a.action === 'done' || a.action === 'ask') { job.awaiting = a.action === 'ask'; if (a.action === 'done') rememberExp(); await finish(); return 'stop'; }
     if (a.action === 'navigate') {
       if (!/^https?:\/\//i.test(a.url || '')) { job.history.push('bad url'); return 'go'; }
       job.history.push('navigate ' + a.url); await save(); await jump(a.url); return 'nav';
     }
-    if (a.action === 'scroll') { scrollBy({ top: (a.dir === 'up' ? -1 : 1) * innerHeight * .8, behavior: 'smooth' }); job.history.push('scroll ' + (a.dir || 'down')); await sleep(900); return 'go'; }
+    if (a.action === 'scroll') { scrollBy({ top: (a.dir === 'up' ? -1 : 1) * innerHeight * .8, behavior: brain === 'smart' ? 'smooth' : 'auto' }); job.history.push('scroll ' + (a.dir || 'down')); await sleep(brain === 'smart' ? 900 : 180); return 'go'; }
     if (a.action === 'wait') { await sleep(Math.min(5000, (+a.seconds || 2) * 1000)); job.history.push('waited'); return 'go'; }
     if (a.action === 'back') { job.history.push('went back'); await save(); history.back(); return 'nav'; }
     if (a.action === 'read') { const t = (el ? el.innerText : document.body.innerText).replace(/\s+/g, ' ').trim().slice(0, 1500); job.last = 'READ: ' + t; job.history.push('read ' + (a.id ?? 'page')); return 'go'; }
-    if (a.action === 'key') { const tgt = el || document.activeElement || document.body, k = String(a.key || 'Enter'); if (/^enter$/i.test(k)) enter(tgt); else for (const t of ['keydown', 'keypress', 'keyup']) tgt.dispatchEvent(new KeyboardEvent(t, { key: k, bubbles: true })); job.history.push('pressed ' + k); await sleep(500); return 'go'; }
+    if (a.action === 'key') { const tgt = (el || document.activeElement || document.body) as HTMLElement, k = String(a.key || 'Enter'); if (/^enter$/i.test(k)) { if (submissionNeedsApproval(tgt) && !(await approve(`submit this form on ${location.hostname}`))) { await finish('Cancelled.'); return 'stop'; } enter(tgt); } else for (const t of ['keydown', 'keypress', 'keyup']) tgt.dispatchEvent(new KeyboardEvent(t, { key: k, bubbles: true })); job.history.push('pressed ' + k); await sleep(brain === 'smart' ? 500 : 100); return 'go'; }
     if (!el) { job.history.push('element ' + a.id + ' not found'); return 'go'; }
-    const r = el.getBoundingClientRect(), label = (el.innerText || el.value || el.getAttribute('aria-label') || '').trim().slice(0, 40);
-    if (SECRET.test([el.type, el.name, el.id, el.autocomplete].join(' '))) { say('e', 'I never fill passwords or payment fields. Please do this step yourself, then tell me to continue.'); job.history.push('blocked: secret field'); await finish(); return 'stop'; }
-    el.scrollIntoView({ block: 'center', behavior: 'smooth' }); await sleep(260);
-    const r2 = el.getBoundingClientRect(); await flyTo(Math.max(8, r2.left - 20), Math.max(8, r2.top - 40), 450);
-    el.style.outline = '3px solid #ff5a1f'; setTimeout(() => (el.style.outline = ''), 1200);
-    if (a.action === 'type') { typeInto(el, String(a.text || '')); job.history.push(`typed "${String(a.text || '').slice(0, 30)}" into ${a.id}`); if (a.submit) { await sleep(300); enter(el); } }
+    const r = el.getBoundingClientRect(), node = el as PageElement, label = (el.innerText || node.value || el.getAttribute('aria-label') || '').trim().slice(0, 40);
+    if (SECRET.test([node.type, node.name, el.id, node.autocomplete].join(' '))) { say('e', 'I never fill passwords or payment fields. Please do this step yourself, then tell me to continue.'); job.history.push('blocked: secret field'); await finish(); return 'stop'; }
+    el.scrollIntoView({ block: 'center', behavior: brain === 'smart' ? 'smooth' : 'auto' });
+    if (brain === 'smart') { await sleep(260); const r2 = el.getBoundingClientRect(); await flyTo(Math.max(8, r2.left - 20), Math.max(8, r2.top - 40), 450); }
+    el.style.outline = '3px solid #ff5a1f'; window.setTimeout(() => (el.style.outline = ''), 1200);
+    if (a.action === 'type') { if (a.submit && submissionNeedsApproval(el) && !(await approve(`submit this form on ${location.hostname}`))) { await finish('Cancelled.'); return 'stop'; } typeInto(el, String(a.text || '')); job.history.push(`typed "${String(a.text || '').slice(0, 30)}" into ${a.id}`); if (a.submit) { await sleep(300); enter(el); } }
     else if (a.action === 'click') {
-      if (SENSITIVE.test(label) && !(await approve(`click "${label}" on ${location.hostname}`))) { job.history.push('user declined click ' + label); await finish('Cancelled.'); return 'stop'; }
+      if (!(await mayClick(el, label))) { job.history.push('user declined click ' + label); await finish(); return 'stop'; }
       el.click(); job.history.push('clicked "' + label + '"');
     } else if (a.action === 'select') {
-      if (el.tagName === 'SELECT') { const want = String(a.text || '').toLowerCase(), op = [...el.options].find(o => o.text.toLowerCase().includes(want) || o.value.toLowerCase() === want); if (op) { el.value = op.value; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); job.history.push('selected ' + op.text); } else job.history.push('option not found: ' + a.text); } else { el.click(); job.history.push('opened dropdown'); }
+      if (el instanceof HTMLSelectElement) { const want = String(a.text || '').toLowerCase(), op = [...el.options].find(o => o.text.toLowerCase().includes(want) || o.value.toLowerCase() === want); if (op) { el.value = op.value; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); job.history.push('selected ' + op.text); } else job.history.push('option not found: ' + a.text); } else { el.click(); job.history.push('opened dropdown'); }
     } else job.history.push('unknown action');
     await sleep(700); return 'go';
   }
@@ -156,7 +221,7 @@ export default defineContentScript({
   async function loop() {
     if (running) return; running = true; orb.classList.add('busy');
     try {
-      if (!job.plan && !job.noplan && job.goal.split(/\s+/).length > 5) {   // strategy first: understand the goal, outline steps, define success
+      if (brain === 'smart' && !job.plan && !job.noplan && job.goal.split(/\s+/).length > 5) {   // Smart mode plans first; Fast mode starts acting immediately.
         job.noplan = true;
         const pr = await bg({ type: 'ask', phase: 'plan', messages: [{ role: 'user', content: JSON.stringify({ goal: job.goal, playbook: playbookFor(), userFacts: facts.slice(0, 15), examples: recall(job.goal).examples, lessons: recall(job.goal).lessons, url: location.href, title: document.title, visible: snap().filter(e => e.onScreen).slice(0, 25).map(e => e.label).filter(Boolean) }) }] });
         const pl = pr && !pr.error && parse(pr.text);
@@ -166,8 +231,8 @@ export default defineContentScript({
         if (job.steps >= 35) { await finish('Step limit reached. Tell me to continue if needed.'); break; }
         const rc = recall(job.goal), payload = { goal: job.goal, playbook: playbookFor(), examples: rc.examples, lessons: rc.lessons, userFacts: facts.slice(0, 15), plan: job.plan, lastResult: job.last, hint: job.hint, url: location.href, title: document.title, text: document.body.innerText.replace(/\s+/g, ' ').slice(0, 1200), elements: (() => { const all = snap(); return [...all.filter(e => e.onScreen), ...all.filter(e => !e.onScreen)].slice(0, 60); })(), history: job.history.slice(-8) };
         const res = await bg({ type: 'ask', messages: [{ role: 'user', content: JSON.stringify(payload) }] });
-        if (!res || res.error) { say('e', (res && res.error) || 'No response from JARVIS server.'); await finish(); break; }
-        const a = parse(res.text); job.steps++;
+        if (!res || res.error) { if (job.status !== 'running') break; say('e', (res && res.error) || 'No response from JARVIS server.'); await finish(); break; }
+        const a = res.reply || parse(res.text); job.steps++;
         if (!a) { job.history.push('unreadable reply'); job.bad = (job.bad || 0) + 1; await save(); if (job.bad >= 2) { say('e', 'JARVIS could not get a usable reply. Open the toolbar popup, check the API address, and press Test. If it still fails, push the latest website files so Vercel redeploys.'); await finish(); break; } await sleep(600); continue; }
         job.hint = '';
         if (a.thought) say('s', '💭 ' + a.thought);
@@ -175,7 +240,7 @@ export default defineContentScript({
         const before = sigPage(), key = a.action + ':' + (a.id ?? a.url ?? a.text ?? '');
         job.keys = [...(job.keys || []), key].slice(-6);
         const out = await act(a);
-        if (out === 'go') { await sleep(250); job.last = a.action === 'scroll' ? 'scrolled' : (sigPage() !== before ? 'page changed after ' : 'NOTHING visibly changed after ') + a.action; }
+        if (out === 'go') { await sleep(brain === 'smart' ? 250 : 40); job.last = a.action === 'scroll' ? 'scrolled' : (sigPage() !== before ? 'page changed after ' : 'NOTHING visibly changed after ') + a.action; }
         if (job.keys.length >= 3 && new Set(job.keys.slice(-3)).size === 1) job.hint = 'You repeated the same action 3 times with no progress. Choose a different element, scroll, navigate directly, or ask the user.';
         await save();
         if (out === 'stop' || out === 'nav') break;
@@ -188,13 +253,15 @@ export default defineContentScript({
     else if (job && job.status === 'idle' && job.history.length && /^(continue|go on|resume)\b/i.test(text)) job.status = 'running';
     else job = { goal: text, steps: 0, history: [], status: 'running' };
     job.steps = 0; job.bad = 0;
+    say('s', brain === 'smart' ? 'Thinking through the steps…' : 'Working…');
     await save(); await loop();
   }
-  $('#go').onclick = () => { const i = $('#in'); const t = i.value; i.value = ''; handle(t); };
-  for (const ev of ['keydown', 'keypress', 'keyup']) addEventListener(ev, e => { if (e.composedPath().includes(host) && !(e.altKey && e.key.toLowerCase() === 'j')) e.stopImmediatePropagation(); }, true);
-  $('#in').onkeydown = e => { if (e.key === 'Enter') $('#go').click(); e.stopPropagation(); };
-  $('#in').onkeyup = e => e.stopPropagation();
-  $('#st').onclick = async () => { await store.set('q' + tabId, []); if (job) { job.status = 'idle'; await save(); } approveResolve && approveResolve(false); say('s', 'Stopped.'); orb.classList.remove('busy'); };
+  $('#go').onclick = () => { const i = $<HTMLInputElement>('#in'); const t = i.value; i.value = ''; handle(t); };
+  for (const ev of ['keydown', 'keypress', 'keyup']) addEventListener(ev, event => { const e = event as KeyboardEvent; if (e.composedPath().includes(host) && !(e.altKey && e.key.toLowerCase() === 'j')) e.stopImmediatePropagation(); }, true);
+  $<HTMLInputElement>('#in').onkeydown = e => { if (e.key === 'Enter') $('#go').click(); e.stopPropagation(); };
+  $<HTMLInputElement>('#in').onkeyup = e => e.stopPropagation();
+  $('#st').onclick = () => { void store.set('q' + tabId, []); if (job) { job.status = 'idle'; void save(); } void bg({ type: 'stop' }); try { speechSynthesis.cancel(); } catch {} approveResolve && approveResolve(false); say('s', 'Stopped.'); orb.classList.remove('busy'); };
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && job?.status === 'running') { event.preventDefault(); $('#st').click(); } }, true);
   chrome.runtime.onMessage.addListener(m => { if (m.type === 'activated') flyIn(); if (m.type === 'wake') activate(true); if (m.type === 'command') { toggle(true); handle(m.text); } });
 
 
@@ -207,23 +274,23 @@ export default defineContentScript({
     const iris = $('#iris'), ring = $('#ring'), wl = $('#wl'); wl.textContent = '▶ ' + label; iris.classList.add('on'); ring.style.display = 'block';
     wl.animate([{ top: '-60px' }, { top: '28px' }], { duration: 350, fill: 'forwards', easing: 'ease-out' });
     const t0 = performance.now(), D = 520;
-    await new Promise(res => { (function f(t) { const k = Math.min(1, (t - t0) / D), e = k * k * k, r = far * (1 - e) + 36 * e; iris.style.webkitMaskImage = iris.style.maskImage = `radial-gradient(circle at ${x}px ${y}px, transparent ${r}px, #000 ${r + 2}px)`; ring.style.cssText = `display:block;left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px`; k < 1 ? requestAnimationFrame(f) : res(); })(t0); });
+    await new Promise<void>(res => { (function f(t: number) { const k = Math.min(1, (t - t0) / D), e = k * k * k, r = far * (1 - e) + 36 * e; iris.style.webkitMaskImage = iris.style.maskImage = `radial-gradient(circle at ${x}px ${y}px, transparent ${r}px, #000 ${r + 2}px)`; ring.style.cssText = `display:block;left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px`; k < 1 ? requestAnimationFrame(f) : res(); })(t0); });
   }
   function shock(x, y) { if (matchMedia('(prefers-reduced-motion:reduce)').matches) return; for (let i = 0; i < 3; i++) { const s = document.createElement('div'); s.className = 'shock'; s.style.left = x + 'px'; s.style.top = y + 'px'; root.appendChild(s); s.animate([{ transform: 'scale(.3)', opacity: 1 }, { transform: 'scale(14)', opacity: 0 }], { duration: 900, delay: i * 140, easing: 'ease-out', fill: 'backwards' }).finished.then(() => s.remove()).catch(() => s.remove()); } }
   function banner(text) { const wl = $('#wl'); wl.textContent = text; wl.animate([{ top: '-60px', opacity: 1 }, { top: '24px', opacity: 1, offset: .2 }, { top: '24px', opacity: 1, offset: .8 }, { top: '-60px', opacity: 0 }], { duration: 2200, fill: 'forwards' }); }
-  async function jump(url) { await warpOut(host_(url)); await store.set('warp', { host: host_(url), t: Date.now() }); await bg({ type: 'nav', url }); }
+  async function jump(url) { if (brain === 'smart') await warpOut(host_(url)); await store.set('warp', { host: host_(url), t: Date.now() }); await bg({ type: 'nav', url }); }
 
   /* ---- direct commands: no AI needed, so "click X" just clicks ---- */
   const norm = (input: string) => normalizeSpokenText(input, aliases);
-  async function touch(el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); await sleep(240); const r = el.getBoundingClientRect(); await flyTo(Math.max(8, r.left - 20), Math.max(8, r.top - 40), 450); el.style.outline = '3px solid #ff5a1f'; setTimeout(() => (el.style.outline = ''), 1200); }
-  function pick(q, ok) {
+  async function touch(el: HTMLElement) { rememberTarget(el); el.scrollIntoView({ block: 'center', behavior: brain === 'smart' ? 'smooth' : 'auto' }); if (brain === 'smart') { await sleep(240); const r = el.getBoundingClientRect(); await flyTo(Math.max(8, r.left - 20), Math.max(8, r.top - 40), 450); } el.style.outline = '3px solid #ff5a1f'; window.setTimeout(() => (el.style.outline = ''), 1200); }
+  function pick(q: string, ok?: (element: { tag: string; type?: string; onScreen: boolean }) => boolean): HTMLElement | null {
     const w = q.toLowerCase().replace(/^(the|a|an)\s+/, '').replace(/\s+(button|link|tab|icon|field|box|option)$/, '').trim(); let best = null, bs = 0;
     for (const e of snap()) { if (ok && !ok(e)) continue; if (!e.label) continue; let sc = scoreLabel(e.label, w); if (sc < .6) continue; sc += (e.onScreen ? .05 : 0) - e.label.length / 20000; if (sc > bs) { bs = sc; best = e; } }
-    return best && document.querySelector(`[data-jv="${best.id}"]`);
+    return best ? document.querySelector<HTMLElement>(`[data-jv="${best.id}"]`) : null;
   }
   function nthEl(kind, n) {
     const vid = /video|song|short/.test(kind), seen = new Set(), list = [];
-    for (const a of document.querySelectorAll('a[href]')) {
+    for (const a of document.querySelectorAll<HTMLAnchorElement>('a[href]')) {
       if (host.contains(a) || a.closest('nav,header,footer,[role=navigation]')) continue;
       const r = a.getBoundingClientRect(); if (r.width < 4 || r.height < 4) continue;
       const lab = (a.getAttribute('title') || a.getAttribute('aria-label') || a.innerText || '').trim(); if (lab.length < 6) continue;
@@ -251,34 +318,48 @@ export default defineContentScript({
     if (c.t === 'good') { if (exp[0] && exp[0].goal === lastGoal) { exp[0].good = true; await put('exp', exp); } say('a', 'Glad that worked. I will repeat that approach.'); return true; }
     if (c.t === 'bad') { if (!lastGoal) { say('a', 'Tell me what went wrong and I will remember it.'); } else { say('a', 'Sorry about that. What should I have done instead?'); } awaitingLesson = true; return true; }
 
-    if (c.t === 'stop') { await store.set('q' + tabId, []); try { speechSynthesis.cancel(); } catch {} $('#st').click(); return true; }
+    if (c.t === 'stop') { $('#st').click(); return true; }
     if (job && job.status === 'running') { job.status = 'idle'; await save(); }
+    if (c.t === 'reference') {
+      const target = lastTarget;
+      const el = target?.el.isConnected ? target.el : target?.label ? pick(target.label) : null;
+      if (!el) { say('e', 'Point at the link or button, then say “click that” or tell me its label.'); return true; }
+      rememberTarget(el);
+      if (c.op === 'newtab') {
+        const href = (el as PageElement).href || (el instanceof HTMLAnchorElement ? el.href : '');
+        if (!/^https?:\/\//i.test(href)) { say('e', 'That target does not have a safe web link to open in a new tab.'); return true; }
+        const result = await bg<AgentReply>({ type: 'tabs', op: 'new', url: href });
+        say(result?.say ? 'a' : 'e', result?.say || 'I could not open that in a new tab.'); return true;
+      }
+      if (!(await mayClick(el, target?.label || 'that item'))) return true;
+      await touch(el); el.click(); say('a', (c.op === 'open' ? 'Opened ' : 'Clicked ') + (target?.label || 'that item') + '.'); return true;
+    }
     if (c.t === 'nav') { await go(c.url); return true; }
     if (c.t === 'tabs') { if (['next', 'prev', 'switch'].includes(c.op)) await flyTo(innerWidth + 40, -60, 450); const r = await bg({ type: 'tabs', op: c.op, q: c.q, url: c.url }); if (r && r.say) say('a', r.say); return true; }
     if (c.t === 'hist') { say('a', c.op === 'back' ? 'Going back.' : c.op === 'forward' ? 'Going forward.' : 'Reloading.'); await sleep(300); c.op === 'back' ? history.back() : c.op === 'forward' ? history.forward() : location.reload(); return true; }
     if (c.t === 'scroll') { c.d === 'top' ? scrollTo({ top: 0, behavior: 'smooth' }) : c.d === 'bottom' ? scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }) : scrollBy({ top: (c.d === 'up' ? -1 : 1) * innerHeight * .8, behavior: 'smooth' }); say('a', 'Scrolling ' + c.d + '.'); return true; }
-    if (c.t === 'enter') { const el = document.activeElement && document.activeElement !== document.body ? document.activeElement : null; if (!el) { say('e', 'Nothing is focused. Tell me where to type first.'); return true; } enter(el); say('a', 'Enter pressed.'); return true; }
+    if (c.t === 'enter') { const el = document.activeElement && document.activeElement !== document.body ? document.activeElement as HTMLElement : null; if (!el) { say('e', 'Nothing is focused. Tell me where to type first.'); return true; } if (submissionNeedsApproval(el) && !(await approve(`submit this form on ${location.hostname}`))) return true; enter(el); say('a', 'Enter pressed.'); return true; }
     if (c.t === 'media') {
-      const v = [...document.querySelectorAll('video,audio')].sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0];
-      if (c.op === 'next') { const nb = document.querySelector('.ytp-next-button'); if (nb) { nb.click(); say('a', 'Next video.'); } else say('e', 'No next button here.'); return true; }
+      const v = [...document.querySelectorAll<HTMLMediaElement>('video,audio')].sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0];
+      if (c.op === 'next') { const nb = document.querySelector<HTMLElement>('.ytp-next-button'); if (nb) { nb.click(); say('a', 'Next video.'); } else say('e', 'No next button here.'); return true; }
       if (!v) { say('e', 'I cannot find a video or audio player on this page.'); return true; }
-      const o = c.op;
+      const o = c.op, amount = c.n ?? 0;
       if (o === 'pause') { v.pause(); say('a', 'Paused.'); } else if (o === 'play') { v.play(); say('a', 'Playing.'); } else if (o === 'mute') { v.muted = true; say('a', 'Muted.'); } else if (o === 'unmute') { v.muted = false; say('a', 'Unmuted.'); }
-      else if (o === 'volup') { v.muted = false; v.volume = Math.min(1, v.volume + .2); say('a', 'Volume ' + Math.round(v.volume * 100) + '%.'); } else if (o === 'voldown') { v.volume = Math.max(0, v.volume - .2); say('a', 'Volume ' + Math.round(v.volume * 100) + '%.'); } else if (o === 'volset') { v.muted = false; v.volume = c.n / 100; say('a', 'Volume ' + c.n + '%.'); }
+      else if (o === 'volup') { v.muted = false; v.volume = Math.min(1, v.volume + .2); say('a', 'Volume ' + Math.round(v.volume * 100) + '%.'); } else if (o === 'voldown') { v.volume = Math.max(0, v.volume - .2); say('a', 'Volume ' + Math.round(v.volume * 100) + '%.'); } else if (o === 'volset') { v.muted = false; v.volume = amount / 100; say('a', 'Volume ' + amount + '%.'); }
       else if (o === 'fs') { if (document.fullscreenElement) document.exitFullscreen(); else (v.closest('#movie_player') || v).requestFullscreen().catch(() => {}); say('a', 'Fullscreen toggled.'); }
-      else if (o === 'skip') { v.currentTime = Math.max(0, v.currentTime + c.n); say('a', (c.n > 0 ? 'Skipped ' : 'Rewound ') + Math.abs(c.n) + ' seconds.'); } else if (o === 'faster') { v.playbackRate = Math.min(4, v.playbackRate + .25); say('a', 'Speed ' + v.playbackRate + 'x.'); } else if (o === 'slower') { v.playbackRate = Math.max(.25, v.playbackRate - .25); say('a', 'Speed ' + v.playbackRate + 'x.'); } else if (o === 'normal') { v.playbackRate = 1; say('a', 'Normal speed.'); }
+      else if (o === 'skip') { v.currentTime = Math.max(0, v.currentTime + amount); say('a', (amount > 0 ? 'Skipped ' : 'Rewound ') + Math.abs(amount) + ' seconds.'); } else if (o === 'faster') { v.playbackRate = Math.min(4, v.playbackRate + .25); say('a', 'Speed ' + v.playbackRate + 'x.'); } else if (o === 'slower') { v.playbackRate = Math.max(.25, v.playbackRate - .25); say('a', 'Speed ' + v.playbackRate + 'x.'); } else if (o === 'normal') { v.playbackRate = 1; say('a', 'Normal speed.'); }
       return true;
     }
     if (c.t === 'page') {
-      const de = document.documentElement, z = parseFloat(de.style.zoom || 1);
-      if (c.op === 'zin') { de.style.zoom = Math.min(3, z + .1); say('a', 'Zoomed in.'); } else if (c.op === 'zout') { de.style.zoom = Math.max(.3, z - .1); say('a', 'Zoomed out.'); } else if (c.op === 'zreset') { de.style.zoom = 1; say('a', 'Zoom reset.'); }
+      const de = document.documentElement, z = parseFloat(de.style.zoom || '1');
+      if (c.op === 'zin') { de.style.zoom = String(Math.min(3, z + .1)); say('a', 'Zoomed in.'); } else if (c.op === 'zout') { de.style.zoom = String(Math.max(.3, z - .1)); say('a', 'Zoomed out.'); } else if (c.op === 'zreset') { de.style.zoom = '1'; say('a', 'Zoom reset.'); }
       else if (c.op === 'dark') { const on = document.body.style.filter ? '' : 'invert(1) hue-rotate(180deg)'; document.body.style.filter = on; say('a', on ? 'Dark mode on.' : 'Dark mode off.'); }
-      else if (c.op === 'read') { const sel = String(getSelection()), el = document.querySelector('article,main') || document.body, txt = (sel || el.innerText).replace(/\s+/g, ' ').trim().slice(0, 1800); say('s', 'Reading…'); speak(txt, true); }
+      else if (c.op === 'read') { const sel = String(getSelection()), el = document.querySelector<HTMLElement>('article,main') || document.body, txt = (sel || el.innerText).replace(/\s+/g, ' ').trim().slice(0, 1800); say('s', 'Reading…'); speak(txt, true); }
       else if (c.op === 'copylink') { await navigator.clipboard.writeText(location.href).catch(() => {}); say('a', 'Link copied.'); } else if (c.op === 'copysel') { await navigator.clipboard.writeText(String(getSelection())).catch(() => {}); say('a', 'Copied.'); }
       else if (c.op === 'selall') { getSelection().selectAllChildren(document.body); say('a', 'Selected everything.'); } else if (c.op === 'print') { say('a', 'Printing.'); setTimeout(() => print(), 300); }
       return true;
     }
-    if (c.t === 'find') { const ok = window.find(c.q, false, false, true); say(ok ? 'a' : 'e', ok ? 'Found "' + c.q + '".' : 'I can’t find "' + c.q + '" on this page.'); return true; }
+    if (c.t === 'find') { const query = c.q.toLowerCase(); const match = [...document.querySelectorAll<HTMLElement>('body *')].find(el => el.children.length === 0 && (el.innerText || '').toLowerCase().includes(query)); match?.scrollIntoView({ block: 'center', behavior: 'auto' }); say(match ? 'a' : 'e', match ? 'Found "' + c.q + '".' : 'I can’t find "' + c.q + '" on this page.'); return true; }
     if (c.t === 'info') {
       const n = new Date();
       if (c.op === 'time') say('a', 'It is ' + n.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + '.'); else if (c.op === 'date') say('a', n.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '.');
@@ -287,17 +368,19 @@ export default defineContentScript({
     }
     if (c.t === 'math') { let r; try { r = Function('"use strict";return (' + c.e + ')')(); } catch { r = NaN; } say(isFinite(r) ? 'a' : 'e', isFinite(r) ? c.e.replace(/\s+/g, '') + ' = ' + +r.toFixed(6) : 'I could not work that out.'); return true; }
     if (c.t === 'agent') { await start(c.goal); return true; }
-    if (c.t === 'nth') { const el = nthEl(c.kind, c.n); if (!el) { say('e', `I can't find that ${c.kind} on this page.`); return true; } await touch(el); const lab = (el.getAttribute('title') || el.getAttribute('aria-label') || el.innerText || '').trim().slice(0, 50); el.click(); say('a', 'Opening ' + lab + '.'); return true; }
+    if (c.t === 'nth') { const el = nthEl(c.kind, c.n); if (!el) { say('e', `I can't find that ${c.kind} on this page.`); return true; } const lab = (el.getAttribute('title') || el.getAttribute('aria-label') || el.innerText || '').trim().slice(0, 50); if (!(await mayClick(el, lab))) return true; await touch(el); el.click(); say('a', 'Opening ' + lab + '.'); return true; }
     if (c.t === 'click') {
       const el = pick(c.q); if (!el) { const sw = c.q; say('e', `I can't see "${sw}" on this page. Say "scroll down" and try again, or describe it differently.`); return true; }
-      await touch(el); const label = (el.innerText || el.value || el.getAttribute('aria-label') || c.q).trim().slice(0, 40); el.click(); say('a', 'Clicked ' + label + '.'); return true;
+      const label = (el.innerText || (el as PageElement).value || el.getAttribute('aria-label') || c.q).trim().slice(0, 40); if (!(await mayClick(el, label))) return true; await touch(el); el.click(); say('a', 'Clicked ' + label + '.'); return true;
     }
     if (c.t === 'type') {
-      const field = e => /^(input|textarea)$/.test(e.tag) && !/^(hidden|checkbox|radio|submit|button|file)$/.test(e.type || '');
+      const field = (e: { tag: string; type?: string }) => /^(input|textarea)$/.test(e.tag) && !/^(hidden|checkbox|radio|submit|button|file)$/.test(e.type || '');
       let el = c.q ? pick(c.q, field) : null;
-      if (!el && !c.q) { const a = document.activeElement; el = a && /^(INPUT|TEXTAREA)$/.test(a.tagName) ? a : (() => { const f = snap().find(e => field(e) && e.onScreen); return f && document.querySelector(`[data-jv="${f.id}"]`); })(); }
+      if (!el && !c.q) { const a = document.activeElement; el = a && /^(INPUT|TEXTAREA)$/.test(a.tagName) ? a as HTMLElement : (() => { const f = snap().find(e => field(e) && e.onScreen); return f ? document.querySelector<HTMLElement>(`[data-jv="${f.id}"]`) : null; })(); }
       if (!el) { say('e', 'I could not find a text box to type in.'); return true; }
-      if (SECRET.test([el.type, el.name, el.id, el.autocomplete].join(' '))) { say('e', 'I never fill passwords or payment fields. Please type that yourself.'); return true; }
+      const node = el as PageElement;
+      if (SECRET.test([node.type, node.name, el.id, node.autocomplete].join(' '))) { say('e', 'I never fill passwords or payment fields. Please type that yourself.'); return true; }
+      if (c.submit && submissionNeedsApproval(el) && !(await approve(`submit this form on ${location.hostname}`))) return true;
       await touch(el); typeInto(el, c.text); if (c.submit) { await sleep(300); enter(el); } say('a', 'Typed it' + (c.submit ? ' and pressed enter.' : '.')); return true;
     }
     return false;
@@ -308,7 +391,7 @@ export default defineContentScript({
     if (draining || tabId == null) return; draining = true;
     try {
       for (;;) {
-        const q = (await store.get('q' + tabId)) || []; if (!q.length) break;
+        const q = (await store.get<string[]>('q' + tabId)) || []; if (!q.length) break;
         await store.set('q' + tabId, q.slice(1));   // remove first, so a page change never repeats a command
         say('u', q[0]);
         if (!(await local(q[0]))) await start(q[0]);
@@ -318,10 +401,10 @@ export default defineContentScript({
   }
   async function handle(text) { text = norm((text || '').trim()); if (!text) return;
     if (awaitingLesson) { awaitingLesson = false; if (!/^(cancel|never mind|stop)$/i.test(text)) { lessons.unshift({ goal: lastGoal || 'general', lesson: text.slice(0, 240) }); lessons = lessons.slice(0, 40); await put('lessons', lessons); say('u', text); say('a', 'Understood. I will do it that way next time.'); } return; }
-    text = expandSkill(text); const q = (await store.get('q' + tabId)) || []; await store.set('q' + tabId, [...q, ...splitCmds(text)]); drain(); }
+    text = expandSkill(text); const q = (await store.get<string[]>('q' + tabId)) || []; await store.set('q' + tabId, [...q, ...splitCmds(text)]); drain(); }
 
   /* ---- voice: hands-free listening that follows you across tabs ---- */
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; let rec = null, listening = false, settle = 0, consumed = { i: -1, text: '' };
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; let rec: SpeechRecognitionLike = null, listening = false, settle = 0, consumed = { i: -1, text: '' };
   function mk() {
     if (!listening || document.visibilityState !== 'visible') return;
     rec = new SR(); rec.lang = lang; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 3;
@@ -332,13 +415,13 @@ export default defineContentScript({
       const alts = [...r].map(x => x.transcript.trim()), t = alts.reduce((best, x) => (score(x) > score(best) ? x : best), alts[0]);
       if (consumed.i !== idx) consumed = { i: idx, text: '' };
       const fresh = (t.startsWith(consumed.text) ? t.slice(consumed.text.length) : t).trim();
-      clearTimeout(settle);
+      window.clearTimeout(settle);
       if (r.isFinal) { $('#hear').textContent = ''; if (fresh) { ack(); handle(fresh); } consumed = { i: -1, text: '' }; return; }
       $('#hear').textContent = fresh ? '🎤 ' + fresh : '';
-      if (fresh) settle = setTimeout(() => { consumed = { i: idx, text: t }; $('#hear').textContent = ''; ack(); handle(fresh); }, splitCmds(norm(fresh)).every(p => parseCmd(p)) ? 420 : 900);
+      if (fresh) settle = window.setTimeout(() => { consumed = { i: idx, text: t }; $('#hear').textContent = ''; ack(); handle(fresh); }, splitCmds(norm(fresh)).every(p => parseCmd(p)) ? 420 : 650);
     };
     rec.onerror = e => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { listening = false; $('#mic').classList.remove('on'); store.set('listen', false); say('e', 'Microphone is blocked on this site. Click the lock icon in the address bar, allow Microphone, then press 🎤 again.'); } };
-    rec.onend = () => { if (listening && document.visibilityState === 'visible') setTimeout(mk, 300); };
+    rec.onend = () => { if (listening && document.visibilityState === 'visible') window.setTimeout(mk, 300); };
     try { rec.start(); } catch {}
   }
   function listen(on) { orb.classList.toggle('listen', on); if (on && !SR) return say('e', 'Voice input is not supported in this browser.'); listening = on; $('#mic').classList.toggle('on', on); store.set('listen', on); if (on) mk(); else { try { rec && rec.abort(); } catch {} } }
@@ -349,16 +432,16 @@ export default defineContentScript({
 
   /* ---- Tony Stark style activation ---- */
   async function activate(long = true) {
-    const b = $('#boot'), bt = $('#bt'); b.style.opacity = 1; b.classList.add('on'); orb.style.visibility = 'hidden';
+    const b = $('#boot'), bt = $('#bt'); b.style.opacity = '1'; b.classList.add('on'); orb.style.visibility = 'hidden';
     const lines = long ? ['INITIALIZING J.A.R.V.I.S.', 'LOADING NEURAL CORE', 'ALL SYSTEMS ONLINE', 'GOOD DAY, SIR.'] : ['J.A.R.V.I.S. ONLINE'];
     for (const l of lines) { bt.textContent = ''; for (const ch of l) { bt.textContent += ch; await sleep(28); } await sleep(long ? 420 : 500); }
     if (speakOn && window.speechSynthesis) { try { speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('Good day, sir. JARVIS online.')); } catch {} }
-    b.style.opacity = 0; await sleep(700); b.classList.remove('on'); orb.style.visibility = ''; await flyIn();
+    b.style.opacity = '0'; await sleep(700); b.classList.remove('on'); orb.style.visibility = ''; await flyIn();
   }
 
 
   /* ---- learning: shortcuts, facts, voice fixes, experience, site playbooks ---- */
-  const PLAYBOOKS = [
+  const PLAYBOOKS: Array<[RegExp, string]> = [
     [/youtube\./, 'Search by navigating to https://www.youtube.com/results?search_query=QUERY. Video titles are links: click the title to play. Skip ads with the button labelled Skip. Fullscreen: key f. Use action read for descriptions or comments.'],
     [/(^|\.)google\.[a-z.]+$/, 'Search by navigating to https://www.google.com/search?q=QUERY. Result titles are links. Use the Images, News, Maps tabs by clicking their labels.'],
     [/mail\.google/, 'Compose button is labelled Compose. Recipient field label To, then Subject, then the message body. The Send button sends for real: ALWAYS ask before sending.'],
@@ -373,7 +456,7 @@ export default defineContentScript({
     [/flipkart\.|myntra\.|ajio\./, 'Search box at top, results are product links. Add to cart is safe; Buy now / Place order spends money: ask first.'],
     [/./, 'Forms: fill one field at a time, then ask before submitting anything. If a cookie or popup banner blocks the page, click Accept/Close first.'],
   ];
-  const playbookFor = () => (PLAYBOOKS.find(([re]) => re.test(location.hostname)) || [0, ''])[1];
+  const playbookFor = () => PLAYBOOKS.find(([re]) => re.test(location.hostname))?.[1] || '';
   const keyOf = t => toks(t).join(' ');
   function expandSkill(text) {
     const k = keyOf(text), Q = toks(text); if (!Q.length) return text;
@@ -396,16 +479,16 @@ export default defineContentScript({
 
   /* ---- boot ---- */
   (async () => {
-    skills = (await store.get('skills')) || {}; facts = (await store.get('facts')) || []; aliases = (await store.get('aliases')) || {}; exp = (await store.get('exp')) || []; lessons = (await store.get('lessons')) || [];
-    size = (await store.get('size')) || 'auto'; companionOn = !!(await store.get('companion')); voiceName = (await store.get('voiceName')) || ''; applySize(); pv();
-    pos = (await store.get('orbPos')) || pos; home();
-    lang = (await store.get('lang')) || lang;
-    const w = await store.get('warp');
-    if (!(await store.get('booted')) && window === top) { await store.set('booted', true); activate(true); } else { await flyIn(); if (w && Date.now() - w.t < 12000) { await store.set('warp', null); banner('ARRIVED · ' + w.host); } }
-    if (SR && !companionOn && (await store.get('listen')) && document.visibilityState === 'visible') { listening = true; $('#mic').classList.add('on'); mk(); }
-    tabId = await bg({ type: 'tabId' }); job = tabId != null ? await store.get('job' + tabId) : null;
+    skills = (await store.get<Record<string, string>>('skills')) || {}; facts = (await store.get<string[]>('facts')) || []; aliases = (await store.get<Record<string, string>>('aliases')) || {}; exp = (await store.get<any[]>('exp')) || []; lessons = (await store.get<Array<{ goal: string; lesson: string }>>('lessons')) || [];
+    size = (await store.get<string>('size')) || 'auto'; brain = (await store.get<string>('brain')) === 'smart' ? 'smart' : 'fast'; companionOn = !!(await store.get<boolean>('companion')); voiceName = (await store.get<string>('voiceName')) || ''; applySize(); pv();
+    pos = (await store.get<typeof pos>('orbPos')) || pos; home();
+    lang = (await store.get<string>('lang')) || lang;
+    const w = await store.get<{ host: string; t: number }>('warp');
+    if (!(await store.get<boolean>('booted')) && window === top) { await store.set('booted', true); activate(true); } else { await flyIn(); if (w && Date.now() - w.t < 12000) { await store.set('warp', null); banner('ARRIVED · ' + w.host); } }
+    if (SR && !companionOn && (await store.get<boolean>('listen')) && document.visibilityState === 'visible') { listening = true; $('#mic').classList.add('on'); mk(); }
+    tabId = await bg<number>({ type: 'tabId' }); job = tabId != null ? await store.get<any>('job' + tabId) : null;
     if (job && job.status === 'running') { toggle(true); say('s', 'Continuing: ' + job.goal); await sleep(1200); loop(); }
-    else if (((await store.get('q' + tabId)) || []).length) { toggle(true); await sleep(1500); drain(); }
+    else if (((await store.get<string[]>('q' + tabId)) || []).length) { toggle(true); await sleep(brain === 'smart' ? 1500 : 250); drain(); }
     else say('s', 'JARVIS online. Try: "open youtube and search for lo-fi", "click Sign in", "scroll down", "next tab". Press 🎤 to talk.');
   })();
 })();

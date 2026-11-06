@@ -10,6 +10,5 @@
     "src/**/*.ts",
     "wxt.config.ts",
     "../../packages/grammar/src/**/*.ts"
-  ],
-  "exclude": ["src/entrypoints/content.content.ts"]
+  ]
 }

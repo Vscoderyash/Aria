@@ -1,7 +1,20 @@
-export interface ParsedCommand {
-  t: string;
-  [key: string]: string | number | boolean | undefined;
-}
+export type ParsedCommand =
+  | { t: 'wake' | 'listskills' | 'good' | 'bad' | 'stop' | 'enter' }
+  | { t: 'teach'; phrase: string; action: string }
+  | { t: 'alias'; from: string; to: string }
+  | { t: 'forget' | 'find' | 'click'; q: string }
+  | { t: 'fact'; text: string }
+  | { t: 'tabs'; op: string; q?: string; url?: string }
+  | { t: 'nav'; url: string }
+  | { t: 'hist'; op: string }
+  | { t: 'scroll'; d: string }
+  | { t: 'media'; op: string; n?: number }
+  | { t: 'page' | 'info'; op: string }
+  | { t: 'math'; e: string }
+  | { t: 'agent'; goal: string }
+  | { t: 'nth'; n: number; kind: string }
+  | { t: 'type'; text: string; q?: string; submit: boolean }
+  | { t: 'reference'; op: 'click' | 'open' | 'newtab' };
 
 const SITES: Record<string, string> = {
   youtube: 'youtube.com', google: 'google.com', gmail: 'mail.google.com', github: 'github.com',
@@ -47,6 +60,9 @@ export function parseCmd(text: string): ParsedCommand | null {
   if (/^(?:good job|well done|great job|that(?:'?s| is| was)? (?:right|correct|perfect|good)|nice work|perfect)$/i.test(s)) return { t: 'good' };
   if (/^(?:that(?:'?s| is| was)? (?:wrong|not right|incorrect|bad)|wrong|bad job|no,? (?:not that|that'?s wrong)|you (?:got it|did it) wrong)$/i.test(s)) return { t: 'bad' };
   if (/^(stop|cancel|abort|never mind)$/i.test(s)) return { t: 'stop' };
+  if ((m = s.match(/^(click|tap|open|follow|go(?:\s+to)?)(?:\s+on)?\s+(?:that|this|there|it|the one|the link)(?:\s+(?:link|button|one))?(\s+in\s+(?:a\s+)?new\s+tab)?$/i))) {
+    return { t: 'reference', op: m[2] ? 'newtab' : /^(?:click|tap)$/i.test(m[1]) ? 'click' : 'open' };
+  }
   if ((m = s.match(/^(?:open|go to|visit)\s+(.+?)\s+in\s+(?:a\s+)?new\s+tab$/i))) return { t: 'tabs', op: 'new', url: toUrl(m[1]) };
   if ((m = s.match(/^(youtube|google|amazon|github|wikipedia)\s+(?:search|find)\s+(?:for\s+)?(.+)$/i))) return { t: 'nav', url: SEARCH[m[1].toLowerCase()] + encodeURIComponent(m[2]) };
   if ((m = s.match(/^(?:switch to\s+)?tab\s+(?:number\s+)?(\d+)$/i))) return { t: 'tabs', op: 'switch', q: m[1] };

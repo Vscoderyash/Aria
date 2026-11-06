@@ -1,6 +1,6 @@
 import Ajv2020 from 'ajv/dist/2020';
 import { describe, expect, it } from 'vitest';
-import { actionSchema, bridgeMessageSchema, pageModelSchema } from '../src/index';
+import { actionSchema, bridgeMessageSchema, browserAgentReplySchema, pageModelSchema } from '../src/index';
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
 
@@ -29,5 +29,14 @@ describe('shared JSON contracts', () => {
     expect(validate({ type: 'hello', v: 1, device: 'desktop', caps: ['voice'] })).toBe(true);
     expect(validate({ type: 'command', id: 'job-1', text: 'open youtube', target: 'browser' })).toBe(true);
     expect(validate({ type: 'execute', command: 'open youtube' })).toBe(false);
+  });
+
+  it('validates grounded browser actions and rejects malformed URLs or unknown actions', () => {
+    const validate = ajv.compile(browserAgentReplySchema);
+    const valid = validate({ action: 'click', id: 3, say: 'Opening the result.' });
+    expect(valid, JSON.stringify(validate.errors)).toBe(true);
+    expect(validate({ action: 'navigate', url: 'javascript:alert(1)' })).toBe(false);
+    expect(validate({ action: 'deleteAccount', id: 3 })).toBe(false);
+    expect(validate({ action: 'type', id: 2, submit: 'yes' })).toBe(false);
   });
 });
