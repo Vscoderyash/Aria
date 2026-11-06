@@ -1,0 +1,15 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": false,
+    "types": ["chrome"]
+  },
+  "include": [
+    ".wxt/**/*.ts",
+    "src/**/*.ts",
+    "wxt.config.ts",
+    "../../packages/grammar/src/**/*.ts"
+  ],
+  "exclude": ["src/entrypoints/content.content.ts"]
+}

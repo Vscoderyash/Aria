@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jarvis:schemas:action:v1",
+  "title": "JARVIS Action v1",
+  "type": "object",
+  "required": ["id", "type", "args", "risk"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "type": { "enum": ["click", "hover", "focus", "type", "press", "select", "check", "uncheck", "drag", "scroll", "upload", "download", "navigate", "back", "forward", "reload", "openTab", "switchTab", "closeTab", "duplicate", "waitFor", "handleDialog", "dismissOverlay", "readText", "screenshot", "extract", "copy", "paste", "fillForm", "setValue", "ask", "done", "abort"] },
+    "target": { "type": "string", "minLength": 1 },
+    "args": { "type": "object" },
+    "expect": { "type": "object" },
+    "risk": { "enum": ["low", "medium", "high"] }
+  },
+  "additionalProperties": false
+}

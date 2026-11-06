@@ -1,0 +1,123 @@
+/// <reference types="chrome" />
+
+const byId = <T extends HTMLElement>(id: string): T => {
+  const element = document.getElementById(id);
+  if (!element) throw new Error(`Missing popup element #${id}`);
+  return element as T;
+};
+
+const apiInput = byId<HTMLInputElement>('u');
+const message = byId<HTMLElement>('m');
+const language = byId<HTMLSelectElement>('l');
+const voice = byId<HTMLSelectElement>('v');
+const size = byId<HTMLSelectElement>('z');
+const brain = byId<HTMLSelectElement>('br');
+const trainingFile = byId<HTMLInputElement>('fi');
+const trainingKeys = ['skills', 'facts', 'aliases', 'exp', 'lessons'];
+const getStored = async (keys: string | string[]): Promise<Record<string, unknown>> =>
+  await chrome.storage.local.get(keys) as Record<string, unknown>;
+const countKeys = (value: unknown): number => value !== null && typeof value === 'object' ? Object.keys(value).length : 0;
+const countItems = (value: unknown): number => Array.isArray(value) ? value.length : 0;
+
+void getStored('apiUrl').then((value) => { apiInput.value = typeof value.apiUrl === 'string' ? value.apiUrl : ''; });
+byId<HTMLButtonElement>('s').onclick = () => chrome.storage.local.set({ apiUrl: apiInput.value.trim() }).then(() => { message.textContent = 'Saved.'; });
+
+byId<HTMLButtonElement>('t').onclick = async () => {
+  message.textContent = 'Testing...';
+  const url = apiInput.value.trim() || 'https://jarvisv02.vercel.app/api/chat';
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'agent', messages: [{ role: 'user', content: JSON.stringify({ goal: 'say hello', url: 'about:blank', elements: [], history: [] }) }] }),
+    });
+    const text = await response.text();
+    message.textContent = /\{[\s\S]*"action"/.test(text)
+      ? 'Agent mode works.'
+      : response.ok ? 'Server answered but is NOT in agent mode. Deploy the latest api/chat.js.' : `Error ${response.status}: ${text.slice(0, 120)}`;
+  } catch (error) {
+    message.textContent = `Cannot reach server: ${error instanceof Error ? error.message : String(error)}`;
+  }
+};
+
+byId<HTMLButtonElement>('w').onclick = async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab || tab.id === undefined || !/^https?:/.test(tab.url || '')) {
+    message.textContent = 'Open a normal website tab first (Chrome blocks chrome:// pages and the Web Store).';
+    return;
+  }
+  const wake = () => chrome.tabs.sendMessage(tab.id!, { type: 'wake' });
+  try {
+    await wake();
+    window.close();
+  } catch {
+    try {
+      await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content-scripts/content.js'] });
+      setTimeout(() => wake().then(() => window.close()).catch(() => { message.textContent = 'Could not reach this page. Refresh it once and try again.'; }), 700);
+    } catch (error) {
+      message.textContent = `Blocked on this page: ${error instanceof Error ? error.message : String(error)}`;
+    }
+  }
+};
+
+void getStored('lang').then((value) => { language.value = typeof value.lang === 'string' ? value.lang : ''; });
+language.onchange = () => chrome.storage.local.set({ lang: language.value }).then(() => { message.textContent = 'Voice language saved. Refresh your tabs.'; });
+
+function fillVoices(): void {
+  voice.textContent = '';
+  const automatic = document.createElement('option');
+  automatic.value = '';
+  automatic.textContent = 'Auto (best male voice)';
+  voice.appendChild(automatic);
+  for (const item of speechSynthesis.getVoices().filter((candidate) => /^en/i.test(candidate.lang))) {
+    const option = document.createElement('option');
+    option.value = item.name;
+    option.textContent = item.name;
+    voice.appendChild(option);
+  }
+  void getStored('voiceName').then((value) => { voice.value = typeof value.voiceName === 'string' ? value.voiceName : ''; });
+}
+
+speechSynthesis.onvoiceschanged = fillVoices;
+fillVoices();
+voice.onchange = () => chrome.storage.local.set({ voiceName: voice.value });
+void getStored('size').then((value) => { size.value = typeof value.size === 'string' ? value.size : 'auto'; });
+size.onchange = () => chrome.storage.local.set({ size: size.value });
+void getStored('companion').then((value) => { byId<HTMLElement>('c').textContent = value.companion ? 'Desktop JARVIS: connected ✓' : 'Desktop JARVIS: not running'; });
+
+async function trainInfo(): Promise<void> {
+  const data = await getStored(trainingKeys);
+  byId<HTMLElement>('tr').textContent = `Learned: ${countKeys(data.skills)} shortcuts, ${countItems(data.facts)} facts, ${countKeys(data.aliases)} voice fixes, ${countItems(data.exp)} experiences, ${countItems(data.lessons)} lessons`;
+}
+void trainInfo();
+chrome.storage.onChanged.addListener(() => { void trainInfo(); });
+void getStored('brain').then((value) => { brain.value = typeof value.brain === 'string' ? value.brain : 'fast'; });
+brain.onchange = () => chrome.storage.local.set({ brain: brain.value });
+
+byId<HTMLButtonElement>('ex').onclick = async () => {
+  const data = await getStored(trainingKeys);
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+  link.download = 'jarvis-training.json';
+  link.click();
+};
+byId<HTMLButtonElement>('im').onclick = () => trainingFile.click();
+trainingFile.onchange = async () => {
+  try {
+    const file = trainingFile.files?.[0];
+    if (!file) return;
+    const imported = JSON.parse(await file.text()) as Record<string, unknown>;
+    const values: Record<string, unknown> = {};
+    for (const key of trainingKeys) if (imported[key]) values[key] = imported[key];
+    await chrome.storage.local.set(values);
+    message.textContent = 'Training imported.';
+  } catch {
+    message.textContent = 'That file is not a JARVIS training file.';
+  }
+};
+byId<HTMLButtonElement>('rs').onclick = async () => {
+  if (confirm('Erase everything JARVIS has learned?')) {
+    await chrome.storage.local.remove(trainingKeys);
+    message.textContent = 'Training erased.';
+  }
+};

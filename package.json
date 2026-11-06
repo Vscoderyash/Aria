@@ -1,6 +1,26 @@
 {
-  "name": "jarvis",
+  "name": "jarvis-workspace",
   "version": "2.0.0",
   "private": true,
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "apps/extension",
+    "packages/grammar",
+    "packages/schema"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "npm run typecheck --workspace @jarvis/grammar && npm run typecheck --workspace @jarvis/schema && npm run typecheck --workspace @jarvis/extension",
+    "build:extension": "npm run build --workspace @jarvis/extension",
+    "package:extension": "npm run zip --workspace @jarvis/extension && node scripts/package-extension.mjs",
+    "check": "npm run typecheck && npm test && npm run build:extension"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.3.7",
+    "ajv": "8.20.0",
+    "typescript": "5.9.3",
+    "vitest": "5.1.0"
+  }
 }

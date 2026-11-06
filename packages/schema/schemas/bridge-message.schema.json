@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jarvis:schemas:bridge-message:v1",
+  "title": "JARVIS Bridge Message v1",
+  "oneOf": [
+    { "$ref": "#/$defs/hello" },
+    { "$ref": "#/$defs/ping" },
+    { "$ref": "#/$defs/pong" },
+    { "$ref": "#/$defs/command" },
+    { "$ref": "#/$defs/say" },
+    { "$ref": "#/$defs/status" },
+    { "$ref": "#/$defs/result" },
+    { "$ref": "#/$defs/examine" },
+    { "$ref": "#/$defs/pageModel" },
+    { "$ref": "#/$defs/confirm" },
+    { "$ref": "#/$defs/confirmed" },
+    { "$ref": "#/$defs/stop" }
+  ],
+  "$defs": {
+    "hello": { "type": "object", "required": ["type", "v", "device", "caps"], "properties": { "type": { "const": "hello" }, "v": { "const": 1 }, "device": { "type": "string", "minLength": 1 }, "caps": { "type": "array", "items": { "type": "string" } } }, "additionalProperties": false },
+    "ping": { "type": "object", "required": ["type"], "properties": { "type": { "const": "ping" }, "id": { "type": "string" } }, "additionalProperties": false },
+    "pong": { "type": "object", "required": ["type"], "properties": { "type": { "const": "pong" }, "id": { "type": "string" } }, "additionalProperties": false },
+    "command": { "type": "object", "required": ["type", "id", "text"], "properties": { "type": { "const": "command" }, "id": { "type": "string", "minLength": 1 }, "text": { "type": "string", "minLength": 1 }, "target": { "type": "string" } }, "additionalProperties": false },
+    "say": { "type": "object", "required": ["type", "text"], "properties": { "type": { "const": "say" }, "text": { "type": "string" }, "priority": { "type": "integer", "minimum": 0 } }, "additionalProperties": false },
+    "status": { "type": "object", "required": ["type", "state"], "properties": { "type": { "const": "status" }, "state": { "type": "string" } }, "additionalProperties": false },
+    "result": { "type": "object", "required": ["type", "id", "ok", "text"], "properties": { "type": { "const": "result" }, "id": { "type": "string" }, "ok": { "type": "boolean" }, "text": { "type": "string" } }, "additionalProperties": false },
+    "examine": { "type": "object", "required": ["type", "id"], "properties": { "type": { "const": "examine" }, "id": { "type": "string" } }, "additionalProperties": false },
+    "pageModel": { "type": "object", "required": ["type", "id", "model"], "properties": { "type": { "const": "pageModel" }, "id": { "type": "string" }, "model": { "type": "object" } }, "additionalProperties": false },
+    "confirm": { "type": "object", "required": ["type", "id", "prompt"], "properties": { "type": { "const": "confirm" }, "id": { "type": "string" }, "prompt": { "type": "string" } }, "additionalProperties": false },
+    "confirmed": { "type": "object", "required": ["type", "id", "yes"], "properties": { "type": { "const": "confirmed" }, "id": { "type": "string" }, "yes": { "type": "boolean" } }, "additionalProperties": false },
+    "stop": { "type": "object", "required": ["type"], "properties": { "type": { "const": "stop" }, "id": { "type": "string" } }, "additionalProperties": false }
+  }
+}

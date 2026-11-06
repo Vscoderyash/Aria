@@ -1,0 +1,18 @@
+{
+  "api_url": "https://jarvisv02.vercel.app/api/chat",
+  "address": "sir",
+  "voice": "en-GB-RyanNeural",
+  "speak": true,
+  "stt": "auto",
+  "whisper_model": "small.en",
+  "vosk_model": "vosk-model-en-us-0.22-lgraph",
+  "language": "en",
+  "wake_word": "jarvis",
+  "wake_required": true,
+  "active_seconds": 12,
+  "mic_device": null,
+  "bridge_port": 8765,
+  "ui_scale": 1.0,
+  "max_steps": 12,
+  "brain": "fast"
+}

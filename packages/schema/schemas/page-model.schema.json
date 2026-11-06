@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jarvis:schemas:page-model:v1",
+  "title": "JARVIS PageModel v1",
+  "type": "object",
+  "required": ["version", "url", "title", "lang", "pageType", "capturedAt", "viewport", "outline", "mainText", "mainTextTruncated", "elements", "forms", "tables", "media", "overlays", "redactions"],
+  "properties": {
+    "version": { "const": 1 },
+    "url": { "type": "string", "format": "uri-reference" },
+    "title": { "type": "string" },
+    "lang": { "type": "string" },
+    "pageType": { "enum": ["article", "search", "product", "checkout", "login", "form", "video", "table", "app", "other"] },
+    "capturedAt": { "type": "string", "format": "date-time" },
+    "viewport": {
+      "type": "object",
+      "required": ["w", "h", "scrollY", "scrollMax"],
+      "properties": {
+        "w": { "type": "number", "minimum": 0 },
+        "h": { "type": "number", "minimum": 0 },
+        "scrollY": { "type": "number", "minimum": 0 },
+        "scrollMax": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "outline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["level", "text", "ref"],
+        "properties": {
+          "level": { "type": "integer", "minimum": 1, "maximum": 6 },
+          "text": { "type": "string" },
+          "ref": { "type": "string", "pattern": "^e[1-9][0-9]*$" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "mainText": { "type": "string" },
+    "mainTextTruncated": { "type": "boolean" },
+    "elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref", "role", "name", "tag", "type", "href", "state", "rect", "onScreen", "frame", "selectorHints"],
+        "properties": {
+          "ref": { "type": "string", "pattern": "^e[1-9][0-9]*$" },
+          "role": { "type": "string" },
+          "name": { "type": "string" },
+          "tag": { "type": "string" },
+          "type": { "type": "string" },
+          "href": { "type": "string" },
+          "state": {
+            "type": "object",
+            "properties": {
+              "disabled": { "type": "boolean" },
+              "checked": { "type": "boolean" },
+              "expanded": { "type": "boolean" },
+              "required": { "type": "boolean" },
+              "invalid": { "type": "boolean" },
+              "selected": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          },
+          "rect": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }, { "type": "number" }, { "type": "number" }], "minItems": 4, "maxItems": 4 },
+          "onScreen": { "type": "boolean" },
+          "frame": { "type": "string" },
+          "selectorHints": {
+            "type": "object",
+            "required": ["css", "xpath", "text"],
+            "properties": { "css": { "type": "string" }, "xpath": { "type": "string" }, "text": { "type": "string" } },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "forms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref", "action", "method", "fields"],
+        "properties": {
+          "ref": { "type": "string", "pattern": "^f[1-9][0-9]*$" },
+          "action": { "type": "string" },
+          "method": { "type": "string" },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["ref", "label", "type", "required", "invalid"],
+              "properties": {
+                "ref": { "type": "string", "pattern": "^e[1-9][0-9]*$" },
+                "label": { "type": "string" },
+                "type": { "type": "string" },
+                "required": { "type": "boolean" },
+                "value": { "type": "string" },
+                "invalid": { "type": "boolean" }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "tables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ref", "caption", "headers", "rows"],
+        "properties": {
+          "ref": { "type": "string", "pattern": "^t[1-9][0-9]*$" },
+          "caption": { "type": "string" },
+          "headers": { "type": "array", "items": { "type": "string" } },
+          "rows": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "media": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "ref", "paused", "duration", "currentTime"],
+        "properties": {
+          "kind": { "enum": ["video", "audio"] },
+          "ref": { "type": "string" },
+          "paused": { "type": "boolean" },
+          "duration": { "type": "number", "minimum": 0 },
+          "currentTime": { "type": "number", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "overlays": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "ref", "dismissRef"],
+        "properties": {
+          "kind": { "enum": ["cookie-banner", "modal", "paywall"] },
+          "ref": { "type": "string" },
+          "dismissRef": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "screenshot": {
+      "type": "object",
+      "required": ["mime", "marks"],
+      "properties": {
+        "mime": { "const": "image/png" },
+        "data": { "type": "string", "contentEncoding": "base64" },
+        "marks": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^e[1-9][0-9]*$" } }
+      },
+      "additionalProperties": false
+    },
+    "redactions": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}
