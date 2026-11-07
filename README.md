@@ -29,7 +29,7 @@ Import this repository into Vercel with Framework set to **Other**. Keep the rep
 
 The Codex-inspired composer includes Chat/Code/Translate modes, provider/model selection, Quick/Balanced/Deep response power, microphone dictation, input and reply language selection, and attachments. Code mode works from supplied project files and can return complete changed files for the website's ZIP export. Translation mode honors the selected output language. Provider model lists are fetched by the server; keys stay server-side. It accepts common text/code formats, PDF, DOCX, PPTX, XLSX, PNG/JPG/WebP/GIF images (up to four files and 2.7 MB combined). PDF, Word, PowerPoint, and Excel text is extracted by the API; images are sent to the selected provider. File bytes stay in the current browser tab's memory and are not written into saved chat history. Reattach files after reloading the page.
 
-The site has an independent animated pet named Nova; the extension has its own pet, Pip. They react to JARVIS activity and offer small contextual tips. In the extension popup, choose the language you speak for speech recognition, choose a reply/translation language, and select a system voice. Smart browser tasks now use a dedicated planning request before taking page actions, and spoken commands wait for final recognition results before acting.
+In the extension popup, choose the language you speak for speech recognition, choose a reply/translation language, and select a system voice. Smart browser tasks now use a dedicated planning request before taking page actions, and spoken commands wait for final recognition results before acting.
 
 ## Desktop app
 

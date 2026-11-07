@@ -54,7 +54,6 @@ textarea{flex:1;resize:none;max-height:200px;background:none;border:0;outline:0;
 #extView h2{font:400 clamp(28px,4vw,38px)/1.2 var(--serif);margin-bottom:12px}#extView p{color:var(--mut);max-width:60ch;margin-bottom:18px}
 .dl{display:inline-flex;align-items:center;gap:8px;background:var(--btn);color:var(--btn-ink);padding:10px 18px;border-radius:12px;text-decoration:none;font-weight:500;margin:0 8px 8px 0}.dl.alt{background:none;color:var(--txt);border:1px solid var(--line)}
 #extView h3{font:600 16px var(--ui);margin:30px 0 10px}#extView ol,#extView ul{margin-left:1.3em;color:var(--mut)}#extView li{margin:7px 0}#extView li b{color:var(--txt);font-weight:500}#extView code{font:400 13px var(--mono);background:var(--surf);padding:2px 6px;border-radius:6px;color:var(--txt)}
-#jarvisPet{position:fixed;right:18px;bottom:96px;z-index:18;width:84px;height:92px;border:0;background:none;padding:0;cursor:pointer;filter:drop-shadow(0 8px 8px #0008);animation:petFloat 2.8s ease-in-out infinite}#jarvisPet svg{width:100%;height:100%;image-rendering:pixelated;overflow:visible}#jarvisPet .pet-screen{fill:#111c3b}#jarvisPet .pet-body{fill:#3266ef}#jarvisPet .pet-light{fill:#75a5ff}#jarvisPet .pet-eye{fill:#88fff3}#jarvisPet .pet-laptop{fill:#182c68;stroke:#78caff;stroke-width:2}#jarvisPet .pet-cursor{fill:#8effff}#jarvisPet[data-mood="thinking"]{animation:petThink .45s ease-in-out infinite alternate}#jarvisPet[data-mood="happy"] .pet-eye{fill:#d6ffff}#jarvisPet[data-mood="oops"]{animation:petOops .32s ease-in-out 2}@keyframes petFloat{50%{transform:translateY(-5px)}}@keyframes petThink{to{transform:translateY(-4px) rotate(3deg)}}@keyframes petOops{50%{transform:rotate(-7deg)}}#petNote{position:fixed;right:94px;bottom:120px;z-index:18;max-width:min(280px,70vw);border:1px solid #548cff80;border-radius:14px;padding:10px 13px;background:#111a2bec;color:#eaf1ff;font-size:13px;line-height:1.45;box-shadow:0 8px 30px #0008}#petNote[hidden]{display:none}@media(max-width:600px){#jarvisPet{right:8px;bottom:98px;width:64px;height:72px}#petNote{right:66px;bottom:106px}}
 #scrim{display:none}
 @media(max-width:820px){#side{position:fixed;inset:0 auto 0 0;z-index:30;margin-left:-272px;box-shadow:0 0 40px rgba(0,0,0,.5)}body.nav #side{margin-left:0}body.nav #scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20}body.collapsed #side{margin-left:-272px}.m.u{max-width:92%}}
 @media(max-width:600px){.composer{padding:0 10px 10px}.box{border-radius:20px;padding:9px}.compose-controls{gap:1px}.compose-controls select{font-size:11px;padding:7px 4px}.compose-controls #modelSelect{max-width:116px}.compose-controls #providerSelect{max-width:86px}.compose-controls #powerSelect{max-width:78px}.access-control button{padding:7px 8px}.access-control button span{display:none}#mic,#go,#attach{width:34px;height:34px}}
@@ -100,8 +99,7 @@ textarea{flex:1;resize:none;max-height:200px;background:none;border:0;outline:0;
     <p>Runs on your computer, listens anywhere (not only in the browser) and speaks in a natural male voice. It opens apps, sets timers, takes screenshots and controls volume and media. Keep it running and the extension uses it too.</p>
   </div></section>
 </main>
-<button id="jarvisPet" type="button" aria-label="Talk to Nova, your AI pet" title="Nova, your AI pet" data-mood="idle"><svg viewBox="0 0 84 92" aria-hidden="true"><ellipse cx="40" cy="87" rx="26" ry="4" fill="#050916" opacity=".6"/><path class="pet-body" d="M27 56h29v17h8v8h-8v4h-9v-9h-9v9h-9v-5h-7v-8h5z"/><path class="pet-light" d="M22 13h8V8h24v5h9v8h6v27h-6v7h-9v5H29v-5h-8v-7h-6V22h7z"/><path class="pet-body" d="M19 21h6v29h-6v-5h-5V27h5zm44 0h6v6h5v18h-5v5h-6z"/><path class="pet-screen" d="M25 22h35v27H25z"/><path class="pet-eye" d="M31 32h9v4h-3v3h-3v-3h-3zm15 0h9v4h-3v3h-3v-3h-3z"/><path class="pet-body" d="M26 61h27v10H26z"/><path class="pet-laptop" d="M48 55h27v22H48z"/><path class="pet-cursor" d="m59 60 8 6-4 1 3 5-3 2-3-5-3 3z"/><path fill="#75a5ff" d="M43 77h36l-4 5H39z"/></svg></button>
-<div id="petNote" role="status" aria-live="polite" hidden></div>
+
 <script>
 const $=s=>document.querySelector(s),esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let hist=[];
@@ -167,9 +165,6 @@ try{const saved=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');selectedPro
 try{accessToken=sessionStorage.getItem(ACCESS_KEY)||''}catch{}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(chats.slice(0,60)))}catch{}};
 const msgs=$('#msgs'),scroller=$('#scroll'),inp=$('#in'),goBtn=$('#go');
-let petTimer=0,petLine=0;const petLines=['Hi! I’m Nova, your little coding companion. Choose Code mode and add project files when you want JARVIS to work with them.','You can set a reply language for translated answers, too. I’ll keep an eye on the chat while JARVIS works.','Click me for a quick hello anytime. I react when JARVIS is thinking, listening, or finished.'];
-function setPetMood(mood){$('#jarvisPet').dataset.mood=mood}
-$('#jarvisPet').onclick=()=>{const note=$('#petNote');note.textContent=petLines[petLine++%petLines.length];note.hidden=false;clearTimeout(petTimer);petTimer=setTimeout(()=>{note.hidden=true},6500);setPetMood('happy')};
 const near=()=>scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<140;
 const toEnd=()=>{scroller.scrollTop=scroller.scrollHeight};
 const ICON={copy:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg>',redo:'<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>'};
@@ -248,10 +243,10 @@ $('#mic').onclick=()=>{
  const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!Speech){showFileError('Voice dictation is unavailable in this browser. Try Chrome or Edge over HTTPS.');return}
  const rec=new Speech();recognition=rec;rec.lang=selectedInputLanguage||navigator.language||'en-US';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=5;
- const before=inp.value.trim();$('#mic').classList.add('listening');$('#mic').setAttribute('aria-pressed','true');showFileError('Listening… speak now.');setPetMood('thinking');
+ const before=inp.value.trim();$('#mic').classList.add('listening');$('#mic').setAttribute('aria-pressed','true');showFileError('Listening… speak now.');
  rec.onresult=event=>{const words=Array.from(event.results).filter(result=>result.isFinal).map(result=>{const alternatives=Array.from(result);return alternatives.reduce((best,item)=>(Number(item.confidence)||0)>(Number(best.confidence)||0)?item:best,alternatives[0])?.transcript||''}).join(' ').trim();if(words){inp.value=[before,words].filter(Boolean).join(' ');inp.dispatchEvent(new Event('input',{bubbles:true}));showFileError('')}};
  rec.onerror=event=>showFileError(event.error==='not-allowed'?'Allow microphone access to use voice dictation.':event.error==='audio-capture'?'No microphone detected. Check the selected input device.':event.error==='no-speech'?'No speech detected. Try again a little closer to the microphone.':`Voice input error: ${event.error||'try again'}.`);
- rec.onend=()=>{recognition=null;$('#mic').classList.remove('listening');$('#mic').setAttribute('aria-pressed','false');if($('#fileError').textContent==='Listening… speak now.')showFileError('');setPetMood('idle')};
+ rec.onend=()=>{recognition=null;$('#mic').classList.remove('listening');$('#mic').setAttribute('aria-pressed','false');if($('#fileError').textContent==='Listening… speak now.')showFileError('');};
  try{rec.start()}catch{recognition=null;$('#mic').classList.remove('listening');$('#mic').setAttribute('aria-pressed','false');showFileError('Could not start the microphone. Check its browser permission.')}
 };
 function addAsst(html){const d=document.createElement('div');d.className='m a';d.innerHTML=html;msgs.appendChild(d);return d}
@@ -266,7 +261,7 @@ msgs.onclick=e=>{const b=e.target.closest('button');if(!b)return;const c=b.close
 const OWNER=/who\s*(made|created|built|developed|designed|programmed|trained|owns)\s*(you|u)\b|who('?s|\s+is)\s+your\s+(creator|maker|developer|owner|author|father)|your\s+(creator|maker|developer)\b|kisne\s*(banaya|bnaya)|(tumhe|tujhe|aapko)\s*kisne/i;
 const WHO=/^\s*(who\s*(are|r)\s*(you|u)|what\s*(are|r)\s*(you|u)|(what('?s|\s+is)|tell\s+me)\s+your\s+name|introduce\s+yourself|tum\s*kaun\s*ho|aap\s*kaun\s*ho|tu\s*kaun\s*hai)\s*[?.!]*\s*$/i;
 const local=t=>OWNER.test(t)?'I was created by **Yash Raj**.':WHO.test(t)?"I'm **JARVIS**, an AI assistant created by **Yash Raj**. I write and debug code in any language, plan whole projects, explain concepts, and can export multi-file projects as a ZIP. What shall we build?":null;
-async function send(text,chosen=pendingFiles){text=(text||'').trim();const selected=[...chosen];if(!text&&selected.length)text='Please summarize the attached file(s).';if((!text&&!selected.length)||busy)return;busy=true;setBtn();setPetMood('thinking');
+async function send(text,chosen=pendingFiles){text=(text||'').trim();const selected=[...chosen];if(!text&&selected.length)text='Please summarize the attached file(s).';if((!text&&!selected.length)||busy)return;busy=true;setBtn();
  if(!cur){cur={id:'c'+Date.now(),title:'',messages:[]};chats.unshift(cur);hist=cur.messages}
  let uploads;
  try{uploads=selected.length?await Promise.all(selected.map(encodeFile)):(fileContexts.get(cur.id)||[])}catch(e){showFileError(e.message||'Could not read that file.');busy=false;setBtn();return}
@@ -283,8 +278,8 @@ async function send(text,chosen=pendingFiles){text=(text||'').trim();const selec
     if(!q){q=true;requestAnimationFrame(()=>{q=false;if(fin)return;const s=near();w.innerHTML=render(full);if(s)toEnd()})}}
    fin=true;
    if(!full.trim())throw new Error('JARVIS sent an empty reply. Please try again.')}
-  finishAsst(w,full);cur.messages.push({role:'assistant',content:full});save();setPetMood('happy');
- }catch(e){setPetMood('oops');cur.messages.pop();w.className='m e';w.innerHTML=esc(e.message)+' <button class="ghost" id="retry" style="padding:3px 10px">Try again</button>';$('#retry').onclick=()=>{w.remove();if(msgs.lastElementChild)msgs.lastElementChild.remove();send(text)}}
+  finishAsst(w,full);cur.messages.push({role:'assistant',content:full});save();
+ }catch(e){cur.messages.pop();w.className='m e';w.innerHTML=esc(e.message)+' <button class="ghost" id="retry" style="padding:3px 10px">Try again</button>';$('#retry').onclick=()=>{w.remove();if(msgs.lastElementChild)msgs.lastElementChild.remove();send(text)}}
  finally{busy=false;setBtn();if(near())toEnd();inp.focus()}}
  function setBtn(){goBtn.disabled=busy||(!inp.value.trim()&&!pendingFiles.length)}
 $('#f').onsubmit=e=>{e.preventDefault();send(inp.value)};
