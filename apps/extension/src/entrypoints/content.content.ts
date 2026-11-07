@@ -40,42 +40,32 @@ export default defineContentScript({
   #orb{position:fixed;width:56px;height:56px;border:0;border-radius:0;cursor:grab;touch-action:none;background:transparent;box-shadow:none;transition:filter .3s;filter:drop-shadow(0 8px 9px #0008);outline:none}
   #orb:focus-visible{filter:drop-shadow(0 0 8px #72a4ff) drop-shadow(0 8px 9px #0008)}
   #orb.busy{filter:drop-shadow(0 0 12px #72a4ff) drop-shadow(0 8px 9px #0008)}
-  @keyframes sp{to{transform:rotate(360deg)}}
-  .ghost{position:fixed;width:30px;height:30px;border-radius:50%;background:#ff5a1f;pointer-events:none;animation:gh .6s forwards}
-  @keyframes gh{to{opacity:0;transform:scale(.2)}}
-  #panel{position:fixed;width:340px;max-width:92vw;background:#14181c;color:#e7ece9;border-radius:16px;box-shadow:0 20px 60px #000a;display:none;flex-direction:column;overflow:hidden;border:1px solid #2a3138}
-  #panel.open{display:flex}
-  #hd{display:flex;align-items:center;padding:10px 14px;font-weight:700;border-bottom:1px solid #2a3138}#hd span{flex:1}#hd button{background:none;border:0;color:#9aa6ae;cursor:pointer;font-size:16px}#mic.on{color:#ff5a1f;animation:pl 1.2s infinite}#vo.off{opacity:.35}@keyframes pl{50%{transform:scale(1.3)}}
-  #log{max-height:260px;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.45}
-  .m{padding:8px 11px;border-radius:10px;max-width:92%}.a{background:#1f262c}.u{background:#ff5a1f;align-self:flex-end}.e{background:#3a1f1f;color:#ffb4a8}.s{color:#9aa6ae;font-size:12px}
-  #ap{display:none;gap:8px;padding:0 12px 10px}#ap.on{display:flex}#ap button,#go,#st{background:#ff5a1f;color:#fff;border:0;border-radius:999px;padding:7px 14px;cursor:pointer;font-size:13px}#ap #no,#st{background:#38414a}
-  #bar{display:flex;gap:8px;padding:10px;border-top:1px solid #2a3138}#in{flex:1;background:#0e1215;border:1px solid #2f383f;border-radius:10px;color:#fff;padding:8px 10px;font-size:13px;outline:0}
+  #panel{position:fixed;width:360px;max-width:92vw;background:#202123;color:#ececec;border-radius:16px;box-shadow:0 18px 48px #0009;display:none;flex-direction:column;overflow:hidden;border:1px solid #343538}
+  #panel.open{display:flex;animation:panelIn .16s ease-out}@keyframes panelIn{from{opacity:0;transform:translateY(6px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+  #hd{display:flex;align-items:center;gap:8px;padding:11px 13px;font-weight:600;border-bottom:1px solid #343538}#hd span{flex:1;letter-spacing:0;color:#ededed;font:600 14px system-ui,sans-serif}#hd span:before{content:"";display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:#8eaaff;box-shadow:0 0 8px #8eaaff88;vertical-align:1px}#hd button{width:30px;height:30px;background:none;border:0;border-radius:8px;color:#a7a7a7;cursor:pointer;font-size:16px}#hd button:hover{background:#ffffff12;color:#fff}#mic.on{color:#9ab8ff;animation:pl 1.2s infinite}#vo.off{opacity:.35}@keyframes pl{50%{transform:scale(1.15)}}
+  #log{max-height:280px;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:9px;font-size:13px;line-height:1.5}
+  .m{padding:9px 11px;border-radius:11px;max-width:94%}.a{background:#2a2b2e;border:1px solid #ffffff0d}.u{background:#34363a;align-self:flex-end}.e{background:#3a2929;color:#ffb4a8}.s{color:#a7a7a7;font-size:12px}
+  #ap{display:none;gap:8px;padding:0 12px 10px}#ap.on{display:flex}#ap button,#go,#st{background:#f4f4f4;color:#191919;border:0;border-radius:10px;padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600}#ap #no,#st{background:#383a3e;color:#ededed}
+  #bar{display:flex;gap:8px;padding:11px;border-top:1px solid #343538}#in{flex:1;min-width:0;background:#2c2d30;border:1px solid #44464a;border-radius:11px;color:#fff;padding:9px 11px;font-size:13px;outline:0}#in:focus{border-color:#777b84}
   #orb{width:88px;height:92px}
   #bot{width:100%;height:100%;overflow:visible;image-rendering:pixelated}
-  #rig{transform-origin:50px 90px;transform:scaleX(var(--f,1)) rotate(var(--t,0deg));transition:transform .35s}
+  #rig{transform-origin:50px 90px}
   .pet-float{transform-origin:50% 85%;animation:petFloat 2.5s ease-in-out infinite}
   @keyframes petFloat{50%{transform:translateY(-4px)}}
   .pet-eyes{animation:petBlink 5s infinite;transform-origin:center}
   @keyframes petBlink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.15)}}
-  .pet-arm{transform-origin:70px 62px}#orb.busy .pet-arm{animation:petType .32s ease-in-out infinite alternate}
+  .pet-arm{transform-origin:70px 62px}#orb.busy .pet-arm{animation:petType .32s ease-in-out infinite alternate}#orb.panel-open .pet-arm{animation:petWave .5s ease-in-out 2}
+  @keyframes petWave{50%{transform:rotate(-22deg)}}
   @keyframes petType{to{transform:translateY(2px) rotate(-8deg)}}
   .pet-cursor{transform-origin:center}#orb.busy .pet-cursor{animation:petCursor .55s ease-in-out infinite alternate}
   @keyframes petCursor{to{transform:translate(4px,-3px)}}
   #orb.listen:after{display:block;content:"";position:absolute;inset:3px;border-radius:48%;border:2px solid #8eaaff;animation:petRing 1.4s infinite;pointer-events:none}@keyframes petRing{to{transform:scale(1.3);opacity:0}}
-  #panel{background:linear-gradient(160deg,#0b1722ee,#14181cee);backdrop-filter:blur(14px);border:1px solid #19d3ff55;box-shadow:0 0 40px #19d3ff2a,0 20px 60px #000a}
-  #hd{font-family:"Courier New",monospace;letter-spacing:.22em;color:#19d3ff}.m.a{border-left:2px solid #19d3ff}#st{background:#38414a}
-  #boot{position:fixed;inset:0;display:none;place-items:center;background:radial-gradient(circle,#042033ee,#000000f2);opacity:1;transition:opacity .7s}#boot.on{display:grid}
-  #boot:after{content:"";position:absolute;left:0;right:0;height:110px;background:linear-gradient(transparent,#19d3ff40,transparent);animation:sc 1.6s linear infinite}@keyframes sc{from{top:-120px}to{top:100%}}
-  .r{position:absolute;border-radius:50%;border:2px solid #19d3ff;box-shadow:0 0 30px #19d3ff77,inset 0 0 30px #19d3ff33}
-  .r1{width:300px;height:300px;border-style:dashed;animation:sp 8s linear infinite}.r2{width:220px;height:220px;border-color:#ff5a1f;border-top-color:transparent;border-bottom-color:transparent;animation:sp 2.4s linear infinite reverse}.r3{width:120px;height:120px;background:radial-gradient(circle,#fff,#19d3ff 50%,transparent 72%);animation:cr 1s infinite}
-  #bt{position:absolute;top:calc(50% + 190px);font:700 18px "Courier New",monospace;letter-spacing:.3em;color:#19d3ff;text-shadow:0 0 14px #19d3ff;text-align:center;width:100%}
-  #hear{padding:0 14px 6px;font-size:12px;color:#19d3ff;font-style:italic;min-height:0}#orb.hear .pet-float{animation-duration:.55s}#orb.ack{animation:ak .35s}@keyframes ak{50%{transform:scale(1.08)}}
-  #iris{position:fixed;inset:0;display:none;pointer-events:none;background:radial-gradient(circle at 50% 50%,#02070cf2,#02070c)}#iris.on{display:block}
-  #ring{position:fixed;border-radius:50%;border:3px solid #ffc247;box-shadow:0 0 40px #ff3b2f,inset 0 0 30px #ff3b2f66;pointer-events:none;display:none}
-  #wl{position:fixed;left:50%;top:-60px;transform:translateX(-50%);padding:10px 22px;color:#ffc247;background:#12070af0;border:1px solid #ffc24788;font:700 14px "Courier New",monospace;letter-spacing:.25em;white-space:nowrap;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);pointer-events:none}
-  .shock{position:fixed;width:60px;height:60px;margin:-30px;border-radius:50%;border:3px solid #ffc247;box-shadow:0 0 24px #ff3b2f;pointer-events:none}
-  </style><div id="orb" role="button" tabindex="0" aria-expanded="false" aria-label="Pip, JARVIS browser assistant. Click to open; press Alt+J anytime." title="Pip · JARVIS assistant (Alt+J)"><svg id="bot" viewBox="0 0 100 100" aria-hidden="true"><g id="rig"><ellipse cx="50" cy="91" rx="27" ry="4" fill="#101a35" opacity=".45"/><g class="pet-float"><path fill="#3266ef" d="M24 25V18h7v-7h10V7h22v4h9v7h7v9h5v27h-8v8H68v7H37v-5h-8v-8h-7V29h5z"/><path fill="#75a5ff" d="M19 24V17h8v-5h9V8h19v4h9v5h8v7h5v19h-5v8h-7v6H35v-5h-8v-7h-6V29h-5v-5z"/><path fill="#101b38" d="M31 23h38v30H31z"/><path class="pet-eyes" fill="#8efff3" d="M36 34h11v4h-4v4h-4v-4h-3zm18 0h11v4h-4v4h-4v-4h-3z"/><path fill="#3266ef" d="M34 54h32v9h8v8H63v6H39v-5h-8v-8h-5v-7h8z"/><path fill="#75a5ff" d="M34 58h25v7H34z"/><path fill="#2f5ed0" d="M31 64h10v13H31zm28 0h10v13H59z"/><g class="pet-arm"><path fill="#3266ef" d="M66 57h9v6h6v10h-8v-5h-7z"/><path fill="#75a5ff" d="M72 68h8v5h-8z"/></g><path fill="#101b38" stroke="#8bc8ff" stroke-width="2" d="M53 51h34v27H53z"/><path fill="#263d82" d="M56 54h28v20H56z"/><path class="pet-cursor" fill="#9ffcff" d="m64 58 12 10-6 1 4 6-4 2-4-6-3 5z"/><path fill="#86b5ff" d="M49 78h42l-5 5H45z"/><path fill="#3266ef" d="M38 78h13v4H38z"/></g></g></svg></div><div id="iris"></div><div id="ring"></div><div id="wl"></div><div id="boot"><i class="r r1"></i><i class="r r2"></i><i class="r r3"></i><div id="bt"></div></div>
-  <div id="panel"><div id="hd"><span>JARVIS</span><button id="mic" title="Listen (hands-free)">🎤</button><button id="vo" title="Voice replies">🔊</button><button id="x">✕</button></div><div id="log"></div>
+  #panel{background:#202123ee;backdrop-filter:blur(14px);border:1px solid #343538;box-shadow:0 16px 48px #0009}
+  #hd{font-family:system-ui,sans-serif;letter-spacing:normal;color:#ececec}.m.a{border-left:0}#st{background:#383a3e}
+  #hear{padding:0 14px 6px;font-size:12px;color:#b3c7ff;font-style:italic;min-height:0}#orb.hear .pet-float{animation-duration:.55s}#orb.ack{animation:ak .35s}@keyframes ak{50%{transform:scale(1.08)}}
+  #wl{position:fixed;left:50%;top:-60px;transform:translateX(-50%);padding:9px 14px;color:#ededed;background:#202123;border:1px solid #45464a;border-radius:12px;box-shadow:0 8px 28px #0008;font:500 13px system-ui,sans-serif;white-space:nowrap;pointer-events:none}
+  </style><div id="orb" role="button" tabindex="0" aria-expanded="false" aria-label="Pip, JARVIS browser assistant. Click to open; press Alt+J anytime." title="Pip · JARVIS assistant (Alt+J)"><svg id="bot" viewBox="0 0 100 100" aria-hidden="true"><g id="rig"><ellipse cx="50" cy="91" rx="27" ry="4" fill="#101a35" opacity=".45"/><g class="pet-float"><path fill="#3266ef" d="M24 25V18h7v-7h10V7h22v4h9v7h7v9h5v27h-8v8H68v7H37v-5h-8v-8h-7V29h5z"/><path fill="#75a5ff" d="M19 24V17h8v-5h9V8h19v4h9v5h8v7h5v19h-5v8h-7v6H35v-5h-8v-7h-6V29h-5v-5z"/><path fill="#101b38" d="M31 23h38v30H31z"/><path class="pet-eyes" fill="#8efff3" d="M36 34h11v4h-4v4h-4v-4h-3zm18 0h11v4h-4v4h-4v-4h-3z"/><path fill="#3266ef" d="M34 54h32v9h8v8H63v6H39v-5h-8v-8h-5v-7h8z"/><path fill="#75a5ff" d="M34 58h25v7H34z"/><path fill="#2f5ed0" d="M31 64h10v13H31zm28 0h10v13H59z"/><g class="pet-arm"><path fill="#3266ef" d="M66 57h9v6h6v10h-8v-5h-7z"/><path fill="#75a5ff" d="M72 68h8v5h-8z"/></g><path fill="#101b38" stroke="#8bc8ff" stroke-width="2" d="M53 51h34v27H53z"/><path fill="#263d82" d="M56 54h28v20H56z"/><path class="pet-cursor" fill="#9ffcff" d="m64 58 12 10-6 1 4 6-4 2-4-6-3 5z"/><path fill="#86b5ff" d="M49 78h42l-5 5H45z"/><path fill="#3266ef" d="M38 78h13v4H38z"/></g></g></svg></div><div id="wl"></div>
+  <div id="panel"><div id="hd"><span>Pip · JARVIS</span><button id="mic" title="Listen (hands-free)">🎤</button><button id="vo" title="Voice replies">🔊</button><button id="x" title="Close assistant">✕</button></div><div id="log"></div>
   <div id="hear"></div><div id="ap"><button id="yes">Approve</button><button id="no">Cancel</button></div>
   <div id="bar"><input id="in" placeholder="Tell JARVIS what to do…"><button id="go">Go</button><button id="st">Stop</button></div></div>`;
   document.documentElement.appendChild(host);
@@ -92,20 +82,12 @@ export default defineContentScript({
   const px = () => ({ x: Math.min(innerWidth - (orb.offsetWidth || 96) - 8, Math.max(8, pos.x * innerWidth)), y: Math.min(innerHeight - (orb.offsetHeight || 96) - 8, Math.max(8, pos.y * innerHeight)) });
   function place(x, y) { orb.style.left = x + 'px'; orb.style.top = y + 'px'; }
   function home() { const p = px(); place(p.x, p.y); }
-  function trail(ms) { const t = setInterval(() => { const r = orb.getBoundingClientRect(), g = document.createElement('div'); g.className = 'ghost'; g.style.left = r.left + 13 + 'px'; g.style.top = r.top + 13 + 'px'; root.appendChild(g); setTimeout(() => g.remove(), 650); }, 45); setTimeout(() => clearInterval(t), ms); }
-  async function flyTo(x, y, ms = 900) {
-    const r = orb.getBoundingClientRect(), dx = x - r.left, dy = y - r.top;
-    trail(ms); orb.style.setProperty('--f', dx < 0 ? '-1' : '1'); orb.style.setProperty('--t', Math.max(-14, Math.min(14, dx / 25)) + 'deg'); orb.classList.add('moving');
-    const a = orb.animate([{ transform: 'translate(0,0) scale(1)' }, { transform: `translate(${dx * .5}px,${dy * .5 - 90}px) scale(1.2)` }, { transform: `translate(${dx}px,${dy}px) scale(1)` }], { duration: ms, easing: 'cubic-bezier(.5,0,.2,1)' });
-    await a.finished.catch(() => {}); place(x, y); orb.classList.remove('moving'); orb.style.setProperty('--t', '0deg'); if (panel.classList.contains('open')) fit();
-  }
-  async function flyIn() { const p = px(); place(innerWidth + 30, -60); await flyTo(p.x, p.y, 900); shock(p.x + orb.offsetWidth / 2, p.y + orb.offsetHeight / 2); }
   function fit() { const o = orb.getBoundingClientRect(), h = panel.offsetHeight || 300; panel.style.left = Math.max(8, Math.min(innerWidth - 348, o.left - 290)) + 'px'; panel.style.top = (o.top > h + 20 ? o.top - h - 12 : o.bottom + 12) + 'px'; }
   let drag = null;
   orb.onpointerdown = e => { drag = { sx: e.clientX, sy: e.clientY, ox: orb.offsetLeft, oy: orb.offsetTop, moved: false }; orb.setPointerCapture(e.pointerId); orb.style.cursor = 'grabbing'; };
   orb.onpointermove = e => { if (!drag) return; const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) { place(drag.ox + dx, drag.oy + dy); if (panel.classList.contains('open')) fit(); } };
   orb.onpointerup = () => { orb.style.cursor = 'grab'; if (!drag) return; if (drag.moved) { pos = { x: orb.offsetLeft / innerWidth, y: orb.offsetTop / innerHeight }; store.set('orbPos', pos); } else toggle(); drag = null; };
-  function toggle(on = !panel.classList.contains('open')) { panel.classList.toggle('open', on); orb.setAttribute('aria-expanded', String(on)); if (panel.classList.contains('open')) { fit(); $('#in').focus(); } }
+  function toggle(on = !panel.classList.contains('open')) { panel.classList.toggle('open', on); orb.classList.toggle('panel-open', on); orb.setAttribute('aria-expanded', String(on)); if (panel.classList.contains('open')) { fit(); $('#in').focus(); } }
   orb.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } };
   addEventListener('keydown', e => { if (e.altKey && e.key.toLowerCase() === 'j') { e.preventDefault(); toggle(); } });
   $('#x').onclick = () => toggle(false);
@@ -191,7 +173,7 @@ export default defineContentScript({
 
   /* ---- agent loop (survives page navigation) ---- */
   const save = () => store.set('job' + tabId, job);
-  async function finish(msg = '') { if (msg) say('a', msg); if (job) { job.status = 'idle'; await save(); } orb.classList.remove('busy'); home && flyTo(px().x, px().y, 800); }
+  async function finish(msg = '') { if (msg) say('a', msg); if (job) { job.status = 'idle'; await save(); } orb.classList.remove('busy'); }
   async function act(a) {
     const el = a.id != null ? document.querySelector<HTMLElement>(`[data-jv="${a.id}"]`) : null;
     if (a.action === 'done' || a.action === 'ask') { job.awaiting = a.action === 'ask'; if (a.action === 'done') rememberExp(); await finish(); return 'stop'; }
@@ -208,7 +190,7 @@ export default defineContentScript({
     const r = el.getBoundingClientRect(), node = el as PageElement, label = (el.innerText || node.value || el.getAttribute('aria-label') || '').trim().slice(0, 40);
     if (SECRET.test([node.type, node.name, el.id, node.autocomplete].join(' '))) { say('e', 'I never fill passwords or payment fields. Please do this step yourself, then tell me to continue.'); job.history.push('blocked: secret field'); await finish(); return 'stop'; }
     el.scrollIntoView({ block: 'center', behavior: brain === 'smart' ? 'smooth' : 'auto' });
-    if (brain === 'smart') { await sleep(260); const r2 = el.getBoundingClientRect(); await flyTo(Math.max(8, r2.left - 20), Math.max(8, r2.top - 40), 450); }
+    if (brain === 'smart') await sleep(260);
     el.style.outline = '3px solid #ff5a1f'; window.setTimeout(() => (el.style.outline = ''), 1200);
     if (a.action === 'type') { if (a.submit && submissionNeedsApproval(el) && !(await approve(`submit this form on ${location.hostname}`))) { await finish('Cancelled.'); return 'stop'; } typeInto(el, String(a.text || '')); job.history.push(`typed "${String(a.text || '').slice(0, 30)}" into ${a.id}`); if (a.submit) { await sleep(300); enter(el); } }
     else if (a.action === 'click') {
@@ -264,27 +246,18 @@ export default defineContentScript({
   $<HTMLInputElement>('#in').onkeyup = e => e.stopPropagation();
   $('#st').onclick = () => { void store.set('q' + tabId, []); if (job) { job.status = 'idle'; void save(); } void bg({ type: 'stop' }); try { speechSynthesis.cancel(); } catch {} approveResolve && approveResolve(false); say('s', 'Stopped.'); orb.classList.remove('busy'); };
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && job?.status === 'running') { event.preventDefault(); $('#st').click(); } }, true);
-  chrome.runtime.onMessage.addListener(m => { if (m.type === 'activated') flyIn(); if (m.type === 'wake') activate(true); if (m.type === 'command') { toggle(true); handle(m.text); } });
+  chrome.runtime.onMessage.addListener(m => { if (m.type === 'activated') { orb.classList.add('ack'); setTimeout(() => orb.classList.remove('ack'), 380); } if (m.type === 'wake') activate(true); if (m.type === 'command') { toggle(true); handle(m.text); } });
 
 
 
-  /* ---- page-to-page animation: iris closes around the bot, shockwave on arrival ---- */
+  /* ---- lightweight page navigation status ---- */
   const host_ = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
-  async function warpOut(label) {
-    if (matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-    const o = orb.getBoundingClientRect(), x = o.left + o.width / 2, y = o.top + o.height / 2, far = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)) + 40;
-    const iris = $('#iris'), ring = $('#ring'), wl = $('#wl'); wl.textContent = '▶ ' + label; iris.classList.add('on'); ring.style.display = 'block';
-    wl.animate([{ top: '-60px' }, { top: '28px' }], { duration: 350, fill: 'forwards', easing: 'ease-out' });
-    const t0 = performance.now(), D = 520;
-    await new Promise<void>(res => { (function f(t: number) { const k = Math.min(1, (t - t0) / D), e = k * k * k, r = far * (1 - e) + 36 * e; iris.style.webkitMaskImage = iris.style.maskImage = `radial-gradient(circle at ${x}px ${y}px, transparent ${r}px, #000 ${r + 2}px)`; ring.style.cssText = `display:block;left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px`; k < 1 ? requestAnimationFrame(f) : res(); })(t0); });
-  }
-  function shock(x, y) { if (matchMedia('(prefers-reduced-motion:reduce)').matches) return; for (let i = 0; i < 3; i++) { const s = document.createElement('div'); s.className = 'shock'; s.style.left = x + 'px'; s.style.top = y + 'px'; root.appendChild(s); s.animate([{ transform: 'scale(.3)', opacity: 1 }, { transform: 'scale(14)', opacity: 0 }], { duration: 900, delay: i * 140, easing: 'ease-out', fill: 'backwards' }).finished.then(() => s.remove()).catch(() => s.remove()); } }
   function banner(text) { const wl = $('#wl'); wl.textContent = text; wl.animate([{ top: '-60px', opacity: 1 }, { top: '24px', opacity: 1, offset: .2 }, { top: '24px', opacity: 1, offset: .8 }, { top: '-60px', opacity: 0 }], { duration: 2200, fill: 'forwards' }); }
-  async function jump(url) { if (brain === 'smart') await warpOut(host_(url)); await store.set('warp', { host: host_(url), t: Date.now() }); await bg({ type: 'nav', url }); }
+  async function jump(url) { await store.set('warp', { host: host_(url), t: Date.now() }); await bg({ type: 'nav', url }); }
 
   /* ---- direct commands: no AI needed, so "click X" just clicks ---- */
   const norm = (input: string) => normalizeSpokenText(input, aliases);
-  async function touch(el: HTMLElement) { rememberTarget(el); el.scrollIntoView({ block: 'center', behavior: brain === 'smart' ? 'smooth' : 'auto' }); if (brain === 'smart') { await sleep(240); const r = el.getBoundingClientRect(); await flyTo(Math.max(8, r.left - 20), Math.max(8, r.top - 40), 450); } el.style.outline = '3px solid #ff5a1f'; window.setTimeout(() => (el.style.outline = ''), 1200); }
+  async function touch(el: HTMLElement) { rememberTarget(el); el.scrollIntoView({ block: 'center', behavior: brain === 'smart' ? 'smooth' : 'auto' }); if (brain === 'smart') await sleep(240); el.style.outline = '2px solid #8eaaff'; window.setTimeout(() => (el.style.outline = ''), 1200); }
   function pick(q: string, ok?: (element: { tag: string; type?: string; onScreen: boolean }) => boolean): HTMLElement | null {
     const w = q.toLowerCase().replace(/^(the|a|an)\s+/, '').replace(/\s+(button|link|tab|icon|field|box|option)$/, '').trim(); let best = null, bs = 0;
     for (const e of snap()) { if (ok && !ok(e)) continue; if (!e.label) continue; let sc = scoreLabel(e.label, w); if (sc < .6) continue; sc += (e.onScreen ? .05 : 0) - e.label.length / 20000; if (sc > bs) { bs = sc; best = e; } }
@@ -337,7 +310,7 @@ export default defineContentScript({
       await touch(el); el.click(); say('a', (c.op === 'open' ? 'Opened ' : 'Clicked ') + (target?.label || 'that item') + '.'); return true;
     }
     if (c.t === 'nav') { await go(c.url); return true; }
-    if (c.t === 'tabs') { if (['next', 'prev', 'switch'].includes(c.op)) await flyTo(innerWidth + 40, -60, 450); const r = await bg({ type: 'tabs', op: c.op, q: c.q, url: c.url }); if (r && r.say) say('a', r.say); return true; }
+    if (c.t === 'tabs') { const r = await bg({ type: 'tabs', op: c.op, q: c.q, url: c.url }); if (r && r.say) say('a', r.say); return true; }
     if (c.t === 'hist') { say('a', c.op === 'back' ? 'Going back.' : c.op === 'forward' ? 'Going forward.' : 'Reloading.'); await sleep(300); c.op === 'back' ? history.back() : c.op === 'forward' ? history.forward() : location.reload(); return true; }
     if (c.t === 'scroll') { c.d === 'top' ? scrollTo({ top: 0, behavior: 'smooth' }) : c.d === 'bottom' ? scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }) : scrollBy({ top: (c.d === 'up' ? -1 : 1) * innerHeight * .8, behavior: 'smooth' }); say('a', 'Scrolling ' + c.d + '.'); return true; }
     if (c.t === 'enter') { const el = document.activeElement && document.activeElement !== document.body ? document.activeElement as HTMLElement : null; if (!el) { say('e', 'Nothing is focused. Tell me where to type first.'); return true; } if (submissionNeedsApproval(el) && !(await approve(`submit this form on ${location.hostname}`))) return true; enter(el); say('a', 'Enter pressed.'); return true; }
@@ -443,12 +416,9 @@ export default defineContentScript({
   document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'hidden') { window.clearTimeout(restartTimer); try { rec && rec.abort(); } catch {} rec = null; } else if (SR && !companionOn && (await store.get('listen'))) { listening = true; $('#mic').classList.add('on'); orb.classList.add('listen'); mk(); } });
 
   /* ---- Tony Stark style activation ---- */
-  async function activate(long = true) {
-    const b = $('#boot'), bt = $('#bt'); b.style.opacity = '1'; b.classList.add('on'); orb.style.visibility = 'hidden';
-    const lines = long ? ['INITIALIZING J.A.R.V.I.S.', 'LOADING NEURAL CORE', 'ALL SYSTEMS ONLINE', 'GOOD DAY, SIR.'] : ['J.A.R.V.I.S. ONLINE'];
-    for (const l of lines) { bt.textContent = ''; for (const ch of l) { bt.textContent += ch; await sleep(28); } await sleep(long ? 420 : 500); }
-    if (speakOn && window.speechSynthesis) { try { speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance('Good day, sir. JARVIS online.')); } catch {} }
-    b.style.opacity = '0'; await sleep(700); b.classList.remove('on'); orb.style.visibility = ''; await flyIn();
+  function activate(greet = true) {
+    orb.classList.add('ack'); setTimeout(() => orb.classList.remove('ack'), 380);
+    if (greet) speak('Good day, sir. JARVIS online.');
   }
 
 
@@ -497,7 +467,7 @@ export default defineContentScript({
     lang = (await store.get<string>('lang')) || lang;
     replyLanguage = (await store.get<string>('replyLanguage')) || ''; pv();
     const w = await store.get<{ host: string; t: number }>('warp');
-    if (!(await store.get<boolean>('booted')) && window === top) { await store.set('booted', true); activate(true); } else { await flyIn(); if (w && Date.now() - w.t < 12000) { await store.set('warp', null); banner('ARRIVED · ' + w.host); } }
+    if (!(await store.get<boolean>('booted')) && window === top) { await store.set('booted', true); activate(true); } else if (w && Date.now() - w.t < 12000) { await store.set('warp', null); banner('Opened ' + w.host); }
     if (SR && !companionOn && (await store.get<boolean>('listen')) && document.visibilityState === 'visible') { listening = true; $('#mic').classList.add('on'); mk(); }
     tabId = await bg<number>({ type: 'tabId' }); job = tabId != null ? await store.get<any>('job' + tabId) : null;
     if (job && job.status === 'running') { toggle(true); say('s', 'Continuing: ' + job.goal); await sleep(1200); loop(); }
