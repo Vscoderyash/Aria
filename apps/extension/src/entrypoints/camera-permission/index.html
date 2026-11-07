@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS camera permission</title>
+    <style>
+      :root{color-scheme:dark;font:14px/1.5 Inter,system-ui,sans-serif;background:#181819;color:#ececec}
+      *{box-sizing:border-box}body{max-width:560px;margin:10vh auto;padding:24px;background:#202123;border:1px solid #383a3e;border-radius:18px}
+      h1{margin:0 0 8px;font-size:20px}p{color:#b9bbc2}.actions{display:flex;gap:10px;margin-top:20px}button{border:0;border-radius:10px;padding:11px 16px;font-weight:600;cursor:pointer}.primary{background:#f0f0f0;color:#161616}.secondary{background:#383a3e;color:#eee}#status{min-height:42px;margin-top:16px;padding:10px;border-radius:10px;background:#292a2d;color:#cbd5ff}#status[data-error="true"]{color:#ffb3a9}button:focus-visible{outline:2px solid #b4c5ff;outline-offset:2px}
+    </style>
+  </head>
+  <body>
+    <h1>Allow camera for JARVIS hand controls</h1>
+    <p>Chrome sometimes blocks camera permission prompts inside extension side panels. Press Enable camera here. The camera stream starts only for the permission check, stays on this device, and is stopped immediately after access is granted.</p>
+    <div class="actions"><button id="enable" class="primary" type="button">Enable camera</button><button id="close" class="secondary" type="button">Return to JARVIS</button></div>
+    <div id="status" role="status" aria-live="polite">The camera is currently off.</div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

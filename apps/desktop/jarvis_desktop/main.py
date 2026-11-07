@@ -27,8 +27,8 @@ from mouth import Mouth                            # noqa: E402
 from bridge import Bridge                          # noqa: E402
 from memory import Memory                          # noqa: E402
 
-DEFAULTS = {"api_url": "https://jarvisv02.vercel.app/api/chat", "address": "sir", "voice": "en-GB-RyanNeural", "speak": True, "whisper_model": "small.en",
-            "language": "en", "wake_word": "jarvis", "wake_required": True, "active_seconds": 12, "mic_device": None, "bridge_port": 8765, "ui_scale": 1.0, "max_steps": 12, "brain": "fast"}
+DEFAULTS = {"api_url": "https://jarvisv02.vercel.app/api/chat", "address": "sir", "voice": "en-GB-RyanNeural", "speak": True, "speech_rate": "+0%", "system_speech_rate": 165, "whisper_model": "small",
+            "language": "auto", "wake_word": "jarvis", "wake_required": True, "active_seconds": 12, "mic_device": None, "bridge_port": 8765, "ui_scale": 1.0, "max_steps": 12, "brain": "fast"}
 WAKE_WORDS = ["jarvis", "jarvas", "jarves", "jervis", "javis", "jar vis", "jar this", "jar is", "garvis", "gar vis", "charvis", "travis", "service", "java is", "jarvic"]
 
 
@@ -158,6 +158,7 @@ class App:
             text = self.ears.hear()
             if not text: continue
             self.log("HEARD: " + text)
+            self.state("listening", "Heard: " + text[:120])
             if self.cfg["wake_required"]:
                 m = self.wake.match(text)
                 if m:

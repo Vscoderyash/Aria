@@ -17,6 +17,7 @@ const keysElement = $('airKeys');
 const statusElement = $('status');
 const startButton = $('start') as HTMLButtonElement;
 const stopButton = $('stop') as HTMLButtonElement;
+const permissionHelpButton = $('permissionHelp') as HTMLButtonElement;
 const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
 const rows: Key[][] = [
   [...'QWERTYUIOP'].map((value) => ({ label: value, value: value.toLowerCase() })),
@@ -244,16 +245,23 @@ function frame(now: number): void {
 
 async function startCamera(): Promise<void> {
   startButton.disabled = true;
+  permissionHelpButton.hidden = true;
   setStatus('Requesting camera permission…');
+  let stage: 'permission' | 'page' | 'model' = 'permission';
   try {
-    if (activeTabId === null) await selectActiveTab();
-    if (activeTabId === null) throw new Error('Switch to a normal website tab before starting hand control.');
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error('Chrome does not expose camera access here. Update Chrome and reopen the JARVIS extension side panel.');
+    // Request permission synchronously from the Start button before awaiting tab lookup.
+    const cameraRequest = navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+    stream = await cameraRequest;
     video.srcObject = stream;
     await video.play();
     preview.classList.add('active');
+    stage = 'page';
+    if (activeTabId === null) await selectActiveTab();
+    if (activeTabId === null) throw new Error('Camera is ready. Switch to a normal http/https website tab, then start hand control again.');
+    stage = 'model';
     setStatus('Loading the on-device hand tracking model. First use downloads the model from Google…');
-    const vision = await FilesetResolver.forVisionTasks(chrome.runtime.getURL('mediapipe/wasm'));
+    const vision = await FilesetResolver.forVisionTasks(chrome.runtime.getURL('mediapipe/wasm/'));
     landmarker = await HandLandmarker.createFromOptions(vision, {
       baseOptions: { modelAssetPath: MODEL_URL, delegate: 'CPU' },
       runningMode: 'VIDEO',
@@ -269,10 +277,19 @@ async function startCamera(): Promise<void> {
     animationFrame = requestAnimationFrame(frame);
   } catch (error) {
     await stopCamera(false);
-    const message = error instanceof DOMException && error.name === 'NotAllowedError'
-      ? 'Camera access was denied. Allow camera access for the JARVIS extension and retry.'
-      : error instanceof Error ? error.message : 'Could not start hand controls.';
-    setStatus(message, true);
+    const name = error instanceof DOMException ? error.name : '';
+    if (name === 'NotAllowedError' || name === 'SecurityError') {
+      permissionHelpButton.hidden = false;
+      setStatus('Chrome blocked camera access in the side panel. Use the full-page setup below. If permission was blocked earlier, allow JARVIS in chrome://settings/content/camera and check Windows camera privacy settings.', true);
+    } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+      setStatus('No camera was found. Connect or enable a webcam, then retry.', true);
+    } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+      setStatus('The camera is busy or blocked by another app. Close Camera, Teams, or Meet, then retry.', true);
+    } else if (stage === 'model') {
+      setStatus(`Camera opened, but the hand model could not load: ${error instanceof Error ? error.message : String(error)}. Check your internet connection and retry.`, true);
+    } else {
+      setStatus(error instanceof Error ? error.message : 'Could not start hand controls.', true);
+    }
     startButton.disabled = false;
   }
 }
@@ -300,6 +317,9 @@ async function stopCamera(showMessage = true): Promise<void> {
 $('browseMode').addEventListener('click', () => setMode('browse'));
 $('typeMode').addEventListener('click', () => setMode('keyboard'));
 startButton.addEventListener('click', () => { void startCamera(); });
+permissionHelpButton.addEventListener('click', () => {
+  void chrome.tabs.create({ url: chrome.runtime.getURL('camera-permission.html') }).catch(() => setStatus('Could not open camera permission setup. Open the JARVIS extension in Chrome and retry.', true));
+});
 stopButton.addEventListener('click', () => { void stopCamera(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && running) void stopCamera(); });
 window.addEventListener('beforeunload', () => { void stopCamera(false); });

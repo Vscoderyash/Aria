@@ -46,7 +46,7 @@ class Mouth:
         try:
             import edge_tts
             path = os.path.join(tempfile.gettempdir(), f"jarvis_{os.getpid()}.mp3")
-            asyncio.run(edge_tts.Communicate(text, self.cfg.get("voice", "en-GB-RyanNeural"), rate="+6%").save(path))
+            asyncio.run(edge_tts.Communicate(text, self.cfg.get("voice", "en-GB-RyanNeural"), rate=self.cfg.get("speech_rate", "+0%")).save(path))
             self._play(path)
         except ImportError:
             self._no_edge = True; self.log("[voice] natural voice package not installed; using the Windows voice")
@@ -82,5 +82,5 @@ class Mouth:
             self._fallback = pyttsx3.init()
             for v in self._fallback.getProperty("voices"):
                 if re.search(r"david|mark|male|daniel|george", v.name, re.I): self._fallback.setProperty("voice", v.id); break
-            self._fallback.setProperty("rate", 175)
+            self._fallback.setProperty("rate", int(self.cfg.get("system_speech_rate", 165)))
         self._fallback.say(text); self._fallback.runAndWait()

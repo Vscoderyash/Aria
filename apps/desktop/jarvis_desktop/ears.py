@@ -1,9 +1,13 @@
-"""Listening: always-on microphone, noise-adaptive voice detection, then Whisper (runs locally) for accurate speech-to-text."""
-import json, time, queue, collections
+"""Local microphone capture and speech recognition for JARVIS Desktop."""
+import collections
+import json
+import queue
+import time
+
 import numpy as np
 
-SR, FRAME = 16000, 480            # 16 kHz, 30 ms frames
-JUNK = {"", ".", "the", "a", "huh", "you", "thank you", "thanks", "thanks for watching", "bye", "the end", "okay", "uh", "um", "hmm"}
+SR, FRAME_SECONDS = 16000, 0.03
+JUNK = {"", ".", "the", "a", "huh", "you", "thank you", "thanks", "thanks for watching", "bye", "the end", "uh", "um", "hmm"}
 PROMPT = "Jarvis. Open Chrome, open Notepad, click, scroll down, type, volume up, next tab, YouTube, Spotify, screenshot, remind me, set a timer."
 
 
@@ -12,89 +16,189 @@ class Ears:
         self.cfg, self.is_speaking, self.log = cfg, is_speaking, log
         self.q = queue.Queue(maxsize=400)
         self.model = None
-        self.threshold = 400.0
+        self.threshold = 180.0
+        self.noise_rms = 60.0
         self.stream = None
+        self.stream_rate = SR
         self.engine = None
         self.vosk_model = None
-        self.vocab = []                       # your own words (from what you taught JARVIS)
+        self.vocab = []
+        self._stream_warning_logged = False
 
     def start(self):
         import sounddevice as sd
+
         self._load_engine()
-        self.stream = sd.InputStream(samplerate=SR, channels=1, dtype="int16", blocksize=FRAME, device=self.cfg.get("mic_device"),
-                                     callback=lambda d, f, t, s: self.q.put_nowait(d[:, 0].copy()) if not self.q.full() else None)
+        device = self.cfg.get("mic_device")
+        try:
+            info = sd.query_devices(device, "input")
+        except Exception as exc:
+            raise RuntimeError(f"Could not open microphone {device!r}. Check mic_device or use the default microphone: {exc}") from exc
+
+        preferred_rate = int(info.get("default_samplerate") or SR)
+        for rate in dict.fromkeys((SR, preferred_rate, 48000, 44100)):
+            try:
+                sd.check_input_settings(device=device, samplerate=rate, channels=1, dtype="int16")
+                self.stream_rate = rate
+                break
+            except Exception:
+                continue
+        else:
+            raise RuntimeError(f"Microphone '{info.get('name', device)}' has no usable mono input rate. Choose another microphone with mic_device.")
+
+        if self.stream_rate != SR:
+            self.log(f"Microphone runs at {self.stream_rate} Hz; converting locally to {SR} Hz for speech recognition.")
+        blocksize = max(1, round(self.stream_rate * FRAME_SECONDS))
+        self.stream = sd.InputStream(
+            samplerate=self.stream_rate,
+            channels=1,
+            dtype="int16",
+            blocksize=blocksize,
+            device=device,
+            callback=self._audio_callback,
+        )
         self.stream.start()
         self.calibrate()
 
+    def _audio_callback(self, data, _frames, _time_info, status):
+        if status and not self._stream_warning_logged:
+            self._stream_warning_logged = True
+            self.log(f"[mic] Audio input warning: {status}. If words are clipped, try another microphone or a USB headset.")
+        if self.q.full():
+            return
+        try:
+            self.q.put_nowait(data[:, 0].copy())
+        except queue.Full:
+            pass
+
     def _load_engine(self):
-        want = self.cfg.get("stt", "auto")
+        want = str(self.cfg.get("stt", "auto")).lower()
         if want in ("auto", "whisper"):
             try:
                 from faster_whisper import WhisperModel
-                self.log(f"Loading Whisper speech model '{self.cfg['whisper_model']}' (first run downloads it)...")
-                self.model = WhisperModel(self.cfg["whisper_model"], device="cpu", compute_type="int8")
-                self.engine = "whisper"; return
-            except Exception as e:
-                if want == "whisper": raise
-                self.log(f"Whisper is not available on this Python ({type(e).__name__}); using the Vosk speech engine instead.")
+
+                model_name = self.cfg.get("whisper_model", "small")
+                self.log(f"Loading Whisper speech model '{model_name}' (first run downloads it)...")
+                self.model = WhisperModel(model_name, device="cpu", compute_type="int8")
+                self.engine = "whisper"
+                language = str(self.cfg.get("language", "auto")).strip().lower()
+                self.log(f"Whisper is ready; input language: {language if language not in ('', 'auto', 'detect') else 'automatic detection'}.")
+                return
+            except Exception as exc:
+                if want == "whisper":
+                    raise
+                self.log(f"Whisper is unavailable ({type(exc).__name__}); using Vosk. For better multilingual accuracy, install Python 3.11 or 3.12 and rerun install_windows.bat.")
+
         from vosk import Model, SetLogLevel
+
         SetLogLevel(-1)
         name = self.cfg.get("vosk_model", "vosk-model-en-us-0.22-lgraph")
-        self.log(f"Loading Vosk speech model '{name}' (first run downloads it, about 130 MB)...")
+        self.log(f"Loading Vosk English speech model '{name}' (first run downloads it, about 130 MB)...")
         self.vosk_model = Model(model_name=name)
         self.engine = "vosk"
 
     def calibrate(self, seconds=1.5):
-        self.log("Calibrating to room noise, stay quiet for a moment...")
-        vals, end = [], time.time() + seconds
+        self.log("Measuring room noise for a moment; keep quiet, then speak normally.")
+        values, end = [], time.time() + seconds
         while time.time() < end:
-            try: vals.append(self._rms(self.q.get(timeout=0.5)))
-            except queue.Empty: pass
-        ambient = float(np.median(vals)) if vals else 100.0
-        self.threshold = max(350.0, ambient * 3.2)
-        self.log(f"Noise level {ambient:.0f}, speech threshold {self.threshold:.0f}")
+            try:
+                values.append(self._rms(self.q.get(timeout=0.5)))
+            except queue.Empty:
+                pass
+        self.noise_rms = float(np.median(values)) if values else 50.0
+        self.threshold = min(5000.0, max(100.0, self.noise_rms * 2.2))
+        self.log(f"Room noise {self.noise_rms:.0f}, voice trigger {self.threshold:.0f}.")
 
     @staticmethod
     def _rms(frame):
         return float(np.sqrt(np.mean(frame.astype(np.float32) ** 2)))
 
     def _capture(self, timeout):
-        pre = collections.deque(maxlen=10)           # keep 300 ms before speech starts so first words are not clipped
+        pre = collections.deque(maxlen=10)  # 300 ms pre-roll keeps the first word
         voiced, silent, started, frames, t0 = 0, 0, False, [], time.time()
         while True:
-            if timeout and not started and time.time() - t0 > timeout: return None
-            try: f = self.q.get(timeout=0.3)
-            except queue.Empty: continue
-            if self.is_speaking():                   # never listen to ourselves
-                pre.clear(); voiced = silent = 0; started = False; frames = []; continue
-            loud = self._rms(f) > self.threshold
+            if timeout and not started and time.time() - t0 > timeout:
+                return None
+            try:
+                frame = self.q.get(timeout=0.3)
+            except queue.Empty:
+                continue
+            if self.is_speaking():  # do not feed JARVIS's own voice back into ASR
+                pre.clear()
+                voiced = silent = 0
+                started = False
+                frames = []
+                continue
+
+            rms = self._rms(frame)
             if not started:
-                pre.append(f)
-                voiced = voiced + 1 if loud else 0
-                if voiced >= 3: started, frames, silent = True, list(pre), 0
-                else: self.threshold = max(300.0, self.threshold * 0.999 + self._rms(f) * 3.2 * 0.001)   # slowly follow room noise
+                pre.append(frame)
+                voiced = voiced + 1 if rms > self.threshold else 0
+                if voiced >= 2:
+                    started, frames, silent = True, list(pre), 0
+                elif rms < self.threshold * 0.65:
+                    self.noise_rms = self.noise_rms * 0.995 + rms * 0.005
+                    self.threshold = min(5000.0, max(100.0, self.noise_rms * 2.2))
             else:
-                frames.append(f)
+                frames.append(frame)
+                loud = rms > max(65.0, self.threshold * 0.5)
                 silent = 0 if loud else silent + 1
-                if silent >= 25 or len(frames) > 500:  # 750 ms of quiet ends the sentence, 15 s max
+                if silent >= 25 or len(frames) > 667:  # 750 ms quiet ends a phrase; cap at 20 seconds
                     return np.concatenate(frames) if len(frames) > 14 else None
 
+    def _to_asr_audio(self, audio):
+        if self.stream_rate != SR and len(audio):
+            output_count = max(1, round(len(audio) * SR / self.stream_rate))
+            positions = np.arange(output_count, dtype=np.float64) * self.stream_rate / SR
+            audio = np.interp(positions, np.arange(len(audio), dtype=np.float64), audio.astype(np.float64))
+        audio = audio.astype(np.float32)
+        audio -= float(np.mean(audio))  # remove microphone DC offset
+        level = float(np.percentile(np.abs(audio), 95)) if len(audio) else 0.0
+        if level > 1.0:
+            audio *= min(4.0, 12000.0 / level)  # capped gain helps quiet laptop microphones
+        return np.clip(audio, -32768.0, 32767.0).astype(np.int16)
+
     def transcribe(self, audio):
+        audio = self._to_asr_audio(audio)
         if self.engine == "vosk":
             from vosk import KaldiRecognizer
-            rec = KaldiRecognizer(self.vosk_model, SR)
-            data = audio.astype(np.int16).tobytes()
-            for i in range(0, len(data), 8000): rec.AcceptWaveform(data[i:i + 8000])
-            text = json.loads(rec.FinalResult()).get("text", "").strip()
+
+            recognizer = KaldiRecognizer(self.vosk_model, SR)
+            data = audio.tobytes()
+            for offset in range(0, len(data), 8000):
+                recognizer.AcceptWaveform(data[offset:offset + 8000])
+            text = json.loads(recognizer.FinalResult()).get("text", "").strip()
             return "" if text.lower().strip(" .!?") in JUNK else text
-        x = audio.astype(np.float32) / 32768.0
-        segs, _ = self.model.transcribe(x, language=self.cfg.get("language") or None, beam_size=5, vad_filter=True,
-                                        initial_prompt=PROMPT + (" " + ", ".join(self.vocab)[:300] if self.vocab else ""), condition_on_previous_text=False, temperature=0.0)
+
+        samples = audio.astype(np.float32) / 32768.0
+        language = str(self.cfg.get("language", "auto")).strip().lower()
+        if language in ("", "auto", "detect"):
+            language = None
+        vocabulary = (", ".join(self.vocab)[:300]) if self.vocab else ""
+        if language == "en":
+            prompt = PROMPT + ((" " + vocabulary) if vocabulary else "")
+        elif language is None:
+            prompt = ("Jarvis. " + vocabulary).strip() or None
+        else:
+            prompt = vocabulary or None
+        segments, info = self.model.transcribe(
+            samples,
+            language=language,
+            beam_size=5,
+            vad_filter=True,
+            vad_parameters={"min_silence_duration_ms": 450, "speech_pad_ms": 250},
+            initial_prompt=prompt,
+            condition_on_previous_text=False,
+        )
         parts = []
-        for s in segs:
-            if s.no_speech_prob > 0.6 or s.avg_logprob < -1.3: continue
-            parts.append(s.text.strip())
+        for segment in segments:
+            # Do not discard uncertain words by either score alone; that clipped quiet parts of real phrases.
+            if segment.no_speech_prob > 0.6 and segment.avg_logprob < -1.0:
+                continue
+            parts.append(segment.text.strip())
         text = " ".join(parts).strip()
+        if getattr(info, "language_probability", 1.0) < 0.55:
+            self.log("Speech language was uncertain. Set config.json 'language' to 'en' or 'hi' to improve recognition.")
         return "" if text.lower().strip(" .!?") in JUNK else text
 
     def hear(self, timeout=None):

@@ -2,12 +2,37 @@
 cd /d "%~dp0"
 echo ===== JARVIS Desktop installer =====
 set "PY="
-for %%V in (3.12 3.11 3.10) do if not defined PY py -%%V --version >nul 2>nul && set "PY=py -%%V"
+set "VOICE_FALLBACK="
+for %%V in (3.12 3.11 3.13 3.10) do if not defined PY py -%%V --version >nul 2>nul && set "PY=py -%%V"
 if defined PY goto havepy
-py -3 -c "import sys; sys.exit(0 if sys.version_info[:2] >= (3,10) else 1)" >nul 2>nul && set "PY=py -3"
+py -3 -c "import sys; sys.exit(0 if (3,10) <= sys.version_info[:2] < (3,14) else 1)" >nul 2>nul && set "PY=py -3"
 if defined PY goto havepy
-python -c "import sys; sys.exit(0 if sys.version_info[:2] >= (3,10) else 1)" >nul 2>nul && set "PY=python"
+python -c "import sys; sys.exit(0 if (3,10) <= sys.version_info[:2] < (3,14) else 1)" >nul 2>nul && set "PY=python"
 if defined PY goto havepy
+py -3 -c "import sys; sys.exit(0 if sys.version_info[:2] >= (3,14) else 1)" >nul 2>nul
+if not errorlevel 1 goto newerpy
+python -c "import sys; sys.exit(0 if sys.version_info[:2] >= (3,14) else 1)" >nul 2>nul
+if not errorlevel 1 goto newerpy
+goto badpython
+
+:newerpy
+echo Python 3.14 or newer is installed, but this JARVIS build cannot use its Whisper speech engine on that version.
+where winget >nul 2>nul
+if errorlevel 1 goto latestpy
+choice /c YN /m "Install Python 3.11 for more accurate Whisper speech recognition"
+if errorlevel 2 goto latestpy
+winget install -e --id Python.Python.3.11 --accept-package-agreements --accept-source-agreements
+if errorlevel 1 goto latestpy
+py -3.11 --version >nul 2>nul && set "PY=py -3.11"
+if defined PY goto havepy
+
+:latestpy
+set "VOICE_FALLBACK=1"
+py -3 --version >nul 2>nul && set "PY=py -3"
+if defined PY goto havepy
+python --version >nul 2>nul && set "PY=python"
+if defined PY goto havepy
+goto badpython
 
 :badpython
 echo.
@@ -55,6 +80,7 @@ if errorlevel 1 goto fail
 pip install -r requirements-voice.txt
 if errorlevel 1 echo NOTE: the natural-voice package could not be installed, JARVIS will use the Windows voice instead.
 echo ok> "venv\.jarvis_installed"
+if defined VOICE_FALLBACK echo Vosk selected for this Python version> "venv\.jarvis_vosk_fallback"
 echo.
 echo ===== Installed OK =====
 if /i "%~1"=="auto" exit /b 0

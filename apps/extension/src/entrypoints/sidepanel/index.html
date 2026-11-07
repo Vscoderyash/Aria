@@ -17,7 +17,7 @@
       #airKeys{position:absolute;inset:47% 4% 4%;z-index:3;display:grid;grid-template-rows:repeat(4,1fr);gap:4px;padding:6px;border:1px solid #ffffff1c;border-radius:10px;background:#17181be0;backdrop-filter:blur(8px)}#airKeys[hidden]{display:none}
       .key-row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:3px}.air-key{min-width:0;border:1px solid #ffffff17;border-radius:5px;background:#35363a;color:#ececec;font:600 10px system-ui;display:grid;place-items:center}.air-key.special{background:#40434b;color:#c6d2ff}.air-key.hover{background:#aebfff;color:#121318;border-color:#d3dcff;box-shadow:0 0 10px #9eb9ff88}
       .modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:11px;background:#242528}.mode{padding:8px 10px;border-radius:8px;color:#aaa;font-weight:500}.mode.selected{background:#3a3b3f;color:#fff;box-shadow:0 1px 2px #0006}
-      .actions{display:flex;gap:8px}.actions button{flex:1;border-radius:10px;padding:10px 12px;font-weight:600}.primary{background:#f0f0f0;color:#161616}.secondary{background:#383a3e;color:#ededed}.actions button:disabled{opacity:.45;cursor:default}
+      .actions{display:flex;gap:8px}.actions button{flex:1;border-radius:10px;padding:10px 12px;font-weight:600}.primary{background:#f0f0f0;color:#161616}.secondary{background:#383a3e;color:#ededed}.actions button:disabled{opacity:.45;cursor:default}.permission-help{width:100%;padding:9px 10px;border:1px solid #565b68;border-radius:9px;background:#292c33;color:#cbd5ff;text-align:left;font-size:12px}.permission-help[hidden]{display:none}
       #status{min-height:34px;padding:9px 10px;border-radius:10px;background:#222326;color:#c8c8c8;font-size:12px}#status[data-kind="error"]{color:#ffb3a9}
       .help{margin:0;padding:0 0 0 18px;color:#a4a4a4;font-size:12px}.help li{margin:4px 0}.foot{border-top:1px solid #343538;padding-top:10px;color:#888;font-size:11px}
       button:focus-visible{outline:2px solid #b4c5ff;outline-offset:2px}
@@ -41,10 +41,11 @@
         <button type="button" id="typeMode" class="mode">Air keyboard</button>
       </div>
       <div class="actions"><button type="button" id="start" class="primary">Start camera</button><button type="button" id="stop" class="secondary" disabled>Stop</button></div>
+      <button type="button" id="permissionHelp" class="permission-help" hidden>Open camera permission setup</button>
       <div id="status" role="status" aria-live="polite">Camera is off. Choose a mode, then start it when you want gesture control.</div>
       <ul class="help" id="browseHelp"><li>Point to move the page cursor.</li><li>Pinch and release to click; pinch and drag up or down to scroll.</li><li>Risky actions such as sending, buying, deleting, or submitting are blocked.</li></ul>
       <ul class="help" id="typeHelp" hidden><li>Focus a text field on the page before typing.</li><li>Point at a key and pinch to type. Shift and backspace are supported.</li><li>Air typing never presses Enter or submits a form.</li></ul>
-      <p class="foot">Works on normal http/https pages. Camera video stays in this side panel and is stopped when you stop or close it.</p>
+      <p class="foot">Works on normal http/https pages. Camera video stays on this device and is stopped when you stop or close the panel.</p>
     </main>
     <script type="module" src="./main.ts"></script>
   </body>

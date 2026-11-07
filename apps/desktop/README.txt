@@ -3,7 +3,7 @@ Hears you anywhere on your computer, thinks, acts, and answers in a natural male
 Pairs with the JARVIS browser extension so one voice controls both your PC and Chrome.
 
 INSTALL (Windows)
- 1. You need Python 3.10 or newer (3.11 or 3.12 give the best speech accuracy; very new ones like 3.15 work too, with a lighter speech engine).
+ 1. You need Python 3.10 or newer (3.11 or 3.12 are recommended for accurate Whisper speech recognition; Python 3.14+ uses the lighter, English-focused Vosk engine).
     If you have none, the installer offers to install Python 3.11 for you.
  2. Unzip this folder somewhere simple (like C:\JARVIS) and double-click start_jarvis.bat. If JARVIS is not installed yet it runs install_windows.bat for you
     (a few minutes, needs internet). You can also run install_windows.bat yourself first.
@@ -38,10 +38,23 @@ CONNECT THE BROWSER EXTENSION
  Install the JARVIS extension (jarvis-extension.zip), keep this app running. The extension popup will say
  "Desktop JARVIS: connected". From then on this app listens, the extension acts in the page, and the natural voice speaks for both.
 
+API ACCESS (401)
+ If the server has JARVIS_ACCESS_TOKEN set, Desktop must send the same token. Keep it out of config.json and source files.
+ Windows PowerShell (one time): [Environment]::SetEnvironmentVariable('JARVIS_ACCESS_TOKEN','<same token as Vercel>','User')
+ Then close JARVIS Desktop and start it again. On macOS/Linux, export JARVIS_ACCESS_TOKEN='<same token as Vercel>' before starting JARVIS.
+ The website route is /api/chat; a 401 means the route was reached but the local token is missing or does not match.
+
+CAMERA HAND CONTROLS
+ Click the JARVIS extension icon, choose "Open camera hand controls", and press "Start camera". If Chrome blocks the side-panel permission prompt,
+ choose "Open camera permission setup", press "Enable camera" in that tab, return to the side panel, and press Start camera again.
+ Camera video stays on the device; the permission setup stops its temporary stream as soon as the permission is granted.
+
 SETTINGS  (jarvis_desktop/config.json)
  voice          en-GB-RyanNeural (British male, default)   en-US-GuyNeural   en-IN-PrabhatNeural   en-US-ChristopherNeural
  stt            auto (Whisper if it can be installed, otherwise Vosk)  whisper | vosk
- whisper_model  small.en (accurate, default)   base.en (faster, lighter)   medium.en (most accurate, needs a stronger PC)   "small" + language "" for Hindi/Hinglish
+ speech_rate    +0% (clearer default)   -10% slower   +10% faster
+ whisper_model  small (multilingual, default)   small.en (English only)   medium (more accurate, needs a stronger PC)
+ language       auto (default)   en   hi   or another Whisper language code
  wake_required  false = react to everything you say (only in a quiet room)
  ui_scale       0.5 to 2.5  makes the orb smaller or bigger        mic_device  a number if the wrong microphone is used
  api_url        your JARVIS website API (the same one the extension uses)
@@ -53,6 +66,6 @@ PRIVACY
 
 TROUBLESHOOTING
  "Could not start the microphone": pick the right device with mic_device (run: python -c "import sounddevice;print(sounddevice.query_devices())").
- He answers himself / echo: use headphones or lower the speaker volume.  He misses words: use a better mic or the medium.en model.
+ He answers himself / echo: use headphones or lower the speaker volume. He misses words: set language to en or hi instead of auto, choose a quieter mic, or set whisper_model to medium if the computer can handle it.
  Voice sounds robotic: you are offline, or the natural-voice package is missing; the natural voice needs internet.
- Speech engine: Whisper (Python up to 3.13) is the most accurate. On newer Python JARVIS uses Vosk: good for commands, weaker for long sentences. Say "Jarvis" clearly with a short pause after it.
+ Speech engine: Whisper supports the multilingual default model and automatically detects language. Python 3.14+ falls back to Vosk; on Windows the installer offers Python 3.11 for better multilingual accuracy. Vosk is English-focused. Say "Jarvis" clearly with a short pause after it.

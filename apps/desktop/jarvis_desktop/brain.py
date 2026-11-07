@@ -35,8 +35,22 @@ class Brain:
 
     def _http_llm(self, rules, payload):
         body = {"mode": "raw", "smart": self.smart, "system": rules, "messages": [{"role": "user", "content": rules + "\n\nINPUT:\n" + payload}]}
+        import os
         import requests
-        r = requests.post(self.cfg["api_url"], json=body, timeout=40)
+
+        headers = {}
+        access_token = os.environ.get("JARVIS_ACCESS_TOKEN", "").strip()
+        if access_token:
+            headers["Authorization"] = "Bearer " + access_token
+        r = requests.post(self.cfg["api_url"], json=body, headers=headers, timeout=40)
+        if r.status_code == 401:
+            raise RuntimeError("The server rejected this Desktop request (401). Set the same JARVIS_ACCESS_TOKEN in this computer's environment as in Vercel, then restart JARVIS Desktop.")
+        if r.status_code == 503:
+            try:
+                detail = r.json().get("error", "The server model provider is not configured.")
+            except (ValueError, AttributeError):
+                detail = "The server model provider is not configured."
+            raise RuntimeError(detail)
         r.raise_for_status()
         return r.text
 
