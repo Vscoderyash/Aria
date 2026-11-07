@@ -5,6 +5,7 @@
 node_modules
 apps/extension/.output/
 apps/extension/.wxt/
+apps/extension/public/mediapipe/wasm/
 apps/desktop/venv/
 apps/desktop/**/__pycache__/
 apps/desktop/**/.pytest_cache/

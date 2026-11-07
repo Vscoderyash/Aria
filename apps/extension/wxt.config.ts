@@ -6,8 +6,10 @@ export default defineConfig({
   manifest: {
     name: 'JARVIS Browser Agent',
     description: 'JARVIS by Yash Raj: plans, thinks and acts on web pages by voice. Pairs with JARVIS Desktop for the whole computer.',
-    permissions: ['storage', 'tabs', 'scripting', 'sessions'],
+    minimum_chrome_version: '116',
+    permissions: ['storage', 'tabs', 'scripting', 'sessions', 'sidePanel'],
     host_permissions: ['<all_urls>'],
+    side_panel: { default_path: 'sidepanel.html' },
     action: {
       default_title: 'JARVIS',
       default_icon: {

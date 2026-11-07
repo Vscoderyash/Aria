@@ -68,10 +68,11 @@ export default defineContentScript({
   <div id="panel"><div id="hd"><span>Pip · JARVIS</span><button id="mic" title="Listen (hands-free)">🎤</button><button id="vo" title="Voice replies">🔊</button><button id="x" title="Close assistant">✕</button></div><div id="log"></div>
   <div id="hear"></div><div id="ap"><button id="yes">Approve</button><button id="no">Cancel</button></div>
   <div id="bar"><input id="in" placeholder="Tell JARVIS what to do…"><button id="go">Go</button><button id="st">Stop</button></div></div>`;
+  root.innerHTML += `<style>#gestureCursor{position:fixed;display:none;width:28px;height:28px;margin:-14px;border:2px solid #b4c5ff;border-radius:50%;box-shadow:0 0 12px #8eaaff99;pointer-events:none;z-index:2147483647}#gestureCursor:after{content:"";position:absolute;inset:8px;border-radius:50%;background:#dce5ff}</style><div id="gestureCursor" aria-hidden="true"></div>`;
   document.documentElement.appendChild(host);
   window.__jarvisAgent.host = host;
   const $ = <T extends HTMLElement = HTMLElement>(s: string): T => root.querySelector(s) as T;
-  const orb = $('#orb'), panel = $('#panel'), logEl = $('#log');
+  const orb = $('#orb'), panel = $('#panel'), logEl = $('#log'), gestureCursor = $('#gestureCursor');
   const bg = <T = AgentReply>(m: Record<string, unknown>) => new Promise<T | null>(r => { try { chrome.runtime.sendMessage(m, res => { void chrome.runtime.lastError; r(res as T); }); } catch { r(null); } });
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const store = { get: async <T = unknown>(k: string): Promise<T | undefined> => { const values = await chrome.storage.local.get(k); return values[k] as T | undefined; }, set: (k: string, v: unknown) => chrome.storage.local.set({ [k]: v }) };
@@ -146,7 +147,7 @@ export default defineContentScript({
   }
   const parse = t => { try { return JSON.parse((String(t).match(/\{[\s\S]*\}/) || [''])[0]); } catch { return null; } };
   const SENSITIVE = /(buy|purchase|pay|place order|checkout|delete|remove|confirm|send|submit|book|transfer|subscribe|post|publish)/i;
-  const SECRET = /(password|passwd|card|cc-|cvv|cvc|iban|ssn|otp|pin)/i;
+  const SECRET = /(password|passwd|passcode|card|cc-|cvv|cvc|iban|ssn|\botp\b|\bpin\b)/i;
   const PERSONAL_FIELD = /(email|e-mail|phone|mobile|address|first.?name|last.?name|full.?name|personal.?data)/i;
   function submissionNeedsApproval(el: HTMLElement) {
     const form = (el as PageElement).form || el.closest('form');
@@ -247,6 +248,70 @@ export default defineContentScript({
   $('#st').onclick = () => { void store.set('q' + tabId, []); if (job) { job.status = 'idle'; void save(); } void bg({ type: 'stop' }); try { speechSynthesis.cancel(); } catch {} approveResolve && approveResolve(false); say('s', 'Stopped.'); orb.classList.remove('busy'); };
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && job?.status === 'running') { event.preventDefault(); $('#st').click(); } }, true);
   chrome.runtime.onMessage.addListener(m => { if (m.type === 'activated') { orb.classList.add('ack'); setTimeout(() => orb.classList.remove('ack'), 380); } if (m.type === 'wake') activate(true); if (m.type === 'command') { toggle(true); handle(m.text); } });
+  chrome.runtime.onMessage.addListener((m, _sender, sendResponse) => {
+    if (typeof m?.type !== 'string' || !m.type.startsWith('gesture:')) return;
+    if (m.type === 'gesture:ready') { sendResponse({ ok: true }); return; }
+    if (m.type === 'gesture:off') { gestureCursor.style.display = 'none'; sendResponse({ ok: true }); return; }
+    if (m.type === 'gesture:cursor') {
+      const x = Number(m.nx), y = Number(m.ny);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) { sendResponse({ ok: false }); return; }
+      gestureCursor.style.left = `${Math.max(0, Math.min(1, x)) * innerWidth}px`;
+      gestureCursor.style.top = `${Math.max(0, Math.min(1, y)) * innerHeight}px`;
+      gestureCursor.style.display = 'block'; sendResponse({ ok: true }); return;
+    }
+    if (m.type === 'gesture:scroll') {
+      const nx = Number(m.nx), ny = Number(m.ny), delta = Number(m.delta);
+      if (![nx, ny, delta].every(Number.isFinite)) { sendResponse({ ok: false }); return; }
+      const x = Math.max(0, Math.min(1, nx)) * innerWidth, y = Math.max(0, Math.min(1, ny)) * innerHeight;
+      let node = document.elementFromPoint(x, y) as HTMLElement | null;
+      while (node && node !== document.body && node !== document.documentElement) {
+        const style = getComputedStyle(node);
+        if (/(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight + 4) { node.scrollBy({ top: delta * innerHeight, behavior: 'auto' }); sendResponse({ ok: true }); return; }
+        node = node.parentElement;
+      }
+      window.scrollBy({ top: delta * innerHeight, behavior: 'auto' }); sendResponse({ ok: true }); return;
+    }
+    if (m.type === 'gesture:click') {
+      const nx = Number(m.nx), ny = Number(m.ny);
+      if (![nx, ny].every(Number.isFinite)) { sendResponse({ ok: false, message: 'Hand position was not available.' }); return; }
+      const raw = document.elementFromPoint(Math.max(0, Math.min(1, nx)) * innerWidth, Math.max(0, Math.min(1, ny)) * innerHeight) as HTMLElement | null;
+      const target = raw?.closest<HTMLElement>('a,button,[role="button"],input:not([type="hidden"]),textarea,select,[contenteditable="true"]');
+      if (!target || host.contains(target) || (target as HTMLButtonElement).disabled) { sendResponse({ ok: false, message: 'No clickable page control was under Pip’s cursor.' }); return; }
+      const label = (target.getAttribute('aria-label') || target.getAttribute('title') || target.innerText || (target as HTMLInputElement).value || '').trim().slice(0, 160);
+      const risky = /\b(send|submit|buy|purchase|pay|place order|book|delete|remove|transfer|post|publish|confirm|log out|sign out)\b/i;
+      const targetDetails = [label, target.id, (target as HTMLInputElement).name, (target as HTMLInputElement).type, target.getAttribute('autocomplete')].join(' ');
+      const submitsForm = target instanceof HTMLButtonElement && target.type === 'submit' || target instanceof HTMLInputElement && target.type === 'submit';
+      if (SECRET.test(targetDetails) || risky.test(label) || submitsForm) {
+        toggle(true); say('s', 'Pinch click paused on a sensitive action. Use the page controls and confirm it yourself.'); sendResponse({ ok: false, message: 'Sensitive action paused; use the page controls to confirm it yourself.' }); return;
+      }
+      target.click(); sendResponse({ ok: true }); return;
+    }
+    if (m.type === 'gesture:type') {
+      const value = String(m.value || '');
+      if (!/^[a-zA-Z]$/.test(value) && value !== ' ' && value !== '\b') { sendResponse({ ok: false, message: 'That key is not available.' }); return; }
+      const active = document.activeElement as HTMLElement | null;
+      if (!active || host.contains(active) || active instanceof HTMLInputElement && (active.disabled || active.readOnly || active.type === 'password' || !['text', 'search', 'url', 'email', 'tel'].includes(active.type)) || active instanceof HTMLTextAreaElement && (active.disabled || active.readOnly) || !active.isContentEditable && !(active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement)) {
+        sendResponse({ ok: false, message: 'Focus a regular text field on the page first. Password and sensitive fields are blocked.' }); return;
+      }
+      if (SECRET.test([active.id, (active as HTMLInputElement).name, (active as HTMLInputElement).type, active.getAttribute('autocomplete'), active.getAttribute('aria-label'), (active as HTMLInputElement).placeholder].join(' '))) {
+        sendResponse({ ok: false, message: 'This field looks sensitive. Please type into it yourself.' }); return;
+      }
+      if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) {
+        const start = active.selectionStart ?? active.value.length, end = active.selectionEnd ?? start;
+        const removeStart = value === '\b' && start === end ? Math.max(0, start - 1) : start;
+        const insert = value === '\b' ? '' : value;
+        const next = active.value.slice(0, removeStart) + insert + active.value.slice(end);
+        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(active), 'value');
+        descriptor?.set?.call(active, next);
+        const caret = removeStart + insert.length;
+        try { active.setSelectionRange(caret, caret); } catch { /* Some browser input types do not expose a text selection. */ }
+        active.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: value === '\b' ? 'deleteContentBackward' : 'insertText', data: insert || null }));
+        sendResponse({ ok: true }); return;
+      }
+      if (value === '\b') document.execCommand('delete'); else document.execCommand('insertText', false, value);
+      sendResponse({ ok: true });
+    }
+  });
 
 
 

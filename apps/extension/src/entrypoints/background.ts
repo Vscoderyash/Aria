@@ -60,7 +60,7 @@ chrome.runtime.onMessage.addListener((m, s, send) => {
   if (m.type === 'say') { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'say', text: m.text })); send(true); return; }
   if (m.type === 'ask') { ask(m.messages, m.phase, s.tab?.id).then(send); return true; }
 });
-// The orb "flies in" whenever you switch to a tab.
+// Give the Pip companion a small acknowledgement when switching tabs.
 const inject = id => chrome.scripting.executeScript({ target: { tabId: id }, files: ['content-scripts/content.js'] }).catch(() => {});
 chrome.tabs.onActivated.addListener(({ tabId }) => chrome.tabs.sendMessage(tabId, { type: 'activated' }).catch(() => inject(tabId)));
 chrome.runtime.onInstalled.addListener(async () => { for (const t of await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] })) inject(t.id); });

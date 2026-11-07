@@ -15,6 +15,18 @@ const voice = byId<HTMLSelectElement>('v');
 const size = byId<HTMLSelectElement>('z');
 const brain = byId<HTMLSelectElement>('br');
 const trainingFile = byId<HTMLInputElement>('fi');
+let activeWindowId: number | null = null;
+const handControls = document.createElement('button');
+handControls.type = 'button';
+handControls.textContent = 'Open camera hand controls';
+handControls.style.cssText = 'display:block;margin:10px 0;background:#34363a;color:#ededed';
+handControls.disabled = true;
+byId<HTMLButtonElement>('w').after(handControls);
+void chrome.tabs.query({ active: true, lastFocusedWindow: true }).then(([tab]) => { activeWindowId = typeof tab?.windowId === 'number' ? tab.windowId : null; handControls.disabled = activeWindowId === null; });
+handControls.onclick = () => {
+  if (activeWindowId === null || !chrome.sidePanel) { message.textContent = 'Camera controls need Chrome 116 or newer.'; return; }
+  void chrome.sidePanel.open({ windowId: activeWindowId }).then(() => window.close()).catch(() => { message.textContent = 'Could not open the side panel. Try again from a normal browser tab.'; });
+};
 const trainingKeys = ['skills', 'facts', 'aliases', 'exp', 'lessons'];
 const getStored = async (keys: string | string[]): Promise<Record<string, unknown>> =>
   await chrome.storage.local.get(keys) as Record<string, unknown>;

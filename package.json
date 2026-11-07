@@ -15,6 +15,7 @@
     "typecheck": "npm run typecheck --workspace @jarvis/grammar && npm run typecheck --workspace @jarvis/schema && npm run typecheck --workspace @jarvis/extension",
     "build:extension": "npm run build --workspace @jarvis/extension",
     "package:extension": "npm run zip --workspace @jarvis/extension && node scripts/package-extension.mjs",
+    "package:desktop": "python scripts/package-desktop.py",
     "check": "npm run typecheck && npm test && npm run build:extension"
   },
   "devDependencies": {

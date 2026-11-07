@@ -53,6 +53,6 @@ describe('uploaded attachments', () => {
   it('rejects unsupported file types and oversized uploads', async () => {
     await expect(readAttachments([{ name: 'program.exe', data: base64('no') }])).rejects.toThrow('Unsupported file type');
     const tooLarge = Buffer.alloc(MAX_TOTAL_BYTES + 1).toString('base64');
-    await expect(readAttachments([{ name: 'large.txt', data: tooLarge }])).rejects.toThrow('Attachments exceed the 2.7 MB total size limit');
+    await expect(readAttachments([{ name: 'large.txt', data: tooLarge }])).rejects.toThrow('Attachments exceed the 3.15 MB total size limit');
   });
 });

@@ -5,14 +5,15 @@
   "type": "module",
   "scripts": {
     "postinstall": "wxt prepare",
-    "dev": "wxt",
-    "build": "wxt build",
-    "zip": "wxt zip",
+    "dev": "node ../../scripts/copy-mediapipe-wasm.mjs && wxt",
+    "build": "node ../../scripts/copy-mediapipe-wasm.mjs && wxt build",
+    "zip": "node ../../scripts/copy-mediapipe-wasm.mjs && wxt zip",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@jarvis/grammar": "1.0.0",
     "@jarvis/schema": "1.0.0",
+    "@mediapipe/tasks-vision": "^1.2.2",
     "ajv": "8.20.0"
   },
   "devDependencies": {

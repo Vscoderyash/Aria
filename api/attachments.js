@@ -1,7 +1,8 @@
-const MAX_ATTACHMENTS = 4;
-const MAX_TOTAL_BYTES = 2_700_000;
-const MAX_EXTRACTED_CHARS = 45_000;
-const MAX_PDF_PAGES = 60;
+const MAX_ATTACHMENTS = 8;
+// Keep base64 JSON requests safely below Vercel Functions' 4.5 MB request limit.
+const MAX_TOTAL_BYTES = 3_150_000;
+const MAX_EXTRACTED_CHARS = 80_000;
+const MAX_PDF_PAGES = 100;
 const MAX_DOCX_UNCOMPRESSED_BYTES = 20_000_000;
 const { inflateRawSync } = require('node:zlib');
 
@@ -181,7 +182,7 @@ async function readAttachments(inputs) {
   if (!Array.isArray(inputs) || inputs.length > MAX_ATTACHMENTS) throw badRequest(`Attach up to ${MAX_ATTACHMENTS} files at a time.`);
   const decoded = inputs.map(decodeAttachment);
   const totalBytes = decoded.reduce((sum, file) => sum + file.buffer.length, 0);
-  if (totalBytes > MAX_TOTAL_BYTES) throw badRequest('Attachments exceed the 2.7 MB total size limit.');
+  if (totalBytes > MAX_TOTAL_BYTES) throw badRequest('Attachments exceed the 3.15 MB total size limit.');
 
   const documents = [];
   const images = [];

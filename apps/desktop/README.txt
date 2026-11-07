@@ -21,7 +21,7 @@ USE
    "click sign in" / "next tab" / "summarize this page"  (go to the browser extension when it is connected)
    Anything else ("plan my week", "write an email about...", "find me a recipe and open it") goes to the thinking brain:
    it works out what you want, makes a plan, does one step at a time, checks each result and changes tactics if something fails.
- The small orb on screen: cyan = listening, red = thinking, green = speaking. Drag to move, double-click to stop a task, right-click to quit.
+ The Codex-inspired Pip card stays on top: blue = listening/thinking, green = speaking. Drag to move it, double-click to stop a task, right-click to quit.
  Safety: slam the mouse into a screen corner to abort any automation. Closing windows (Alt+F4) asks you to say "yes" first.
  Ctrl+Alt+Del and Task Manager shortcuts are blocked. It never runs shell commands or deletes files.
 
