@@ -10,6 +10,7 @@ const apiInput = byId<HTMLInputElement>('u');
 const accessInput = byId<HTMLInputElement>('a');
 const message = byId<HTMLElement>('m');
 const language = byId<HTMLSelectElement>('l');
+const replyLanguage = byId<HTMLSelectElement>('rl');
 const voice = byId<HTMLSelectElement>('v');
 const size = byId<HTMLSelectElement>('z');
 const brain = byId<HTMLSelectElement>('br');
@@ -63,6 +64,8 @@ byId<HTMLButtonElement>('w').onclick = async () => {
 
 void getStored('lang').then((value) => { language.value = typeof value.lang === 'string' ? value.lang : ''; });
 language.onchange = () => chrome.storage.local.set({ lang: language.value }).then(() => { message.textContent = 'Voice language saved. Refresh your tabs.'; });
+void getStored('replyLanguage').then((value) => { replyLanguage.value = typeof value.replyLanguage === 'string' ? value.replyLanguage : ''; });
+replyLanguage.onchange = () => chrome.storage.local.set({ replyLanguage: replyLanguage.value }).then(() => { message.textContent = 'Reply and translation language saved.'; });
 
 function fillVoices(): void {
   voice.textContent = '';
@@ -70,10 +73,10 @@ function fillVoices(): void {
   automatic.value = '';
   automatic.textContent = 'Auto (best male voice)';
   voice.appendChild(automatic);
-  for (const item of speechSynthesis.getVoices().filter((candidate) => /^en/i.test(candidate.lang))) {
+  for (const item of speechSynthesis.getVoices()) {
     const option = document.createElement('option');
     option.value = item.name;
-    option.textContent = item.name;
+    option.textContent = `${item.name} (${item.lang})`;
     voice.appendChild(option);
   }
   void getStored('voiceName').then((value) => { voice.value = typeof value.voiceName === 'string' ? value.voiceName : ''; });

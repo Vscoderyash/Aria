@@ -18,7 +18,7 @@ function parseAgentReply(text: string): BrowserAgentReply | null {
 }
 const activeRequests = new Map();
 async function ask(messages, phase, tabId) {
-  const settings = await chrome.storage.local.get(['apiUrl', 'brain', 'accessToken']) as Record<string, unknown>;
+  const settings = await chrome.storage.local.get(['apiUrl', 'brain', 'accessToken', 'replyLanguage']) as Record<string, unknown>;
   const apiUrl = typeof settings.apiUrl === 'string' ? settings.apiUrl : DEFAULT_API;
   const brain = typeof settings.brain === 'string' ? settings.brain : 'fast';
   const controller = new AbortController();
@@ -28,7 +28,7 @@ async function ask(messages, phase, tabId) {
     timeout = setTimeout(() => controller.abort(), 30000);
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (typeof settings.accessToken === 'string' && settings.accessToken) headers.Authorization = `Bearer ${settings.accessToken}`;
-    const r = await fetch(apiUrl, { method: 'POST', headers, body: JSON.stringify({ mode: 'agent', smart: brain === 'smart', messages: withRules(messages, phase) }), signal: controller.signal });
+    const r = await fetch(apiUrl, { method: 'POST', headers, body: JSON.stringify({ mode: phase === 'plan' ? 'planner' : 'agent', smart: brain === 'smart', replyLanguage: settings.replyLanguage, messages: withRules(messages, phase) }), signal: controller.signal });
     const t = await r.text();
     if (!r.ok) { let e = t; try { e = JSON.parse(t).error; } catch {} return { error: e }; }
     if (phase === 'plan') return { text: t };

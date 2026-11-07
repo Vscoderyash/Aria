@@ -11,7 +11,7 @@ The website and `api/chat.js` remain at the repository root so the current Verce
 - `npm run package:extension` rebuilds and refreshes the extension archive served by the website.
 - `npm run check` runs all of those checks.
 
-The grammar, schemas, background worker, popup, WXT config, and injected content script are all included in TypeScript checking. Fast brain mode skips the planner call and action animations; Smart mode keeps strategic planning. Page links can be targeted with “click that” or “open that” after pointing at them. The website composer includes provider/model selection, Quick/Balanced/Deep response power, browser microphone dictation, and text/code, PDF, DOCX, PPTX, XLSX, and common image attachments. File bytes stay in tab memory and are not stored in chat history.
+The grammar, schemas, background worker, popup, WXT config, and injected content script are all included in TypeScript checking. Fast brain mode skips the planner call and action animations; Smart mode uses a dedicated planner request before browser actions. Page links can be targeted with “click that” or “open that” after pointing at them. The website composer includes Chat/Code/Translate modes, provider/model selection, Quick/Balanced/Deep response power, input and reply language selection, browser microphone dictation, and text/code, PDF, DOCX, PPTX, XLSX, and common image attachments. File bytes stay in tab memory and are not stored in chat history. The website and extension each include an independent animated AI pet.
 
 ## Known scope boundary
 

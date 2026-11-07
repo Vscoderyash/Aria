@@ -65,6 +65,7 @@ export default defineContentScript({
   #hd{font-family:"Courier New",monospace;letter-spacing:.22em;color:#19d3ff}.m.a{border-left:2px solid #19d3ff}#st{background:#38414a}
   #boot{position:fixed;inset:0;display:none;place-items:center;background:radial-gradient(circle,#042033ee,#000000f2);opacity:1;transition:opacity .7s}#boot.on{display:grid}
   #boot:after{content:"";position:absolute;left:0;right:0;height:110px;background:linear-gradient(transparent,#19d3ff40,transparent);animation:sc 1.6s linear infinite}@keyframes sc{from{top:-120px}to{top:100%}}
+  #jarvisPet{position:fixed;left:14px;bottom:12px;width:66px;height:74px;border:0;background:none;padding:0;cursor:pointer;filter:drop-shadow(0 6px 8px #0009);animation:petBob 2.7s ease-in-out infinite}#jarvisPet svg{width:100%;height:100%;image-rendering:pixelated}#jarvisPet .pet-body{fill:#3266ef}#jarvisPet .pet-light{fill:#75a5ff}#jarvisPet .pet-screen{fill:#101b38}#jarvisPet .pet-eye{fill:#8efff3}#jarvisPet .pet-laptop{fill:#192d6a;stroke:#8ad7ff;stroke-width:2}#jarvisPet .pet-pointer{fill:#a0ffff}#jarvisPet[data-mood="thinking"]{animation:petThink .4s ease-in-out infinite alternate}#jarvisPet[data-mood="happy"] .pet-eye{fill:#e0ffff}#jarvisPet[data-mood="oops"]{animation:petOops .3s ease-in-out 2}@keyframes petBob{50%{transform:translateY(-4px)}}@keyframes petThink{to{transform:translateY(-4px) rotate(4deg)}}@keyframes petOops{50%{transform:rotate(-7deg)}}#petNote{position:fixed;left:16px;bottom:94px;display:none;max-width:260px;padding:9px 12px;border:1px solid #558cff88;border-radius:12px;background:#101a2df2;color:#edf3ff;font:12px/1.45 system-ui,sans-serif;box-shadow:0 8px 24px #0009}#petNote.open{display:block}
   .r{position:absolute;border-radius:50%;border:2px solid #19d3ff;box-shadow:0 0 30px #19d3ff77,inset 0 0 30px #19d3ff33}
   .r1{width:300px;height:300px;border-style:dashed;animation:sp 8s linear infinite}.r2{width:220px;height:220px;border-color:#ff5a1f;border-top-color:transparent;border-bottom-color:transparent;animation:sp 2.4s linear infinite reverse}.r3{width:120px;height:120px;background:radial-gradient(circle,#fff,#19d3ff 50%,transparent 72%);animation:cr 1s infinite}
   #bt{position:absolute;top:calc(50% + 190px);font:700 18px "Courier New",monospace;letter-spacing:.3em;color:#19d3ff;text-shadow:0 0 14px #19d3ff;text-align:center;width:100%}
@@ -75,13 +76,16 @@ export default defineContentScript({
   #wl{position:fixed;left:50%;top:-60px;transform:translateX(-50%);padding:10px 22px;color:#ffc247;background:#12070af0;border:1px solid #ffc24788;font:700 14px "Courier New",monospace;letter-spacing:.25em;white-space:nowrap;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);pointer-events:none}
   .shock{position:fixed;width:60px;height:60px;margin:-30px;border-radius:50%;border:3px solid #ffc247;box-shadow:0 0 24px #ff3b2f;pointer-events:none}
   </style><div id="orb" title="JARVIS (Alt+J)"><svg id="bot" viewBox="0 0 100 100" width="96" height="96"><g id="rig"><ellipse class="gl" cx="50" cy="92" rx="30" ry="5" fill="#19d3ff" opacity=".5"/><g class="hv"><path d="M8 74 Q8 80 16 80 L84 80 Q92 80 92 74 L86 76 L14 76 Z" fill="#ff5a1f"/><rect x="14" y="76" width="72" height="3.5" rx="1.7" fill="#14181c"/><g class="wh"><circle cx="28" cy="85" r="4.5" fill="#fff" stroke="#14181c" stroke-width="2"/><circle cx="72" cy="85" r="4.5" fill="#fff" stroke="#14181c" stroke-width="2"/></g><rect x="38" y="62" width="8" height="14" rx="3" fill="#cfd3d6" stroke="#14181c" stroke-width="2"/><rect x="55" y="62" width="8" height="14" rx="3" fill="#cfd3d6" stroke="#14181c" stroke-width="2"/><rect x="24" y="40" width="9" height="22" rx="4.5" fill="#cfd3d6" stroke="#14181c" stroke-width="2" transform="rotate(14 28 42)"/><g class="arm"><rect x="68" y="40" width="9" height="22" rx="4.5" fill="#cfd3d6" stroke="#14181c" stroke-width="2" transform="rotate(-14 72 42)"/></g><rect x="33" y="38" width="34" height="29" rx="10" fill="#fff" stroke="#14181c" stroke-width="2.5"/><circle class="core" cx="50" cy="52" r="6.5" fill="#19d3ff"/><circle cx="50" cy="52" r="10" fill="none" stroke="#ff5a1f" stroke-width="1.5" stroke-dasharray="3 3"/><line x1="50" y1="14" x2="50" y2="8" stroke="#14181c" stroke-width="2.5"/><circle class="an" cx="50" cy="6" r="3.5" fill="#ff5a1f"/><rect x="35" y="14" width="30" height="25" rx="11" fill="#fff" stroke="#14181c" stroke-width="2.5"/><rect x="39" y="21" width="22" height="10" rx="5" fill="#14181c"/><circle class="ey" cx="45.5" cy="26" r="2.4" fill="#19d3ff"/><circle class="ey" cx="54.5" cy="26" r="2.4" fill="#19d3ff"/></g></g></svg></div><div id="iris"></div><div id="ring"></div><div id="wl"></div><div id="boot"><i class="r r1"></i><i class="r r2"></i><i class="r r3"></i><div id="bt"></div></div>
-  <div id="panel"><div id="hd"><span>JARVIS</span><button id="mic" title="Listen (hands-free)">🎤</button><button id="vo" title="Voice replies">🔊</button><button id="x">✕</button></div><div id="log"></div>
+  <button id="jarvisPet" type="button" aria-label="Pip, your browser AI pet" title="Pip, your browser AI pet" data-mood="idle"><svg viewBox="0 0 84 92" aria-hidden="true"><path class="pet-body" d="M27 56h29v17h8v8h-8v4h-9v-9h-9v9h-9v-5h-7v-8h5z"/><path class="pet-light" d="M22 13h8V8h24v5h9v8h6v27h-6v7h-9v5H29v-5h-8v-7h-6V22h7z"/><path class="pet-body" d="M19 21h6v29h-6v-5h-5V27h5zm44 0h6v6h5v18h-5v5h-6z"/><path class="pet-screen" d="M25 22h35v27H25z"/><path class="pet-eye" d="M31 32h9v4h-3v3h-3v-3h-3zm15 0h9v4h-3v3h-3v-3h-3z"/><path class="pet-laptop" d="M48 55h27v22H48z"/><path class="pet-pointer" d="m59 60 8 6-4 1 3 5-3 2-3-5-3 3z"/><path fill="#75a5ff" d="M43 77h36l-4 5H39z"/></svg></button><div id="petNote" role="status" aria-live="polite"></div><div id="panel"><div id="hd"><span>JARVIS</span><button id="mic" title="Listen (hands-free)">🎤</button><button id="vo" title="Voice replies">🔊</button><button id="x">✕</button></div><div id="log"></div>
   <div id="hear"></div><div id="ap"><button id="yes">Approve</button><button id="no">Cancel</button></div>
   <div id="bar"><input id="in" placeholder="Tell JARVIS what to do…"><button id="go">Go</button><button id="st">Stop</button></div></div>`;
   document.documentElement.appendChild(host);
   window.__jarvisAgent.host = host;
   const $ = <T extends HTMLElement = HTMLElement>(s: string): T => root.querySelector(s) as T;
-  const orb = $('#orb'), panel = $('#panel'), logEl = $('#log');
+  const orb = $('#orb'), panel = $('#panel'), logEl = $('#log'), pet = $('#jarvisPet'), petNote = $('#petNote');
+  let petTimer = 0, petLine = 0;
+  const petLines = ['Hi, I’m Pip, your browser-side AI pet. I keep you company while JARVIS handles the page.', 'Try saying “open YouTube” or “click that” to JARVIS. I’ll cheer from here.', 'Set the voice and reply language in the extension popup whenever you like.'];
+  pet.onclick = () => { petNote.textContent = petLines[petLine++ % petLines.length]; petNote.classList.add('open'); pet.dataset.mood = 'happy'; window.clearTimeout(petTimer); petTimer = window.setTimeout(() => petNote.classList.remove('open'), 6000); };
   const bg = <T = AgentReply>(m: Record<string, unknown>) => new Promise<T | null>(r => { try { chrome.runtime.sendMessage(m, res => { void chrome.runtime.lastError; r(res as T); }); } catch { r(null); } });
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const store = { get: async <T = unknown>(k: string): Promise<T | undefined> => { const values = await chrome.storage.local.get(k); return values[k] as T | undefined; }, set: (k: string, v: unknown) => chrome.storage.local.set({ [k]: v }) };
@@ -115,7 +119,8 @@ export default defineContentScript({
     if (ch.brain) brain = ch.brain.newValue === 'smart' ? 'smart' : 'fast';
     if (ch.companion) companionOn = !!ch.companion.newValue;
     if (ch.voiceName) { voiceName = (ch.voiceName.newValue as string) || ''; pv(); }
-    if (ch.lang) lang = (ch.lang.newValue as string) || lang;
+    if (ch.lang) lang = (ch.lang.newValue as string) || navigator.language || 'en-US';
+    if (ch.replyLanguage) { replyLanguage = (ch.replyLanguage.newValue as string) || ''; pv(); }
     if (ch.skills) skills = (ch.skills.newValue as Record<string, string>) || {};
     if (ch.facts) facts = (ch.facts.newValue as string[]) || [];
     if (ch.aliases) aliases = (ch.aliases.newValue as Record<string, string>) || {};
@@ -124,12 +129,12 @@ export default defineContentScript({
   });
 
   /* ---- chat log ---- */
-  let voice: SpeechSynthesisVoice | null = null, speakOn = true, lang = navigator.language || 'en-US', size = 'auto', companionOn = false, voiceName = '', brain: 'fast' | 'smart' = 'fast', skills: Record<string, string> = {}, facts: string[] = [], aliases: Record<string, string> = {}, exp: any[] = [], lessons: Array<{ goal: string; lesson: string }> = [], lastGoal = '', awaitingLesson = false;
-  function pv() { const vs = speechSynthesis.getVoices(); voice = (voiceName && vs.find(v => v.name === voiceName)) || vs.find(v => /(Ryan|Guy|Prabhat|Christopher|Brian|Andrew|Eric|Davis).*Natural|Natural.*(Ryan|Guy|Prabhat|Christopher|Brian|Andrew|Eric)/i.test(v.name)) || vs.find(v => /Google UK English Male/i.test(v.name)) || vs.find(v => /David|Daniel|Mark|George|Ravi/i.test(v.name)) || vs.find(v => /^en/i.test(v.lang)) || null; }
+  let voice: SpeechSynthesisVoice | null = null, speakOn = true, lang = navigator.language || 'en-US', replyLanguage = '', size = 'auto', companionOn = false, voiceName = '', brain: 'fast' | 'smart' = 'fast', skills: Record<string, string> = {}, facts: string[] = [], aliases: Record<string, string> = {}, exp: any[] = [], lessons: Array<{ goal: string; lesson: string }> = [], lastGoal = '', awaitingLesson = false;
+  function pv() { const vs = speechSynthesis.getVoices(), target = replyLanguage.toLowerCase(); voice = (voiceName && vs.find(v => v.name === voiceName)) || (target && vs.find(v => v.lang.toLowerCase() === target)) || (target && vs.find(v => v.lang.toLowerCase().startsWith(target.split('-')[0]))) || vs.find(v => /(Ryan|Guy|Prabhat|Christopher|Brian|Andrew|Eric|Davis).*Natural|Natural.*(Ryan|Guy|Prabhat|Christopher|Brian|Andrew|Eric)/i.test(v.name)) || vs.find(v => /Google UK English Male/i.test(v.name)) || vs.find(v => /David|Daniel|Mark|George|Ravi/i.test(v.name)) || vs.find(v => /^en/i.test(v.lang)) || vs[0] || null; }
   if (window.speechSynthesis) { pv(); speechSynthesis.onvoiceschanged = pv; }
-  function speak(t: string, long = false) { if (!speakOn) return; if (companionOn) { bg({ type: 'say', text: String(t).slice(0, 300) }); return; } if (!window.speechSynthesis) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(t).slice(0, long ? 1800 : 220)); if (voice) u.voice = voice; u.rate = long ? 1 : 1.04; u.pitch = 1; speechSynthesis.speak(u); } catch {} }
+  function speak(t: string, long = false) { if (!speakOn) return; if (companionOn) { bg({ type: 'say', text: String(t).slice(0, 300) }); return; } if (!window.speechSynthesis) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(t).slice(0, long ? 1800 : 220)); if (voice) { u.voice = voice; u.lang = voice.lang; } else if (replyLanguage) u.lang = replyLanguage; u.rate = long ? 1 : 1.04; u.pitch = 1; speechSynthesis.speak(u); } catch {} }
   function say(cls, text) {
-    if (cls === 'a') speak(text); const d = document.createElement('div'); d.className = 'm ' + cls; d.textContent = text; logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight; if (panel.classList.contains('open')) fit(); }
+    if (cls === 'a') { speak(text); pet.dataset.mood = 'happy'; } else if (cls === 'e') pet.dataset.mood = 'oops'; else if (cls === 's' && /thinking|working/i.test(text)) pet.dataset.mood = 'thinking'; const d = document.createElement('div'); d.className = 'm ' + cls; d.textContent = text; logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight; if (panel.classList.contains('open')) fit(); }
   const approve = (text: string) => new Promise<boolean>(res => { say('s', 'Needs your OK: ' + text); $('#ap').classList.add('on'); toggle(true); approveResolve = ok => { $('#ap').classList.remove('on'); approveResolve = null; res(ok); }; });
   $('#yes').onclick = () => approveResolve && approveResolve(true);
   $('#no').onclick = () => approveResolve && approveResolve(false);
@@ -403,32 +408,42 @@ export default defineContentScript({
     if (awaitingLesson) { awaitingLesson = false; if (!/^(cancel|never mind|stop)$/i.test(text)) { lessons.unshift({ goal: lastGoal || 'general', lesson: text.slice(0, 240) }); lessons = lessons.slice(0, 40); await put('lessons', lessons); say('u', text); say('a', 'Understood. I will do it that way next time.'); } return; }
     text = expandSkill(text); const q = (await store.get<string[]>('q' + tabId)) || []; await store.set('q' + tabId, [...q, ...splitCmds(text)]); drain(); }
 
-  /* ---- voice: hands-free listening that follows you across tabs ---- */
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; let rec: SpeechRecognitionLike = null, listening = false, settle = 0, consumed = { i: -1, text: '' };
+  /* ---- voice input: wait for final results and recover from mic/network errors ---- */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; let rec: SpeechRecognitionLike = null, listening = false, restartTimer = 0, restartDelay = 350, handledFinal = -1;
   function mk() {
-    if (!listening || document.visibilityState !== 'visible') return;
-    rec = new SR(); rec.lang = lang; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 3;
-    rec.onspeechstart = () => { orb.classList.add('hear'); try { speechSynthesis.cancel(); } catch {} }; rec.onspeechend = () => orb.classList.remove('hear');
-    rec.onresult = e => {
+    if (!listening || document.visibilityState !== 'visible' || !SR) return;
+    const current = new SR(); rec = current; handledFinal = -1; current.lang = lang; current.continuous = true; current.interimResults = true; current.maxAlternatives = 5;
+    current.onspeechstart = () => { orb.classList.add('hear'); try { speechSynthesis.cancel(); } catch {} }; current.onspeechend = () => orb.classList.remove('hear');
+    current.onresult = e => {
       if (window.speechSynthesis && speechSynthesis.speaking) return;
-      const idx = e.results.length - 1, r = e.results[idx], score = x => splitCmds(norm(x)).filter(p => parseCmd(p)).length;
-      const alts = [...r].map(x => x.transcript.trim()), t = alts.reduce((best, x) => (score(x) > score(best) ? x : best), alts[0]);
-      if (consumed.i !== idx) consumed = { i: idx, text: '' };
-      const fresh = (t.startsWith(consumed.text) ? t.slice(consumed.text.length) : t).trim();
-      window.clearTimeout(settle);
-      if (r.isFinal) { $('#hear').textContent = ''; if (fresh) { ack(); handle(fresh); } consumed = { i: -1, text: '' }; return; }
-      $('#hear').textContent = fresh ? '🎤 ' + fresh : '';
-      if (fresh) settle = window.setTimeout(() => { consumed = { i: idx, text: t }; $('#hear').textContent = ''; ack(); handle(fresh); }, splitCmds(norm(fresh)).every(p => parseCmd(p)) ? 420 : 650);
+      const score = x => splitCmds(norm(x)).filter(p => parseCmd(p)).length;
+      for (let i = Math.max(e.resultIndex || 0, handledFinal + 1); i < e.results.length; i++) {
+        const result = e.results[i], alternatives = [...result].map(x => ({ text: x.transcript.trim(), confidence: Number(x.confidence) || 0 }));
+        if (!result.isFinal) { $('#hear').textContent = alternatives[0]?.text ? '🎤 ' + alternatives[0].text : ''; continue; }
+        handledFinal = i; restartDelay = 350;
+        const best = alternatives.reduce((chosen, item) => score(item.text) > score(chosen.text) || (score(item.text) === score(chosen.text) && item.confidence > chosen.confidence) ? item : chosen, alternatives[0] || { text: '', confidence: 0 });
+        $('#hear').textContent = '';
+        if (best.text) { ack(); void handle(best.text); }
+      }
     };
-    rec.onerror = e => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { listening = false; $('#mic').classList.remove('on'); store.set('listen', false); say('e', 'Microphone is blocked on this site. Click the lock icon in the address bar, allow Microphone, then press 🎤 again.'); } };
-    rec.onend = () => { if (listening && document.visibilityState === 'visible') window.setTimeout(mk, 300); };
-    try { rec.start(); } catch {}
+    current.onerror = e => {
+      if (rec !== current) return;
+      const error = String(e.error || '');
+      if (error === 'not-allowed' || error === 'service-not-allowed') { listening = false; $('#mic').classList.remove('on'); orb.classList.remove('listen'); void store.set('listen', false); $('#hear').textContent = 'Allow microphone access in the site settings, then press 🎤 again.'; }
+      else if (error === 'audio-capture') { listening = false; $('#mic').classList.remove('on'); orb.classList.remove('listen'); void store.set('listen', false); $('#hear').textContent = 'No microphone detected. Check the selected input device.'; }
+      else if (error === 'network') { $('#hear').textContent = 'Voice recognition connection interrupted; retrying…'; restartDelay = Math.min(restartDelay * 2, 5000); }
+    };
+    current.onend = () => {
+      if (rec === current) rec = null;
+      orb.classList.remove('hear');
+      if (listening && document.visibilityState === 'visible') { window.clearTimeout(restartTimer); restartTimer = window.setTimeout(() => { restartTimer = 0; mk(); }, restartDelay); restartDelay = Math.min(restartDelay * 2, 5000); }
+    };
+    try { current.start(); } catch { if (rec === current) rec = null; if (listening) { window.clearTimeout(restartTimer); restartTimer = window.setTimeout(mk, restartDelay); restartDelay = Math.min(restartDelay * 2, 5000); } }
   }
-  function listen(on) { orb.classList.toggle('listen', on); if (on && !SR) return say('e', 'Voice input is not supported in this browser.'); listening = on; $('#mic').classList.toggle('on', on); store.set('listen', on); if (on) mk(); else { try { rec && rec.abort(); } catch {} } }
+  function listen(on) { orb.classList.toggle('listen', on); if (on && !SR) return say('e', 'Voice input is not supported in this browser.'); listening = on; $('#mic').classList.toggle('on', on); void store.set('listen', on); window.clearTimeout(restartTimer); if (on) mk(); else { $('#hear').textContent = ''; try { rec && rec.abort(); } catch {} rec = null; } }
   $('#mic').onclick = () => listen(!listening);
   $('#vo').onclick = () => { speakOn = !speakOn; $('#vo').classList.toggle('off', !speakOn); if (!speakOn) speechSynthesis.cancel(); };
-  document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'hidden') { try { rec && rec.abort(); } catch {} } else if (SR && !companionOn && (await store.get('listen'))) { listening = true; $('#mic').classList.add('on'); mk(); } });
-
+  document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'hidden') { window.clearTimeout(restartTimer); try { rec && rec.abort(); } catch {} rec = null; } else if (SR && !companionOn && (await store.get('listen'))) { listening = true; $('#mic').classList.add('on'); orb.classList.add('listen'); mk(); } });
 
   /* ---- Tony Stark style activation ---- */
   async function activate(long = true) {
@@ -483,6 +498,7 @@ export default defineContentScript({
     size = (await store.get<string>('size')) || 'auto'; brain = (await store.get<string>('brain')) === 'smart' ? 'smart' : 'fast'; companionOn = !!(await store.get<boolean>('companion')); voiceName = (await store.get<string>('voiceName')) || ''; applySize(); pv();
     pos = (await store.get<typeof pos>('orbPos')) || pos; home();
     lang = (await store.get<string>('lang')) || lang;
+    replyLanguage = (await store.get<string>('replyLanguage')) || ''; pv();
     const w = await store.get<{ host: string; t: number }>('warp');
     if (!(await store.get<boolean>('booted')) && window === top) { await store.set('booted', true); activate(true); } else { await flyIn(); if (w && Date.now() - w.t < 12000) { await store.set('warp', null); banner('ARRIVED · ' + w.host); } }
     if (SR && !companionOn && (await store.get<boolean>('listen')) && document.visibilityState === 'visible') { listening = true; $('#mic').classList.add('on'); mk(); }
