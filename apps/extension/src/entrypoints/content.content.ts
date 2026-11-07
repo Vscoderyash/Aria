@@ -37,10 +37,9 @@ export default defineContentScript({
   const root = host.attachShadow({ mode: 'closed' });
   root.innerHTML = `<style>
   *{box-sizing:border-box;font-family:system-ui,sans-serif}
-  #orb{position:fixed;width:56px;height:56px;border-radius:50%;cursor:grab;touch-action:none;background:radial-gradient(circle,#fff 0 12%,#ffb08f 30%,#ff5a1f 55%,#14181c 58%);box-shadow:0 0 24px #ff5a1f99,0 6px 20px #0008;transition:filter .3s}
-  #orb:before,#orb:after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px dashed #ff5a1f;animation:sp 9s linear infinite}
-  #orb:after{inset:-13px;border:2px solid #ff5a1f55;border-top-color:transparent;animation-duration:3s;animation-direction:reverse}
-  #orb.busy:before{animation-duration:1.4s}#orb.busy{filter:brightness(1.25)}
+  #orb{position:fixed;width:56px;height:56px;border:0;border-radius:0;cursor:grab;touch-action:none;background:transparent;box-shadow:none;transition:filter .3s;filter:drop-shadow(0 8px 9px #0008);outline:none}
+  #orb:focus-visible{filter:drop-shadow(0 0 8px #72a4ff) drop-shadow(0 8px 9px #0008)}
+  #orb.busy{filter:drop-shadow(0 0 12px #72a4ff) drop-shadow(0 8px 9px #0008)}
   @keyframes sp{to{transform:rotate(360deg)}}
   .ghost{position:fixed;width:30px;height:30px;border-radius:50%;background:#ff5a1f;pointer-events:none;animation:gh .6s forwards}
   @keyframes gh{to{opacity:0;transform:scale(.2)}}
@@ -51,16 +50,18 @@ export default defineContentScript({
   .m{padding:8px 11px;border-radius:10px;max-width:92%}.a{background:#1f262c}.u{background:#ff5a1f;align-self:flex-end}.e{background:#3a1f1f;color:#ffb4a8}.s{color:#9aa6ae;font-size:12px}
   #ap{display:none;gap:8px;padding:0 12px 10px}#ap.on{display:flex}#ap button,#go,#st{background:#ff5a1f;color:#fff;border:0;border-radius:999px;padding:7px 14px;cursor:pointer;font-size:13px}#ap #no,#st{background:#38414a}
   #bar{display:flex;gap:8px;padding:10px;border-top:1px solid #2a3138}#in{flex:1;background:#0e1215;border:1px solid #2f383f;border-radius:10px;color:#fff;padding:8px 10px;font-size:13px;outline:0}
-  #orb:before,#orb:after{display:none}
-  #orb{width:96px;height:96px;background:none;box-shadow:none;filter:drop-shadow(0 10px 12px #0009)}#orb.busy{filter:drop-shadow(0 0 14px #19d3ff) drop-shadow(0 10px 12px #0009)}
+  #orb{width:88px;height:92px}
+  #bot{width:100%;height:100%;overflow:visible;image-rendering:pixelated}
   #rig{transform-origin:50px 90px;transform:scaleX(var(--f,1)) rotate(var(--t,0deg));transition:transform .35s}
-  .hv{animation:hv 2.2s ease-in-out infinite}@keyframes hv{50%{transform:translateY(-4px)}}
-  .gl{animation:gl 2.2s ease-in-out infinite;transform-origin:50px 92px}@keyframes gl{50%{transform:scale(.75);opacity:.25}}
-  .core{animation:cr 1.6s ease-in-out infinite}#orb.busy .core{animation-duration:.45s}@keyframes cr{50%{opacity:.35}}
-  .ey{animation:bk 4.5s infinite;transform-origin:50px 26px}@keyframes bk{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
-  .an{animation:cr 1s infinite}.arm{transform-origin:72px 42px}#orb.busy .arm,#orb.listen .arm{animation:wv .6s ease-in-out infinite}@keyframes wv{50%{transform:rotate(-40deg)}}
-  .wh{transform-box:fill-box}.wh circle{transform-box:fill-box;transform-origin:center}#orb.moving .wh circle{animation:sp .25s linear infinite}
-  #orb.listen:after{display:block;content:"";position:absolute;inset:6px;border-radius:50%;border:2px solid #19d3ff;animation:rp 1.4s infinite;pointer-events:none}@keyframes rp{to{transform:scale(1.7);opacity:0}}
+  .pet-float{transform-origin:50% 85%;animation:petFloat 2.5s ease-in-out infinite}
+  @keyframes petFloat{50%{transform:translateY(-4px)}}
+  .pet-eyes{animation:petBlink 5s infinite;transform-origin:center}
+  @keyframes petBlink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.15)}}
+  .pet-arm{transform-origin:70px 62px}#orb.busy .pet-arm{animation:petType .32s ease-in-out infinite alternate}
+  @keyframes petType{to{transform:translateY(2px) rotate(-8deg)}}
+  .pet-cursor{transform-origin:center}#orb.busy .pet-cursor{animation:petCursor .55s ease-in-out infinite alternate}
+  @keyframes petCursor{to{transform:translate(4px,-3px)}}
+  #orb.listen:after{display:block;content:"";position:absolute;inset:3px;border-radius:48%;border:2px solid #8eaaff;animation:petRing 1.4s infinite;pointer-events:none}@keyframes petRing{to{transform:scale(1.3);opacity:0}}
   #panel{background:linear-gradient(160deg,#0b1722ee,#14181cee);backdrop-filter:blur(14px);border:1px solid #19d3ff55;box-shadow:0 0 40px #19d3ff2a,0 20px 60px #000a}
   #hd{font-family:"Courier New",monospace;letter-spacing:.22em;color:#19d3ff}.m.a{border-left:2px solid #19d3ff}#st{background:#38414a}
   #boot{position:fixed;inset:0;display:none;place-items:center;background:radial-gradient(circle,#042033ee,#000000f2);opacity:1;transition:opacity .7s}#boot.on{display:grid}
@@ -68,13 +69,12 @@ export default defineContentScript({
   .r{position:absolute;border-radius:50%;border:2px solid #19d3ff;box-shadow:0 0 30px #19d3ff77,inset 0 0 30px #19d3ff33}
   .r1{width:300px;height:300px;border-style:dashed;animation:sp 8s linear infinite}.r2{width:220px;height:220px;border-color:#ff5a1f;border-top-color:transparent;border-bottom-color:transparent;animation:sp 2.4s linear infinite reverse}.r3{width:120px;height:120px;background:radial-gradient(circle,#fff,#19d3ff 50%,transparent 72%);animation:cr 1s infinite}
   #bt{position:absolute;top:calc(50% + 190px);font:700 18px "Courier New",monospace;letter-spacing:.3em;color:#19d3ff;text-shadow:0 0 14px #19d3ff;text-align:center;width:100%}
-  #bot{width:100%;height:100%}#hear{padding:0 14px 6px;font-size:12px;color:#19d3ff;font-style:italic;min-height:0}#orb.hear .hv{animation-duration:.5s}#orb.ack{animation:ak .35s}@keyframes ak{50%{transform:scale(1.15)}}
-  #bot [fill="#fff"]{fill:#c4161c}#bot [fill="#cfd3d6"]{fill:#e0a93b}#bot [fill="#ff5a1f"]{fill:#ffc247}
+  #hear{padding:0 14px 6px;font-size:12px;color:#19d3ff;font-style:italic;min-height:0}#orb.hear .pet-float{animation-duration:.55s}#orb.ack{animation:ak .35s}@keyframes ak{50%{transform:scale(1.08)}}
   #iris{position:fixed;inset:0;display:none;pointer-events:none;background:radial-gradient(circle at 50% 50%,#02070cf2,#02070c)}#iris.on{display:block}
   #ring{position:fixed;border-radius:50%;border:3px solid #ffc247;box-shadow:0 0 40px #ff3b2f,inset 0 0 30px #ff3b2f66;pointer-events:none;display:none}
   #wl{position:fixed;left:50%;top:-60px;transform:translateX(-50%);padding:10px 22px;color:#ffc247;background:#12070af0;border:1px solid #ffc24788;font:700 14px "Courier New",monospace;letter-spacing:.25em;white-space:nowrap;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);pointer-events:none}
   .shock{position:fixed;width:60px;height:60px;margin:-30px;border-radius:50%;border:3px solid #ffc247;box-shadow:0 0 24px #ff3b2f;pointer-events:none}
-  </style><div id="orb" title="JARVIS (Alt+J)"><svg id="bot" viewBox="0 0 100 100" width="96" height="96"><g id="rig"><ellipse class="gl" cx="50" cy="92" rx="30" ry="5" fill="#19d3ff" opacity=".5"/><g class="hv"><path d="M8 74 Q8 80 16 80 L84 80 Q92 80 92 74 L86 76 L14 76 Z" fill="#ff5a1f"/><rect x="14" y="76" width="72" height="3.5" rx="1.7" fill="#14181c"/><g class="wh"><circle cx="28" cy="85" r="4.5" fill="#fff" stroke="#14181c" stroke-width="2"/><circle cx="72" cy="85" r="4.5" fill="#fff" stroke="#14181c" stroke-width="2"/></g><rect x="38" y="62" width="8" height="14" rx="3" fill="#cfd3d6" stroke="#14181c" stroke-width="2"/><rect x="55" y="62" width="8" height="14" rx="3" fill="#cfd3d6" stroke="#14181c" stroke-width="2"/><rect x="24" y="40" width="9" height="22" rx="4.5" fill="#cfd3d6" stroke="#14181c" stroke-width="2" transform="rotate(14 28 42)"/><g class="arm"><rect x="68" y="40" width="9" height="22" rx="4.5" fill="#cfd3d6" stroke="#14181c" stroke-width="2" transform="rotate(-14 72 42)"/></g><rect x="33" y="38" width="34" height="29" rx="10" fill="#fff" stroke="#14181c" stroke-width="2.5"/><circle class="core" cx="50" cy="52" r="6.5" fill="#19d3ff"/><circle cx="50" cy="52" r="10" fill="none" stroke="#ff5a1f" stroke-width="1.5" stroke-dasharray="3 3"/><line x1="50" y1="14" x2="50" y2="8" stroke="#14181c" stroke-width="2.5"/><circle class="an" cx="50" cy="6" r="3.5" fill="#ff5a1f"/><rect x="35" y="14" width="30" height="25" rx="11" fill="#fff" stroke="#14181c" stroke-width="2.5"/><rect x="39" y="21" width="22" height="10" rx="5" fill="#14181c"/><circle class="ey" cx="45.5" cy="26" r="2.4" fill="#19d3ff"/><circle class="ey" cx="54.5" cy="26" r="2.4" fill="#19d3ff"/></g></g></svg></div><div id="iris"></div><div id="ring"></div><div id="wl"></div><div id="boot"><i class="r r1"></i><i class="r r2"></i><i class="r r3"></i><div id="bt"></div></div>
+  </style><div id="orb" role="button" tabindex="0" aria-expanded="false" aria-label="Pip, JARVIS browser assistant. Click to open; press Alt+J anytime." title="Pip · JARVIS assistant (Alt+J)"><svg id="bot" viewBox="0 0 100 100" aria-hidden="true"><g id="rig"><ellipse cx="50" cy="91" rx="27" ry="4" fill="#101a35" opacity=".45"/><g class="pet-float"><path fill="#3266ef" d="M24 25V18h7v-7h10V7h22v4h9v7h7v9h5v27h-8v8H68v7H37v-5h-8v-8h-7V29h5z"/><path fill="#75a5ff" d="M19 24V17h8v-5h9V8h19v4h9v5h8v7h5v19h-5v8h-7v6H35v-5h-8v-7h-6V29h-5v-5z"/><path fill="#101b38" d="M31 23h38v30H31z"/><path class="pet-eyes" fill="#8efff3" d="M36 34h11v4h-4v4h-4v-4h-3zm18 0h11v4h-4v4h-4v-4h-3z"/><path fill="#3266ef" d="M34 54h32v9h8v8H63v6H39v-5h-8v-8h-5v-7h8z"/><path fill="#75a5ff" d="M34 58h25v7H34z"/><path fill="#2f5ed0" d="M31 64h10v13H31zm28 0h10v13H59z"/><g class="pet-arm"><path fill="#3266ef" d="M66 57h9v6h6v10h-8v-5h-7z"/><path fill="#75a5ff" d="M72 68h8v5h-8z"/></g><path fill="#101b38" stroke="#8bc8ff" stroke-width="2" d="M53 51h34v27H53z"/><path fill="#263d82" d="M56 54h28v20H56z"/><path class="pet-cursor" fill="#9ffcff" d="m64 58 12 10-6 1 4 6-4 2-4-6-3 5z"/><path fill="#86b5ff" d="M49 78h42l-5 5H45z"/><path fill="#3266ef" d="M38 78h13v4H38z"/></g></g></svg></div><div id="iris"></div><div id="ring"></div><div id="wl"></div><div id="boot"><i class="r r1"></i><i class="r r2"></i><i class="r r3"></i><div id="bt"></div></div>
   <div id="panel"><div id="hd"><span>JARVIS</span><button id="mic" title="Listen (hands-free)">🎤</button><button id="vo" title="Voice replies">🔊</button><button id="x">✕</button></div><div id="log"></div>
   <div id="hear"></div><div id="ap"><button id="yes">Approve</button><button id="no">Cancel</button></div>
   <div id="bar"><input id="in" placeholder="Tell JARVIS what to do…"><button id="go">Go</button><button id="st">Stop</button></div></div>`;
@@ -105,7 +105,8 @@ export default defineContentScript({
   orb.onpointerdown = e => { drag = { sx: e.clientX, sy: e.clientY, ox: orb.offsetLeft, oy: orb.offsetTop, moved: false }; orb.setPointerCapture(e.pointerId); orb.style.cursor = 'grabbing'; };
   orb.onpointermove = e => { if (!drag) return; const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy; if (Math.abs(dx) + Math.abs(dy) > 5) drag.moved = true; if (drag.moved) { place(drag.ox + dx, drag.oy + dy); if (panel.classList.contains('open')) fit(); } };
   orb.onpointerup = () => { orb.style.cursor = 'grab'; if (!drag) return; if (drag.moved) { pos = { x: orb.offsetLeft / innerWidth, y: orb.offsetTop / innerHeight }; store.set('orbPos', pos); } else toggle(); drag = null; };
-  function toggle(on = !panel.classList.contains('open')) { panel.classList.toggle('open', on); if (panel.classList.contains('open')) { fit(); $('#in').focus(); } }
+  function toggle(on = !panel.classList.contains('open')) { panel.classList.toggle('open', on); orb.setAttribute('aria-expanded', String(on)); if (panel.classList.contains('open')) { fit(); $('#in').focus(); } }
+  orb.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } };
   addEventListener('keydown', e => { if (e.altKey && e.key.toLowerCase() === 'j') { e.preventDefault(); toggle(); } });
   $('#x').onclick = () => toggle(false);
   const applySize = () => { const s = size === 's' ? 64 : size === 'm' ? 96 : size === 'l' ? 128 : (innerWidth < 700 ? 64 : innerWidth > 1800 ? 120 : 96); orb.style.width = orb.style.height = s + 'px'; };
