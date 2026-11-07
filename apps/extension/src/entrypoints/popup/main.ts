@@ -7,6 +7,7 @@ const byId = <T extends HTMLElement>(id: string): T => {
 };
 
 const apiInput = byId<HTMLInputElement>('u');
+const accessInput = byId<HTMLInputElement>('a');
 const message = byId<HTMLElement>('m');
 const language = byId<HTMLSelectElement>('l');
 const voice = byId<HTMLSelectElement>('v');
@@ -19,8 +20,8 @@ const getStored = async (keys: string | string[]): Promise<Record<string, unknow
 const countKeys = (value: unknown): number => value !== null && typeof value === 'object' ? Object.keys(value).length : 0;
 const countItems = (value: unknown): number => Array.isArray(value) ? value.length : 0;
 
-void getStored('apiUrl').then((value) => { apiInput.value = typeof value.apiUrl === 'string' ? value.apiUrl : ''; });
-byId<HTMLButtonElement>('s').onclick = () => chrome.storage.local.set({ apiUrl: apiInput.value.trim() }).then(() => { message.textContent = 'Saved.'; });
+void getStored(['apiUrl', 'accessToken']).then((value) => { apiInput.value = typeof value.apiUrl === 'string' ? value.apiUrl : ''; accessInput.value = typeof value.accessToken === 'string' ? value.accessToken : ''; });
+byId<HTMLButtonElement>('s').onclick = () => chrome.storage.local.set({ apiUrl: apiInput.value.trim(), accessToken: accessInput.value.trim() }).then(() => { message.textContent = 'Saved. Provider API keys stay on the server.'; });
 
 byId<HTMLButtonElement>('t').onclick = async () => {
   message.textContent = 'Testing...';
@@ -28,7 +29,7 @@ byId<HTMLButtonElement>('t').onclick = async () => {
   try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(accessInput.value.trim() ? { Authorization: `Bearer ${accessInput.value.trim()}` } : {}) },
       body: JSON.stringify({ mode: 'agent', messages: [{ role: 'user', content: JSON.stringify({ goal: 'say hello', url: 'about:blank', elements: [], history: [] }) }] }),
     });
     const text = await response.text();

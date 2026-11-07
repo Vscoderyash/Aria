@@ -4,7 +4,7 @@ New: plans before acting, checks each step and changes tactics, natural male voi
 Install / update:
 1. Unzip this folder (replace the old one).
 2. chrome://extensions -> Developer mode -> "Load unpacked" (or press the reload arrow if already loaded).
-3. Click the JARVIS toolbar icon, put your site's API address (https://YOUR-SITE.vercel.app/api/chat), press Save, then Test. It must say "Agent mode works."
+3. Click the JARVIS toolbar icon, put your site's API address (https://YOUR-SITE.vercel.app/api/chat), and press Save, then Test. It must say "Agent mode works." If the site uses `JARVIS_ACCESS_TOKEN`, enter that server access token in the password field too (never enter a provider API key here).
    (If not: deploy the latest api/chat.js from jarvis-site-v3.zip.)
 
 Use: click the orb or press Alt+J. Type or press the mic and talk.

@@ -25,9 +25,9 @@ WXT is the extension build tool; Vitest runs the golden tests; Ajv validates the
 
 ## Website deployment
 
-Import this repository into Vercel with Framework set to **Other**. Keep the repository root as the project root and set `NVIDIA_API_KEY` in the Vercel environment. The static site and `/api/chat` remain at their existing paths.
+Import this repository into Vercel with Framework set to **Other**. Keep the repository root as the project root and set provider secrets in Vercel's server environment: `NVIDIA_API_KEY` is required for NVIDIA; `OPENROUTER_API_KEY` and `ANTHROPIC_API_KEY` are optional. Set `JARVIS_ACCESS_TOKEN` to gate all API providers (it is also required before enabling OpenRouter or Anthropic), then enter that access token with the Providers button in the site or the extension popup. Without it, NVIDIA keeps the existing anonymous API behavior. Never put provider API keys in browser storage or source files. The static site and `/api/chat` remain at their existing paths.
 
-The chat accepts text/code, PDF, DOCX, and PNG/JPG/WebP attachments (up to four files and 2.7 MB combined). PDF and Word text is extracted by the API; images use NVIDIA's vision model. File bytes stay in the current browser tab's memory and are not written into saved chat history. Reattach files after reloading the page.
+The Codex-inspired composer includes provider/model selection, Quick/Balanced/Deep response power, microphone dictation, and attachments. Provider model lists are fetched by the server; keys stay server-side. It accepts common text/code formats, PDF, DOCX, PPTX, XLSX, PNG/JPG/WebP/GIF images (up to four files and 2.7 MB combined). PDF, Word, PowerPoint, and Excel text is extracted by the API; images are sent to the selected provider. File bytes stay in the current browser tab's memory and are not written into saved chat history. Reattach files after reloading the page.
 
 ## Desktop app
 

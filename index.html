@@ -45,8 +45,8 @@ section.view{flex:1;min-height:0;display:flex;flex-direction:column}section[hidd
 .code pre{padding:14px;overflow:auto;max-height:440px}.code pre code{background:none;padding:0;font:400 13px/1.6 var(--mono);color:var(--txt);white-space:pre}
 .tw{overflow:auto;margin:14px 0}table{border-collapse:collapse;font:400 14.5px var(--ui);min-width:60%}th,td{border:1px solid var(--line);padding:8px 12px;text-align:left}th{background:var(--surf);font-weight:600}
 .composer{padding:0 20px 14px}.composer form{max-width:720px;margin:0 auto}
-.box{display:flex;align-items:flex-end;gap:8px;background:var(--surf);border:1px solid var(--line);border-radius:24px;padding:8px 8px 8px 18px;transition:border-color .15s}.box:focus-within{border-color:var(--mut)}
-.filebar{display:flex;flex-wrap:wrap;gap:6px;margin:0 auto 8px;max-width:720px}.filebar[hidden]{display:none}.filechip{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--mut);font-size:12px}.filechip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.filechip button{border:0;background:none;color:var(--mut);padding:0 2px;cursor:pointer}.filechip button:hover{color:var(--txt)}#activeFiles{color:var(--mut);font-size:12px;margin:0 auto 8px;max-width:720px}#activeFiles button{margin-left:8px;color:var(--mut);text-decoration:underline;font-size:12px}.fileerror{max-width:720px;margin:0 auto 8px;color:#ed8f87;font-size:12px}#attach{width:36px;height:36px;border-radius:50%;color:var(--mut);display:grid;place-items:center;flex:none}#attach:hover{background:var(--hov);color:var(--txt)}#attach svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.userfiles{margin-top:6px;padding-top:6px;border-top:1px solid #ffffff30;font-size:12px;opacity:.8}
+.box{display:flex;flex-direction:column;align-items:stretch;gap:8px;background:var(--surf);border:1px solid var(--line);border-radius:24px;padding:12px 12px 10px 14px;transition:border-color .15s}.box:focus-within{border-color:var(--mut)}.compose-input{display:flex;align-items:flex-end;gap:8px;min-width:0}.compose-controls{display:flex;align-items:center;gap:5px;min-width:0}.compose-spacer{flex:1;min-width:4px}.compose-controls select{max-width:150px;min-width:0;border:0;border-radius:999px;background:transparent;color:var(--mut);font:500 12px var(--ui);padding:7px 8px;cursor:pointer}.compose-controls select:hover,.compose-controls select:focus{background:var(--hov);color:var(--txt);outline:0}.compose-controls option{background:#202020;color:#ececec}.compose-controls #modelSelect{max-width:195px}.compose-controls #providerSelect{max-width:115px}.compose-controls #powerSelect{max-width:96px}.access-control{display:flex;align-items:center}.access-control button{display:flex;align-items:center;gap:6px;border-radius:999px;padding:7px 10px;color:#ff9a45;background:#ff9a4512;font:500 12px var(--ui)}.access-control button:hover{background:#ff9a4522}.access-control svg{width:15px;height:15px}.control-note{max-width:720px;margin:0 auto 8px;color:var(--mut);font-size:12px}.control-note[hidden]{display:none}
+.filebar{display:flex;flex-wrap:wrap;gap:6px;margin:0 auto 8px;max-width:720px}.filebar[hidden]{display:none}.filechip{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--mut);font-size:12px}.filechip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.filechip button{border:0;background:none;color:var(--mut);padding:0 2px;cursor:pointer}.filechip button:hover{color:var(--txt)}#activeFiles{color:var(--mut);font-size:12px;margin:0 auto 8px;max-width:720px}#activeFiles button{margin-left:8px;color:var(--mut);text-decoration:underline;font-size:12px}.fileerror{max-width:720px;margin:0 auto 8px;color:#ed8f87;font-size:12px}#attach,#mic{width:36px;height:36px;border-radius:50%;color:var(--mut);display:grid;place-items:center;flex:none}#attach:hover,#mic:hover{background:var(--hov);color:var(--txt)}#attach svg,#mic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}#mic.listening{color:#ff7777;background:#ff77771a;animation:micPulse 1s ease-in-out infinite}@keyframes micPulse{50%{box-shadow:0 0 0 5px #ff777722}}.userfiles{margin-top:6px;padding-top:6px;border-top:1px solid #ffffff30;font-size:12px;opacity:.8}
 textarea{flex:1;resize:none;max-height:200px;background:none;border:0;outline:0;color:var(--txt);font:inherit;font-size:16px;padding:7px 0;line-height:1.5}textarea::placeholder{color:var(--mut)}
 #go{width:36px;height:36px;border-radius:50%;background:var(--btn);color:var(--btn-ink);display:grid;place-items:center;flex:none;transition:opacity .15s}#go:disabled{opacity:.25;cursor:default}
 .fine{text-align:center;color:var(--mut);font-size:12.5px;margin-top:10px}
@@ -56,6 +56,7 @@ textarea{flex:1;resize:none;max-height:200px;background:none;border:0;outline:0;
 #extView h3{font:600 16px var(--ui);margin:30px 0 10px}#extView ol,#extView ul{margin-left:1.3em;color:var(--mut)}#extView li{margin:7px 0}#extView li b{color:var(--txt);font-weight:500}#extView code{font:400 13px var(--mono);background:var(--surf);padding:2px 6px;border-radius:6px;color:var(--txt)}
 #scrim{display:none}
 @media(max-width:820px){#side{position:fixed;inset:0 auto 0 0;z-index:30;margin-left:-272px;box-shadow:0 0 40px rgba(0,0,0,.5)}body.nav #side{margin-left:0}body.nav #scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20}body.collapsed #side{margin-left:-272px}.m.u{max-width:92%}}
+@media(max-width:600px){.composer{padding:0 10px 10px}.box{border-radius:20px;padding:9px}.compose-controls{gap:1px}.compose-controls select{font-size:11px;padding:7px 4px}.compose-controls #modelSelect{max-width:116px}.compose-controls #providerSelect{max-width:86px}.compose-controls #powerSelect{max-width:78px}.access-control button{padding:7px 8px}.access-control button span{display:none}#mic,#go,#attach{width:34px;height:34px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style></head>
 <body>
@@ -79,10 +80,12 @@ textarea{flex:1;resize:none;max-height:200px;background:none;border:0;outline:0;
         <div class="chips"><button>Write a Python script that renames my files</button><button>Explain how REST and GraphQL differ</button><button>Build a to-do app in HTML, CSS and JavaScript</button><button>Help me debug an error message</button></div></div>
       <div id="msgs" aria-live="polite"></div>
     </div></div>
-    <div class="composer"><form id="f"><div id="pendingFiles" class="filebar" aria-live="polite" hidden></div><div id="activeFiles" hidden></div><p id="fileError" class="fileerror" role="alert" hidden></p><div class="box"><button id="attach" type="button" aria-label="Attach files" title="Attach files"><svg viewBox="0 0 24 24"><path d="m8.5 12.5 6.4-6.4a3.5 3.5 0 0 1 5 5l-8.5 8.5a5 5 0 0 1-7.1-7.1l8.2-8.2"/></svg></button><textarea id="in" rows="1" placeholder="Message JARVIS" aria-label="Message"></textarea>
-      <button id="go" type="submit" aria-label="Send" disabled><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>
-      <input id="fileInput" type="file" hidden multiple accept=".txt,.md,.markdown,.csv,.tsv,.json,.xml,.html,.htm,.css,.js,.mjs,.cjs,.ts,.tsx,.jsx,.py,.java,.c,.cc,.cpp,.h,.hpp,.go,.rs,.rb,.php,.sql,.sh,.bat,.ps1,.yml,.yaml,.toml,.ini,.log,.diff,.patch,.env.example,.pdf,.docx,.png,.jpg,.jpeg,.webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg,image/webp">
-      <p class="fine">JARVIS can make mistakes. Check important information. File content goes to JARVIS's NVIDIA AI service; attachment data stays in this tab only (2.7 MB total).</p></form></div>
+    <div class="composer"><form id="f"><div id="pendingFiles" class="filebar" aria-live="polite" hidden></div><div id="activeFiles" hidden></div><p id="fileError" class="fileerror" role="alert" hidden></p><p id="modelNote" class="control-note" role="status" hidden></p><div class="box">
+      <div class="compose-input"><button id="attach" type="button" aria-label="Attach files" title="Attach files"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button><textarea id="in" rows="1" placeholder="Message JARVIS" aria-label="Message"></textarea></div>
+      <div class="compose-controls"><div class="access-control"><button id="accessBtn" type="button" title="Connect protected model providers"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg><span id="accessLabel">Providers</span></button></div><span class="compose-spacer"></span><select id="powerSelect" aria-label="Response power" title="Choose response speed and reasoning"><option value="quick">Quick</option><option value="balanced" selected>Balanced</option><option value="deep">Deep</option></select><select id="providerSelect" aria-label="AI provider" title="Choose a configured AI provider"><option value="nvidia">NVIDIA</option><option value="openrouter">OpenRouter</option><option value="anthropic">Anthropic</option></select><select id="modelSelect" aria-label="Model" title="Choose a model"><option value="">Loading models…</option></select><button id="mic" type="button" aria-label="Dictate message" title="Dictate message"><svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/></svg></button><button id="go" type="submit" aria-label="Send" disabled><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>
+      </div>
+      <input id="fileInput" type="file" hidden multiple accept="text/*,.txt,.md,.markdown,.mdx,.csv,.tsv,.json,.jsonl,.ndjson,.ipynb,.xml,.html,.htm,.svg,.css,.js,.mjs,.cjs,.ts,.tsx,.jsx,.py,.java,.c,.cc,.cpp,.h,.hpp,.go,.rs,.rb,.php,.sql,.sh,.bat,.ps1,.yml,.yaml,.toml,.ini,.log,.diff,.patch,.rtf,.rst,.properties,.tex,.lua,.swift,.kt,.scala,.dart,.vue,.svelte,.astro,.graphql,.proto,.gradle,.conf,.lock,.pdf,.docx,.pptx,.xlsx,.zip,.png,.jpg,.jpeg,.webp,.gif,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/png,image/jpeg,image/webp,image/gif">
+      <p class="fine">JARVIS can make mistakes. Check important information. Supports text, code, PDF, Word, PowerPoint, Excel, ZIP source bundles, and common images (2.7 MB total). Files are sent to the selected AI provider and kept in this tab only.</p></form></div>
   </section>
   <section class="view" id="extView" hidden><div class="col">
     <h2>JARVIS for your browser</h2>
@@ -153,10 +156,12 @@ function render(md){const lines=md.split('\n'),out=[],tabs=[];let fence=false;
    out.push('','@@T'+(tabs.length-1)+'@@','');continue}
   out.push(l)}
  return fmt(out.join('\n')).replace(/<p>@@T(\d+)@@<\/p>/g,(m,n)=>tabs[n])}
-const KEY='jarvis.chats.v3',MAX_FILES=4,MAX_UPLOAD_BYTES=2700000;
-const ALLOWED_FILE=/\.(txt|md|markdown|csv|tsv|json|xml|html?|css|m?js|cjs|tsx?|jsx|py|java|c|cc|cpp|h|hpp|go|rs|rb|php|sql|sh|bat|ps1|ya?ml|toml|ini|log|diff|patch|env\.example|pdf|docx|png|jpe?g|webp)$/i;
-let chats=[],cur=null,busy=false,pendingFiles=[];const fileContexts=new Map();
+const KEY='jarvis.chats.v3',SETTINGS_KEY='jarvis.composer.v1',ACCESS_KEY='jarvis.providerAccess',MAX_FILES=4,MAX_UPLOAD_BYTES=2700000;
+const ALLOWED_FILE=/\.(txt|md|markdown|mdx|csv|tsv|json|jsonl|ndjson|ipynb|xml|html?|svg|css|m?js|cjs|tsx?|jsx|py|java|c|cc|cpp|h|hpp|go|rs|rb|php|sql|sh|bat|ps1|ya?ml|toml|ini|log|diff|patch|env\.example|rtf|rst|properties|tex|lua|swift|kt|scala|dart|vue|svelte|astro|graphql|proto|gradle|conf|lock|pdf|docx|pptx|xlsx|zip|png|jpe?g|webp|gif)$/i;
+let chats=[],cur=null,busy=false,pendingFiles=[],selectedProvider='nvidia',selectedModel='',selectedPower='balanced',providerCatalog=[],accessToken='',accessRequired=false;const fileContexts=new Map();
 try{chats=JSON.parse(localStorage.getItem(KEY)||'[]')}catch{}
+try{const saved=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');selectedProvider=saved.provider||'nvidia';selectedModel=saved.model||'';selectedPower=['quick','balanced','deep'].includes(saved.power)?saved.power:'balanced'}catch{}
+try{accessToken=sessionStorage.getItem(ACCESS_KEY)||''}catch{}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(chats.slice(0,60)))}catch{}};
 const msgs=$('#msgs'),scroller=$('#scroll'),inp=$('#in'),goBtn=$('#go');
 const near=()=>scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<140;
@@ -176,13 +181,67 @@ function addUser(t,files=[]){const d=document.createElement('div');d.className='
 function renderFileUI(){const list=$('#pendingFiles');list.replaceChildren();pendingFiles.forEach((file,i)=>{const chip=document.createElement('div');chip.className='filechip';const name=document.createElement('span');name.textContent=file.name;const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label','Remove '+file.name);remove.onclick=()=>{pendingFiles.splice(i,1);renderFileUI();setBtn()};chip.append(name,remove);list.appendChild(chip)});list.hidden=!pendingFiles.length;
  const active=$('#activeFiles');active.replaceChildren();const files=cur&&fileContexts.get(cur.id);if(files&&files.length){active.appendChild(document.createTextNode('Using file context: '+files.map(f=>f.name).join(', ')));const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.onclick=()=>{fileContexts.delete(cur.id);renderFileUI()};active.appendChild(remove);active.hidden=false}else active.hidden=true}
 function showFileError(message){const error=$('#fileError');error.textContent=message;error.hidden=!message}
+function saveComposerSettings(){try{localStorage.setItem(SETTINGS_KEY,JSON.stringify({provider:selectedProvider,model:selectedModel,power:selectedPower}))}catch{}}
+function showModelNote(message){const note=$('#modelNote');note.textContent=message;note.hidden=!message}
+function chooseProvider(){
+ const select=$('#providerSelect'),modelSelect=$('#modelSelect'),current=providerCatalog.find(item=>item.id===select.value);
+ selectedProvider=current?current.id:'nvidia';
+ const models=current&&current.models||[];modelSelect.replaceChildren();
+ for(const model of models){const option=document.createElement('option');option.value=model.id;option.textContent=(model.name||model.id)+(model.supportsImages?' · Vision':'');option.title=model.id;modelSelect.appendChild(option)}
+ const saved=models.some(model=>model.id===selectedModel)?selectedModel:'';
+ const preferred=models.find(model=>selectedProvider==='nvidia'&&/meta\/llama-3\.1-8b-instruct/i.test(model.id))||models.find(model=>selectedProvider==='anthropic'&&/haiku/i.test(model.id))||models[0];
+ selectedModel=saved||(preferred&&preferred.id)||'';modelSelect.value=selectedModel;modelSelect.disabled=!models.length;
+ saveComposerSettings();
+ if(current&&current.locked)showModelNote('Provider access is locked. Set JARVIS_ACCESS_TOKEN on the server, then connect it here.');
+ else if(current&&!current.configured)showModelNote(`Add ${current.id==='openrouter'?'OPENROUTER_API_KEY':'ANTHROPIC_API_KEY'} to the server environment to enable ${current.name}.`);
+ else if(current&&current.error)showModelNote(current.error);
+ else if(!models.length)showModelNote('No models are available. Check the provider keys and reload the model list.');
+ else showModelNote('');
+}
+async function loadModels(){
+ const providerSelect=$('#providerSelect'),modelSelect=$('#modelSelect');providerSelect.disabled=true;modelSelect.disabled=true;showModelNote('Loading available models…');
+ try{
+  const headers=accessToken?{Authorization:'Bearer '+accessToken}:{};
+  const response=await fetch('/api/models',{headers,cache:'no-store'}),data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error||'Could not load model providers.');
+  providerCatalog=Array.isArray(data.providers)?data.providers:[];providerSelect.replaceChildren();
+  accessRequired=Boolean(data.accessRequired);
+  for(const item of providerCatalog){const option=document.createElement('option');option.value=item.id;option.disabled=!item.configured||item.locked||!item.models.length;option.textContent=!item.configured?`${item.name} · key needed`:item.locked?`${item.name} · connect`:item.models.length?item.name:`${item.name} · unavailable`;providerSelect.appendChild(option)}
+  const active=providerCatalog.find(item=>item.id===selectedProvider&&item.configured&&!item.locked&&item.models.length)||providerCatalog.find(item=>item.configured&&!item.locked&&item.models.length);
+  if(active){selectedProvider=active.id;providerSelect.value=active.id}else{providerSelect.value='nvidia';selectedProvider='nvidia'}
+  $('#accessLabel').textContent=data.accessRequired?(data.accessGranted?'Connected':'Connect'):'Providers';
+  $('#accessBtn').title=data.accessRequired?(data.accessGranted?'Provider access connected for this tab':'Connect provider access using the server access token'):'Provider keys are configured on the server';
+  providerSelect.disabled=!providerCatalog.some(item=>item.configured&&!item.locked&&item.models.length);
+  chooseProvider();
+  if(data.accessRequired&&!data.accessGranted)showModelNote(data.accessConfigured?'Connect provider access to load OpenRouter and Anthropic models.':'Set JARVIS_ACCESS_TOKEN on the server before enabling additional providers.');
+  else if(!providerCatalog.some(item=>item.configured))showModelNote('Add NVIDIA_API_KEY or another provider key to the server environment.');
+  else if(active&&active.error)showModelNote(active.error);
+ }catch(error){providerSelect.disabled=true;modelSelect.disabled=true;showModelNote(error.message||'Could not load available models.')}
+}
+$('#providerSelect').onchange=()=>chooseProvider();
+$('#modelSelect').onchange=()=>{selectedModel=$('#modelSelect').value;saveComposerSettings()};
+$('#powerSelect').value=selectedPower;
+$('#powerSelect').onchange=()=>{selectedPower=$('#powerSelect').value;saveComposerSettings()};
+$('#accessBtn').onclick=()=>{if(!accessRequired&&!providerCatalog.some(item=>item.id!=='nvidia'&&item.configured)){showModelNote('Add OPENROUTER_API_KEY and/or ANTHROPIC_API_KEY on the server first. Provider keys never belong in this browser.');return}const next=prompt('Enter the JARVIS_ACCESS_TOKEN from your server settings. It is kept only in this tab. Do not paste provider API keys here.');if(next===null)return;accessToken=next.trim();try{if(accessToken)sessionStorage.setItem(ACCESS_KEY,accessToken);else sessionStorage.removeItem(ACCESS_KEY)}catch{}void loadModels()};
 async function encodeFile(file){const bytes=new Uint8Array(await file.arrayBuffer());let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));return{name:file.name,mime:file.type||'application/octet-stream',data:btoa(binary)}}
 $('#attach').onclick=()=>$('#fileInput').click();
 $('#fileInput').onchange=()=>{const chosen=Array.from($('#fileInput').files||[]);$('#fileInput').value='';if(!chosen.length)return;
- if(chosen.some(f=>!ALLOWED_FILE.test(f.name))){showFileError('Use a text/code file, PDF, DOCX, PNG, JPG, or WebP image.');return}
+ if(chosen.some(f=>!ALLOWED_FILE.test(f.name))){showFileError('Use text/code, PDF, DOCX, PPTX, XLSX, PNG, JPG, WebP, or GIF files.');return}
  if(pendingFiles.length+chosen.length>MAX_FILES){showFileError('Attach up to 4 files at a time.');return}
  if([...pendingFiles,...chosen].reduce((n,f)=>n+f.size,0)>MAX_UPLOAD_BYTES){showFileError('Attachments must total 2.7 MB or less.');return}
  pendingFiles.push(...chosen);showFileError('');renderFileUI();setBtn()};
+let recognition=null;
+$('#mic').onclick=()=>{
+ if(recognition){recognition.stop();return}
+ const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Speech){showFileError('Voice dictation is unavailable in this browser. Try Chrome or Edge over HTTPS.');return}
+ const rec=new Speech();recognition=rec;rec.lang=navigator.language||'en-US';rec.interimResults=true;rec.continuous=false;
+ const before=inp.value.trim();$('#mic').classList.add('listening');$('#mic').setAttribute('aria-pressed','true');showFileError('Listening… speak now.');
+ rec.onresult=event=>{const words=Array.from(event.results).map(result=>result[0]&&result[0].transcript||'').join(' ').trim();inp.value=[before,words].filter(Boolean).join(' ');inp.dispatchEvent(new Event('input',{bubbles:true}))};
+ rec.onerror=event=>showFileError(event.error==='not-allowed'?'Allow microphone access to use voice dictation.':`Voice input error: ${event.error||'try again'}.`);
+ rec.onend=()=>{recognition=null;$('#mic').classList.remove('listening');$('#mic').setAttribute('aria-pressed','false');if($('#fileError').textContent==='Listening… speak now.')showFileError('')};
+ try{rec.start()}catch{recognition=null;$('#mic').classList.remove('listening');$('#mic').setAttribute('aria-pressed','false');showFileError('Could not start the microphone. Check its browser permission.')}
+};
 function addAsst(html){const d=document.createElement('div');d.className='m a';d.innerHTML=html;msgs.appendChild(d);return d}
 function finishAsst(el,text){el.classList.remove('live');el.innerHTML=render(text);el.dataset.raw=text;
  const a=document.createElement('div');a.className='acts';
@@ -204,8 +263,9 @@ async function send(text,chosen=pendingFiles){text=(text||'').trim();const selec
  $('#hero').hidden=true;addUser(text,fileNames);const w=addAsst('<span class="dots"><i></i><i></i><i></i></span>');toEnd();inp.value='';inp.style.height='auto';$('#ttl').textContent=cur.title;renderList();
  try{let full='';const ans=local(text);
   if(ans){for(const ch of ans.match(/.{1,4}/gs)){full+=ch;w.innerHTML=render(full);await new Promise(r=>setTimeout(r,10))}}
-   else{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:cur.messages.slice(-12),...(uploads.length?{attachments:uploads}:{})})});
+   else{const requestHeaders={'Content-Type':'application/json'};if(accessToken)requestHeaders.Authorization='Bearer '+accessToken;const r=await fetch('/api/chat',{method:'POST',headers:requestHeaders,body:JSON.stringify({messages:cur.messages.slice(-12),provider:selectedProvider,model:selectedModel,power:selectedPower,...(uploads.length?{attachments:uploads}:{})})});
    if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||'The request failed ('+r.status+').')}
+   const usedModel=r.headers.get('X-Model');if(usedModel&&selectedModel&&usedModel!==selectedModel&&uploads.some(file=>/^image\//i.test(file.mime||'')))showModelNote(`Using ${usedModel} to understand the attached image.`);
    const rd=r.body.getReader(),dec=new TextDecoder();w.classList.add('live');w.innerHTML='';let q=false,fin=false;
    for(;;){const{done,value}=await rd.read();if(done)break;full+=dec.decode(value,{stream:true});
     if(!q){q=true;requestAnimationFrame(()=>{q=false;if(fin)return;const s=near();w.innerHTML=render(full);if(s)toEnd()})}}
@@ -224,5 +284,5 @@ $('#sbtoggle').onclick=()=>{innerWidth<=820?document.body.classList.toggle('nav'
 const setTheme=t=>{document.documentElement.dataset.theme=t;try{localStorage.setItem('jarvis.theme',t)}catch{}};
 $('#theme').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
 try{setTheme(localStorage.getItem('jarvis.theme')||'dark')}catch{}
-renderList();showView('chat');
+renderList();showView('chat');void loadModels();
 </script></body></html>
